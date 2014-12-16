@@ -18,8 +18,9 @@ import org.citygml4j.util.internal.xml.SystemIDResolver;
 
 
 @XmlType(name="CityKmlExportType", propOrder={
-		"path",
-		"filter",
+		"sourcePath",
+        "resultPath",
+        "filter",
 		"lodToExportFrom",
 		"internal",
 		"tempCacheManager",
@@ -71,8 +72,9 @@ import org.citygml4j.util.internal.xml.SystemIDResolver;
 		"system"
 })
 public class ConfigImpl extends PluginConfig{
-	private Path path;
-	private ExportFilterConfig filter;
+	private Path sourcePath;
+    private Path resultPath;
+    private ExportFilterConfig filter;
 	private int lodToExportFrom;
 	private Internal internal;
 	private CacheManager tempCacheManager;
@@ -147,8 +149,9 @@ public class ConfigImpl extends PluginConfig{
 	public static final String THEME_NONE = "none";
 
 	public ConfigImpl() {
-		path = new Path();
-		filter = new ExportFilterConfig();
+		sourcePath = new Path();
+        resultPath = new Path();
+        filter = new ExportFilterConfig();
 		lodToExportFrom = 2;
 
 		setBuildingDisplayForms(new ArrayList<DisplayForm>());
@@ -199,16 +202,23 @@ public class ConfigImpl extends PluginConfig{
 		internal = new Internal();
 	}
 
-	public Path getPath() {
-		return path;
-	}
+    public Path getSourcePath() {
+        return sourcePath;
+    }
 
-	public void setPath(Path path) {
-		if (path != null)
-			this.path = path;
-	}
+    public void setSourcePath(Path sourcePath) {
+        sourcePath = sourcePath;
+    }
 
-	public System getSystem() {
+    public Path getResultPath() {
+        return resultPath;
+    }
+
+    public void setResultPath(Path resultPath) {
+        resultPath = resultPath;
+    }
+
+    public System getSystem() {
 		return system;
 	}
 

@@ -633,7 +633,6 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 
 		clearGui();
 
-
 		CityKMLExportPlugin citykmlExporter = plugin;
 		if (citykmlExporter == null) return;
 
@@ -1448,10 +1447,10 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 		fileChooser.addChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
 		fileChooser.setFileFilter(filter);
 
-		if (config.getPath().isSetLastUsedMode()) {
-			fileChooser.setCurrentDirectory(new File(config.getPath().getLastUsedPath()));
+		if (config.getResultPath().isSetLastUsedMode()) {
+			fileChooser.setCurrentDirectory(new File(config.getResultPath().getLastUsedPath()));
 		} else {
-			fileChooser.setCurrentDirectory(new File(config.getPath().getStandardPath()));
+			fileChooser.setCurrentDirectory(new File(config.getResultPath().getStandardPath()));
 		}
 		int result = fileChooser.showSaveDialog(getTopLevelAncestor());
 		if (result == JFileChooser.CANCEL_OPTION) return;
@@ -1466,7 +1465,7 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 						exportString + ".kml";
 
 			browseText.setText(exportString);
-			config.getPath().setLastUsedPath(fileChooser.getCurrentDirectory().getAbsolutePath());
+			config.getResultPath().setLastUsedPath(fileChooser.getCurrentDirectory().getAbsolutePath());
 		}
 		catch (Exception e) {
 			//
@@ -1498,10 +1497,10 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 		chooser.setFileFilter(filter);
 
 		if (fileListModel.isEmpty()) {
-			if (config.getPath().isSetLastUsedMode()) {
-				chooser.setCurrentDirectory(new File(config.getPath().getLastUsedPath()));
+			if (config.getSourcePath().isSetLastUsedMode()) {
+				chooser.setCurrentDirectory(new File(config.getSourcePath().getLastUsedPath()));
 			} else {
-				chooser.setCurrentDirectory(new File(config.getPath().getStandardPath()));
+				chooser.setCurrentDirectory(new File(config.getSourcePath().getStandardPath()));
 			}
 		} else
 			chooser.setCurrentDirectory(new File(fileListModel.get(0).toString()));
@@ -1514,7 +1513,7 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 		for (File file : chooser.getSelectedFiles())
 			fileListModel.addElement(file.toString());
 
-		config.getPath().setLastUsedPath(chooser.getCurrentDirectory().getAbsolutePath());
+		config.getSourcePath().setLastUsedPath(chooser.getCurrentDirectory().getAbsolutePath());
 	}
 
 	//fetch theme from selected dataset by preprocessing
@@ -1682,7 +1681,7 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 			for (String fileName : fileNames)
 				fileListModel.add(index++, fileName);
 
-			config.getPath().setLastUsedPath(
+			config.getSourcePath().setLastUsedPath(
 					new File(fileListModel.getElementAt(0).toString()).getAbsolutePath());
 		}
 

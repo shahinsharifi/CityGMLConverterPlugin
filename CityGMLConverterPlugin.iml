@@ -55,7 +55,6 @@
     </src_description>
   </component>
   <component name="NewModuleRootManager" inherit-compiler-output="true">
-    <output url="file://$MODULE_DIR$/build" />
     <exclude-output />
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
@@ -95,15 +94,6 @@
       <library name="citygml4j-2.1.jar">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/share/citygml4j-2.1.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library" exported="">
-      <library name="commons-collections-3.2.1.jar">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/share/commons-collections-3.2.1.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -505,6 +495,7 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" exported="" name="commons-collections-3.2.1" level="project" />
   </component>
 </module>
 
