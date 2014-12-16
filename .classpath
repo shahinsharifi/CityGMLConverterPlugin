@@ -1,15 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-    <classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/third_party"/>
-    <classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/shared"/>
-	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" output="classes" path="src"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/3dcitydb-impexp.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/activation.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/args4j-2.0.11.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/citygml4j-2.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/share/commons-collections-3.2.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/h2-1.1.119.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/hsqldb-1.8.0.7.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/j3d-core-1.3.1.jar"/>
@@ -28,12 +23,15 @@
 	<classpathentry exported="true" kind="lib" path="lib/share/postgis-jdbc-2.0.2SVN.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/postgresql-9.1-901.jdbc4.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/sjsxp.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/share/sqlite-jdbc-3.7.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/swingx-1.6.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/swingx-ws.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/share/texture-atlas-creator.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/tomcat-jdbc.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/tomcat-juli.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/ucp.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/vecmath-1.3.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/third_party/commons-collections-3.2.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/third_party/gt-api-10.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/third_party/gt-data-10.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/third_party/gt-epsg-hsql-10.5.jar"/>
@@ -53,6 +51,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/third_party/jts-1.13.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/third_party/sqlite-jdbc-3.7.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/third_party/textureAtlas.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/share/texture-atlas-creator.jar"/>
-	<classpathentry kind="output" path="build"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
 </classpath>
