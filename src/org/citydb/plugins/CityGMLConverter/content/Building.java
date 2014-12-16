@@ -54,6 +54,8 @@ import net.opengis.kml._2.PolygonType;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.log.Logger;
+import org.citydb.modules.common.event.CounterEvent;
+import org.citydb.modules.common.event.CounterType;
 import org.citydb.plugins.CityGMLConverter.content.BalloonTemplateHandlerImpl;
 import org.citydb.plugins.CityGMLConverter.content.ElevationServiceHandler;
 import org.citydb.plugins.CityGMLConverter.content.KmlExporterManager;
@@ -129,8 +131,6 @@ import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 import org.postgis.PGgeometry;
 import org.postgis.Polygon;
 
-
-
 import org.citydb.plugins.CityGMLConverter.common.xlink.content.DBXlink;
 import org.citydb.plugins.CityGMLConverter.common.xlink.content.DBXlinkBasic;
 import org.citydb.plugins.CityGMLConverter.common.xlink.importer.DBXlinkImporterManager;
@@ -140,12 +140,7 @@ import org.citydb.plugins.CityGMLConverter.config.Balloon;
 import org.citydb.plugins.CityGMLConverter.config.ColladaOptions;
 import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
 
-
 import org.citydb.plugins.CityGMLConverter.config.DisplayForm;
-
-
-import org.citydb.plugins.CityGMLConverter.events.CounterEvent;
-import org.citydb.plugins.CityGMLConverter.events.CounterType;
 import org.citydb.plugins.CityGMLConverter.util.ProjConvertor;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.SqliteImporterManager;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.CacheManager;
@@ -325,11 +320,6 @@ public class Building extends KmlGenericObject{
 					if (getGeometryAmount() > GEOMETRY_AMOUNT_WARNING) {
 						Logger.getInstance().info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
 					}
-
-
-					//	List<Point3d> lowestPointCandidates = getLowestPointsCoordinates(_surfaceList , work);
-
-					//	double zOffset = getZOffsetFromGEService(lowestPointCandidates,work.getTargetSrs());
 
 					List<Point3d> anchorCandidates = setOrigins(); // setOrigins() called mainly for the side-effect
 					double zOffset = getZOffsetFromDB(work.getGmlId(),work.GetElevation());

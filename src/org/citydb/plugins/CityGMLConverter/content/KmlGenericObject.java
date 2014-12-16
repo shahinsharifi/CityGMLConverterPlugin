@@ -88,6 +88,9 @@ import org.citydb.api.log.LogLevel;
 import org.citydb.io.DirectoryScanner;
 import org.citydb.log.Logger;
 
+import org.citydb.modules.common.event.CounterEvent;
+import org.citydb.modules.common.event.CounterType;
+import org.citydb.modules.common.event.GeometryCounterEvent;
 import org.citydb.plugins.CityGMLConverter.CityKMLExportPlugin;
 import org.citydb.plugins.CityGMLConverter.config.Balloon;
 import org.citydb.plugins.CityGMLConverter.config.ColladaOptions;
@@ -95,9 +98,6 @@ import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
 import org.citydb.plugins.CityGMLConverter.config.DisplayForm;
 import org.citydb.plugins.CityGMLConverter.config.Internal;
 
-import org.citydb.plugins.CityGMLConverter.events.CounterEvent;
-import org.citydb.plugins.CityGMLConverter.events.CounterType;
-import org.citydb.plugins.CityGMLConverter.events.GeometryCounterEvent;
 import org.citydb.plugins.CityGMLConverter.util.ElevationHelper;
 import org.citydb.plugins.CityGMLConverter.util.ProjConvertor;
 import org.citydb.util.Util;
@@ -1893,7 +1893,7 @@ public abstract class KmlGenericObject {
 
 
 			eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
-//			eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE,counter , this));
+	//		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE,counter , this));
 			
 			polygon = kmlFactory.createPolygonType();
 
