@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="kml-collada">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../importer-exporter/lib/kml-collada/texture-atlas-creator.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../importer-exporter/lib/kml-collada/kml-collada-jaxb.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

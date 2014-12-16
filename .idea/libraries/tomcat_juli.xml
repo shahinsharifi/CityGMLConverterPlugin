@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="tomcat-juli">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../importer-exporter/lib/tomcat-juli/tomcat-juli.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../importer-exporter/lib/tomcat-juli/tomcat-jdbc.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

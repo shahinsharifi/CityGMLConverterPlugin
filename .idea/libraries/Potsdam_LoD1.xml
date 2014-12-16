@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Potsdam_LoD1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../importer-exporter/samples/Potsdam/KML/Potsdam_LoD1.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

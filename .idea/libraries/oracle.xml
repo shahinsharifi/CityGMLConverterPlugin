@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="oracle">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../importer-exporter/lib/oracle/sdoapi.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../importer-exporter/lib/oracle/ojdbc7.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

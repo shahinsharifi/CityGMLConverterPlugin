@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Gasometer">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../importer-exporter/samples/Berlin/CityGML/Gasometer_LoD2/Gasometer.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
