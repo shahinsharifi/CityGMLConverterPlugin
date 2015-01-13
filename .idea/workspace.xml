@@ -1,69 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="52b2aff2-9167-49d8-8e82-781ee16f9ac7" name="Default" comment="Removing unnecessary packages">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/third_party/activation.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/share/args4j-2.0.21.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/share/h2-1.3.176.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/third_party/hsqldb-1.8.0.7.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/share/j3dcore.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/third_party/jai_codec-1.1.3.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/third_party/jai_core-1.1.3.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/third_party/jak.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/third_party/javacsv-2.0.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/third_party/jaxb-api.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/third_party/jaxb-impl.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/third_party/jaxb-xjc.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/third_party/jdom-1.0.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/third_party/jsr-275-1.0-beta-2.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/third_party/jsr173_1.0_api.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/share/jts-1.13.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/share/kml-collada-jaxb.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/third_party/kml-collada.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/share/ojdbc7.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/third_party/ordim.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/share/postgis-jdbc-2.1.0SVN.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/share/relaxngDatatype.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/share/sdoapi.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/third_party/sjsxp.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/share/stax2-api-3.1.1.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/share/swingx-all-1.6.4.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/third_party/ucp.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/share/vecmath.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/share/woodstox-core-lgpl-4.2.0.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/share/xsom.jar" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/share.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/third_party.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="DELETED" beforePath="C:\Users\Shahin\workspace\CityGMLConverterPlugin\lib\share\activation.jar" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Shahin\workspace\CityGMLConverterPlugin\lib\share\args4j-2.0.11.jar" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Shahin\workspace\CityGMLConverterPlugin\lib\share\h2-1.1.119.jar" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Shahin\workspace\CityGMLConverterPlugin\lib\share\hsqldb-1.8.0.7.jar" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Shahin\workspace\CityGMLConverterPlugin\lib\share\j3d-core-1.3.1.jar" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Shahin\workspace\CityGMLConverterPlugin\lib\share\jai_codec-1.1.3.jar" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Shahin\workspace\CityGMLConverterPlugin\lib\share\jai_core-1.1.3.jar" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Shahin\workspace\CityGMLConverterPlugin\lib\share\jak.jar" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Shahin\workspace\CityGMLConverterPlugin\lib\share\javacsv-2.0.jar" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Shahin\workspace\CityGMLConverterPlugin\lib\share\jaxb-api.jar" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Shahin\workspace\CityGMLConverterPlugin\lib\share\jaxb-impl.jar" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Shahin\workspace\CityGMLConverterPlugin\lib\share\jaxb-xjc.jar" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Shahin\workspace\CityGMLConverterPlugin\lib\share\jdom-1.0.jar" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Shahin\workspace\CityGMLConverterPlugin\lib\share\jsr-275-1.0-beta-2.jar" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Shahin\workspace\CityGMLConverterPlugin\lib\share\jsr173_1.0_api.jar" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Shahin\workspace\CityGMLConverterPlugin\lib\share\kml-collada.jar" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Shahin\workspace\CityGMLConverterPlugin\lib\share\ordim.jar" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Shahin\workspace\CityGMLConverterPlugin\lib\share\postgis-jdbc-2.0.2SVN.jar" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Shahin\workspace\CityGMLConverterPlugin\lib\share\sjsxp.jar" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Shahin\workspace\CityGMLConverterPlugin\lib\share\sqlite-jdbc-3.7.2.jar" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Shahin\workspace\CityGMLConverterPlugin\lib\share\swingx-1.6.jar" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Shahin\workspace\CityGMLConverterPlugin\lib\share\textureAtlas.jar" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Shahin\workspace\CityGMLConverterPlugin\lib\share\ucp.jar" afterPath="" />
-      <change type="DELETED" beforePath="C:\Users\Shahin\workspace\CityGMLConverterPlugin\lib\share\vecmath-1.3.1.jar" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/share/swingx-ws.jar" afterPath="$PROJECT_DIR$/lib/share/swingx-ws.jar" />
+    <list default="true" id="52b2aff2-9167-49d8-8e82-781ee16f9ac7" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.classpath" afterPath="$PROJECT_DIR$/.classpath" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CityGMLConverterPlugin.iml" afterPath="$PROJECT_DIR$/CityGMLConverterPlugin.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules.xml" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.project" afterPath="$PROJECT_DIR$/.project" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="CityGMLConverterPlugin.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -196,6 +138,8 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="PackagesPane" />
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -234,8 +178,6 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
-      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -586,7 +528,8 @@
       <workItem from="1418941559732" duration="590000" />
       <workItem from="1421141515320" duration="14128000" />
       <workItem from="1421161102479" duration="1336000" />
-      <workItem from="1421163064806" duration="5000" />
+      <workItem from="1421163064806" duration="282000" />
+      <workItem from="1421164050714" duration="6000" />
     </task>
     <task id="LOCAL-00001" summary="First Commit">
       <created>1418730900527</created>
@@ -616,11 +559,15 @@
       <created>1421158657345</created>
       <updated>1421158657345</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Libraries problem has been solved.">
+      <created>1421163123172</created>
+      <updated>1421163123172</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="46823000" />
+    <option name="totallyTimeSpent" value="47106000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1296" height="776" extended-state="6" />
@@ -644,7 +591,7 @@
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.30838323" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -674,7 +621,8 @@
     <MESSAGE value="Shared problem is solved." />
     <MESSAGE value="Config problem is solved." />
     <MESSAGE value="Removing unnecessary packages" />
-    <option name="LAST_COMMIT_MESSAGE" value="Removing unnecessary packages" />
+    <MESSAGE value="Libraries problem has been solved." />
+    <option name="LAST_COMMIT_MESSAGE" value="Libraries problem has been solved." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
