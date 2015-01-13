@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/CityGMLConverterPlugin.iml" filepath="$PROJECT_DIR$/CityGMLConverterPlugin.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../Spreadsheet Plugin/Spreadsheet Plugin.iml" filepath="$PROJECT_DIR$/../Spreadsheet Plugin/Spreadsheet Plugin.iml" />
     </modules>
   </component>
 </project>

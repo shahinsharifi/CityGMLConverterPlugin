@@ -1,36 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" output="classes" path="src"/>
+	<classpathentry exported="true" kind="var" path="JRE_LIB" sourcepath="JRE_SRC"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/3dcitydb-impexp.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/share/activation.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/share/args4j-2.0.11.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/share/args4j-2.0.21.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/citygml4j-2.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/share/h2-1.1.119.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/share/hsqldb-1.8.0.7.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/share/j3d-core-1.3.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/share/h2-1.3.176.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/share/j3dcore.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/j3dutils.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/share/jai_codec-1.1.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/share/jai_core-1.1.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/share/javacsv-2.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/share/jaxb-api.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/share/jaxb-impl.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/share/jaxb-xjc.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/share/jdom-1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/share/jsr-275-1.0-beta-2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/share/jsr173_1.0_api.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/share/kml-collada.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/share/ordim.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/share/postgis-jdbc-2.0.2SVN.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/share/jts-1.13.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/share/kml-collada-jaxb.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/share/ojdbc7.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/share/postgis-jdbc-2.1.0SVN.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/postgresql-9.1-901.jdbc4.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/share/sjsxp.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/share/sqlite-jdbc-3.7.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/share/swingx-1.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/share/relaxngDatatype.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/share/sdoapi.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/share/stax2-api-3.1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/share/swingx-all-1.6.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/swingx-ws.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/texture-atlas-creator.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/tomcat-jdbc.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/tomcat-juli.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/share/ucp.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/share/vecmath-1.3.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/share/vecmath.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/share/woodstox-core-lgpl-4.2.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/share/xsom.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/third_party/activation.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/third_party/commons-collections-3.2.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/third_party/gt-api-10.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/third_party/gt-data-10.5.jar"/>
@@ -43,14 +37,28 @@
 	<classpathentry exported="true" kind="lib" path="lib/third_party/gt-referencing-10.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/third_party/gt-referencing3D-10.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/third_party/gt-transform-10.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/third_party/hsqldb-1.8.0.7.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/third_party/jai_codec-1.1.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/third_party/jai_core-1.1.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/third_party/jak.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/third_party/javacsv-2.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/third_party/jaxb-api.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/third_party/jaxb-impl.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/third_party/jaxb-xjc.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/third_party/jdom-1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/third_party/jsr-275-1.0-beta-2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/third_party/jsr173_1.0_api.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/third_party/jt-rangelookup-1.3.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/third_party/jt-utils-1.3.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/third_party/jt-vectorbinarize-1.3.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/third_party/jt-vectorize-1.3.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/third_party/jt-zonalstats-1.3.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/third_party/jts-1.13.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/third_party/kml-collada.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/third_party/ordim.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/third_party/sjsxp.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/third_party/sqlite-jdbc-3.7.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/third_party/textureAtlas.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="lib" path="lib/third_party/ucp.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
