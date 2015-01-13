@@ -51,7 +51,6 @@ import org.citydb.config.project.general.PathMode;
 import org.citydb.plugins.CityGMLConverter.CityKMLExportPlugin;
 import org.citydb.plugins.CityGMLConverter.config.Balloon;
 import org.citydb.plugins.CityGMLConverter.config.BalloonContentMode;
-import org.citydb.plugins.CityGMLConverter.gui.factory.PopupMenuDecorator;
 import org.citydb.plugins.CityGMLConverter.util.Util;
 
 

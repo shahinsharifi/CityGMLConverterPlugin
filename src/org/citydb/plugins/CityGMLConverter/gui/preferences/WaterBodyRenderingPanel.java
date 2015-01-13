@@ -54,10 +54,10 @@ import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.border.TitledBorder;
 
+import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.plugins.CityGMLConverter.CityKMLExportPlugin;
 import org.citydb.plugins.CityGMLConverter.config.ColladaOptions;
 import org.citydb.plugins.CityGMLConverter.config.DisplayForm;
-import org.citydb.plugins.CityGMLConverter.gui.factory.PopupMenuDecorator;
 import org.citydb.plugins.CityGMLConverter.util.Util;
 import org.citydb.util.gui.GuiUtil;
 import org.citygml.textureAtlas.TextureAtlasCreator;
@@ -427,7 +427,7 @@ public class WaterBodyRenderingPanel extends AbstractPreferencesComponent {
 		GridBagConstraints chldt = GuiUtil.setConstraints(1,1,0.0,1.0,GridBagConstraints.HORIZONTAL,0,0,2*BORDER_THICKNESS,0);
 		colladaHLSubPanel.add(colladaHLSurfaceDistanceText, chldt);
 	
-		PopupMenuDecorator.getInstance().decorate(geometryHLSurfaceDistanceText, scaleFactorText, 
+		PopupMenuDecorator.getInstance().decorate(geometryHLSurfaceDistanceText, scaleFactorText,
 				groupSizeText, colladaHLSurfaceDistanceText);
 		
 		scaleTexImagesCheckbox.addActionListener(new ActionListener() {

@@ -51,21 +51,6 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import org.citydb.api.event.Event;
 import org.citydb.api.event.EventHandler;
 import org.citydb.api.event.global.GlobalEvents;
@@ -74,12 +59,13 @@ import org.citydb.api.geometry.BoundingBoxCorner;
 import org.citydb.api.gui.BoundingBoxPanel;
 import org.citydb.api.gui.DatabaseSrsComboBox;
 import org.citydb.api.registry.ObjectRegistry;
+import org.citydb.config.Config;
+import org.citydb.gui.components.bbox.BoundingBoxClipboardHandler;
+import org.citydb.gui.components.bbox.BoundingBoxListener;
+import org.citydb.gui.components.mapviewer.MapWindow;
 import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.log.Logger;
-import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
-import org.citydb.plugins.CityGMLConverter.gui.components.mapviewer.MapWindow;
-import org.citydb.plugins.CityGMLConverter.gui.view.SrsComboBoxFactory;
-import org.citydb.plugins.CityGMLConverter.gui.view.SrsComboBoxFactory.SrsComboBox;
+import org.citydb.plugins.CityGMLConverter.gui.factory.SrsComboBoxFactory;
 import org.citydb.plugins.CityGMLConverter.util.Util;
 import org.citydb.util.gui.GuiUtil;
 
@@ -89,7 +75,7 @@ import org.citydb.util.gui.GuiUtil;
 @SuppressWarnings("serial")
 public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandler, BoundingBoxListener {
 	private final Logger LOG = Logger.getInstance();
-	private final ConfigImpl config;
+	private final Config config;
 	private boolean isEnabled;
 	private boolean isEditable;
 
@@ -97,7 +83,7 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 	private JButton copy;
 	private JButton paste;
 	private JLabel srsLabel;
-	private SrsComboBox srsComboBox;
+	private SrsComboBoxFactory.SrsComboBox srsComboBox;
 	private JFormattedTextField xmin;
 	private JFormattedTextField ymin;
 	private JFormattedTextField xmax;
@@ -110,7 +96,7 @@ public class BoundingBoxPanelImpl extends BoundingBoxPanel implements EventHandl
 	private BBoxPopupMenuWrapper[] bboxPopups;
 	private BoundingBoxClipboardHandler clipboardHandler;
 
-	public BoundingBoxPanelImpl(ConfigImpl config) {
+	public BoundingBoxPanelImpl(Config config) {
 		this.config = config;
 
 		ObjectRegistry.getInstance().getEventDispatcher().addEventHandler(GlobalEvents.SWITCH_LOCALE, this);		

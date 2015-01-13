@@ -101,12 +101,16 @@ import javax.xml.namespace.QName;
 
 import org.citydb.api.controller.LogController;
 import org.citydb.api.controller.ViewController;
+import org.citydb.api.database.DatabaseSrs;
 import org.citydb.api.event.Event;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.event.EventHandler;
 import org.citydb.api.event.global.DatabaseConnectionStateEvent;
+import org.citydb.api.gui.BoundingBoxPanel;
+import org.citydb.api.gui.DatabaseSrsComboBox;
 import org.citydb.api.log.LogLevel;
 import org.citydb.api.registry.ObjectRegistry;
+import org.citydb.config.Config;
 import org.citydb.config.project.exporter.ExportFilterConfig;
 import org.citydb.config.project.filter.FilterMode;
 import org.citydb.config.project.filter.TilingMode;
@@ -115,7 +119,8 @@ import org.citydb.gui.components.ExportStatusDialog;
 import org.citydb.gui.components.checkboxtree.CheckboxTree;
 import org.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
 import org.citydb.gui.components.checkboxtree.DefaultTreeCheckingModel;
-import org.citydb.gui.factory.PopupMenuDecorator;
+import org.citydb.gui.factory.*;
+import org.citydb.gui.factory.SrsComboBoxFactory;
 import org.citydb.io.DirectoryScanner;
 import org.citydb.log.Logger;
 import org.citydb.plugins.CityGMLConverter.CityKMLExportPlugin;
@@ -125,6 +130,7 @@ import org.citydb.plugins.CityGMLConverter.config.Internal;
 import org.citydb.plugins.CityGMLConverter.controller.CityKmlExporter;
 import org.citydb.plugins.CityGMLConverter.events.InterruptEnum;
 import org.citydb.plugins.CityGMLConverter.events.InterruptEvent;
+//import org.citydb.plugins.CityGMLConverter.gui.components.bbox.BoundingBoxPanelImpl;
 import org.citydb.plugins.CityGMLConverter.gui.components.bbox.BoundingBoxPanelImpl;
 import org.citydb.plugins.CityGMLConverter.util.BoundingBox;
 import org.citydb.plugins.CityGMLConverter.util.DSUtil;
@@ -368,11 +374,12 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 
 		JPanel boundingBoxPanel = new JPanel();
 		boundingBoxPanel.setLayout(new GridBagLayout());
-		bboxComponent = new BoundingBoxPanelImpl(config);
+		bboxComponent = new BoundingBoxPanelImpl(new Config());
 
 		boundingBoxPanel.add(bboxComponent, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.HORIZONTAL,2,lmargin,0,BORDER_THICKNESS));
+        bboxComponent.getSrsComboBox().setSelectedIndex(1);
 
-		JPanel BboxCalcButtonPanel = new JPanel();
+        JPanel BboxCalcButtonPanel = new JPanel();
 		BboxCalcButtonPanel.add(BboxCalcButton);
 		boundingBoxPanel.add(BboxCalcButtonPanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.HORIZONTAL,2,lmargin,0,BORDER_THICKNESS));
 

@@ -48,11 +48,11 @@ import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.citydb.config.project.general.PathMode;
+import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.plugins.CityGMLConverter.CityKMLExportPlugin;
 import org.citydb.plugins.CityGMLConverter.config.Balloon;
 import org.citydb.plugins.CityGMLConverter.config.BalloonContentMode;
 import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
-import org.citydb.plugins.CityGMLConverter.gui.factory.PopupMenuDecorator;
 import org.citydb.plugins.CityGMLConverter.util.Util;
 
 

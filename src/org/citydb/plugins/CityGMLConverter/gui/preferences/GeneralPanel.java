@@ -43,9 +43,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import org.citydb.gui.factory.PopupMenuDecorator;
 import org.citydb.plugins.CityGMLConverter.CityKMLExportPlugin;
 import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
-import org.citydb.plugins.CityGMLConverter.gui.factory.PopupMenuDecorator;
 import org.citydb.plugins.CityGMLConverter.util.Util;
 
 import net.opengis.kml._2.ViewRefreshModeEnumType;

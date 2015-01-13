@@ -32,7 +32,6 @@ package org.citydb.plugins.CityGMLConverter.gui.factory;
 import java.awt.Component;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -46,7 +45,10 @@ import org.citydb.api.event.global.GlobalEvents;
 import org.citydb.api.gui.DatabaseSrsComboBox;
 import org.citydb.api.registry.ObjectRegistry;
 import org.citydb.config.Config;
+import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
 import org.citydb.plugins.CityGMLConverter.util.Util;
+
+
 
 
 
@@ -89,15 +91,15 @@ public class SrsComboBoxFactory {
 	public void resetAll(boolean sort) {
 		// by default, any reference system is not supported. In GUI mode we can
 		// override this because the SRS combo boxes will take care.
-		for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems())
-			refSys.setSupported(true);
-		
-		processSrsComboBoxes(sort, false);
+		//	for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems())
+		//		refSys.setSupported(true);
+
+		//	processSrsComboBoxes(sort, false);
 	}
 
 	private void processSrsComboBoxes(boolean sort, boolean update) {
-		if (sort)
-			Collections.sort(config.getProject().getDatabase().getReferenceSystems());
+		//if (sort)
+		//	Collections.sort(config.getProject().getDatabase().getReferenceSystems());
 
 		Iterator<WeakReference<SrsComboBox>> iter = srsBoxes.iterator();
 		while (iter.hasNext()) {
@@ -135,26 +137,23 @@ public class SrsComboBoxFactory {
 			if (anObject instanceof DatabaseSrs) {
 				DatabaseSrs refSys = (DatabaseSrs)anObject;
 
-				if (refSys == dbRefSys || config.getProject().getDatabase().getReferenceSystems().contains(refSys))
-					super.setSelectedItem(refSys);
-				else {
-					DatabaseSrs cand = null;
+				DatabaseSrs cand = null;
 
-					for (int i = 0; i < getItemCount(); i++) {
-						DatabaseSrs item = getItemAt(i);
-						if (item != null) {
-							if (item.getId().equals(refSys.getId())) {
-								super.setSelectedItem(item);
-								cand = null;
-								break;
-							} else if (cand == null && item.getSrid() == refSys.getSrid())
-								cand = refSys;
-						}
+				for (int i = 0; i < getItemCount(); i++) {
+					DatabaseSrs item = getItemAt(i);
+					if (item != null) {
+						if (item.getId().equals(refSys.getId())) {
+							super.setSelectedItem(item);
+							cand = null;
+							break;
+						} else if (cand == null && item.getSrid() == refSys.getSrid())
+							cand = refSys;
 					}
-
-					if (cand != null)
-						super.setSelectedItem(cand);
 				}
+
+				if (cand != null)
+					super.setSelectedItem(cand);
+
 			}
 		}
 
@@ -177,22 +176,17 @@ public class SrsComboBoxFactory {
 		}
 
 		private void init() {
+
+			DatabaseSrs srsWGS = DatabaseSrs.createDefaultSrs(); 
+			srsWGS.setSrid(4326);
+			srsWGS.setDescription("[Default] WGS84");
+
+			
 			addItem(dbRefSys);
-
-			// user-defined reference systems
-			for (DatabaseSrs refSys : config.getProject().getDatabase().getReferenceSystems()) {
-				if (showOnlySupported && !refSys.isSupported())
-					continue;
-
-				if (showOnlySameDimension && refSys.is3D() != dbRefSys.is3D())
-					continue;
-
-				addItem(refSys);
-			}
+			addItem(srsWGS);
 		}
 
 		private void reset() {
-			
 			removeAllItems();
 			init();
 		}
@@ -207,7 +201,7 @@ public class SrsComboBoxFactory {
 		}
 
 		private void doTranslation() {
-			dbRefSys.setDescription(Util.I18N.getString("common.label.boundingBox.crs.sameAsInDB"));
+			dbRefSys.setDescription(Util.I18N.getString("common.label.boundingBox.crs.sameAsInSourceFile"));
 			DatabaseSrs selectedItem = getSelectedItem();
 			if (selectedItem == null)
 				selectedItem = dbRefSys;

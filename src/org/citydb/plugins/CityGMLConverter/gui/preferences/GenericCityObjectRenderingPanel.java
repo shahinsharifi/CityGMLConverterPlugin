@@ -57,7 +57,6 @@ import javax.swing.border.TitledBorder;
 import org.citydb.plugins.CityGMLConverter.CityKMLExportPlugin;
 import org.citydb.plugins.CityGMLConverter.config.ColladaOptions;
 import org.citydb.plugins.CityGMLConverter.config.DisplayForm;
-import org.citydb.plugins.CityGMLConverter.gui.factory.PopupMenuDecorator;
 import org.citydb.plugins.CityGMLConverter.util.Util;
 
 
