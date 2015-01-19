@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.7.0"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/3dcitydb-impexp.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/args4j-2.0.21.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/share/citygml4j-2.1.jar"/>
@@ -60,5 +59,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/third_party/sqlite-jdbc-3.7.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/third_party/textureAtlas.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/third_party/ucp.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
