@@ -37,6 +37,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.xml.namespace.QName;
 
@@ -55,16 +57,23 @@ import org.citygml4j.builder.CityGMLBuilder;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.CityGMLClass;
+import org.citygml4j.model.citygml.appearance.Appearance;
+import org.citygml4j.model.citygml.appearance.AppearanceMember;
 import org.citygml4j.model.citygml.appearance.AppearanceProperty;
+import org.citygml4j.model.citygml.building.AbstractBuilding;
+import org.citygml4j.model.citygml.building.BuildingPart;
+import org.citygml4j.model.citygml.building.BuildingPartProperty;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.CityModel;
 import org.citygml4j.model.citygml.core.CityObjectMember;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 import org.citygml4j.xml.io.CityGMLInputFactory;
+import org.citygml4j.xml.io.reader.CityGMLInputFilter;
 import org.citygml4j.xml.io.reader.CityGMLReadException;
 import org.citygml4j.xml.io.reader.CityGMLReader;
 import org.citygml4j.xml.io.reader.FeatureReadMode;
+import org.citygml4j.xml.io.reader.XMLChunk;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.postgis.Geometry;
@@ -74,8 +83,6 @@ import org.postgis.PGgeometry;
 
 import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
 import org.citydb.plugins.CityGMLConverter.config.DisplayForm;
-
-
 import org.citydb.plugins.CityGMLConverter.util.ElevationHelper;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.SQLiteFactory;
 
@@ -93,7 +100,8 @@ public class KmlSplitter {
 	private volatile boolean shouldRun = true;
 
 	private final Logger LOG = Logger.getInstance();
-
+	private List<Appearance> tmpAppearanceList = null;
+	private List<KmlSplittingResult> DataSetCache = null; 
 	private Connection connection;
 	private DatabaseSrs dbSrs;
 	private String TargetSrs = "";
@@ -195,7 +203,7 @@ public class KmlSplitter {
 				if(tiling.getMode() != TilingMode.NO_TILING)
 				{
 					BoundingBox tile = exportFilter.getBoundingBoxFilter().getFilterState();
-					
+
 					if(boundingBoxSrs != 4326)
 					{
 						_bounds = new org.citydb.plugins.CityGMLConverter.util.BoundingBox(
@@ -214,7 +222,7 @@ public class KmlSplitter {
 								tile.getUpperRightCorner().getY(),
 								"4326");
 					}
-					
+
 				}
 				else{
 
@@ -233,9 +241,9 @@ public class KmlSplitter {
 					}else {
 
 
-					//	BoundingBox BBox = ProjConvertor.transformBBox(filterConfig.getComplexFilter().getTiledBoundingBox() , "4326", this.TargetSrs); 
+						//	BoundingBox BBox = ProjConvertor.transformBBox(filterConfig.getComplexFilter().getTiledBoundingBox() , "4326", this.TargetSrs); 
 						BoundingBox BBox = filterConfig.getComplexFilter().getTiledBoundingBox();
-						
+
 						_bounds = new org.citydb.plugins.CityGMLConverter.util.BoundingBox(
 								BBox.getLowerLeftCorner().getX() ,
 								BBox.getLowerLeftCorner().getY() ,
@@ -247,9 +255,9 @@ public class KmlSplitter {
 
 				}
 
-				
+
 				//****************************************
-				
+
 				// prepare CityGML input factory
 
 				CityGMLInputFactory in = null;
@@ -262,73 +270,140 @@ public class KmlSplitter {
 					in.setProperty(CityGMLInputFactory.EXCLUDE_FROM_SPLITTING, CityModel.class);
 				} catch (CityGMLReadException e) {
 					LOG.error("Failed to initialize CityGML parser. Aborting.");
-					
+
 				}*/
 
 
 				// prepare zOffSet Object
 				SQLiteFactory factory = new SQLiteFactory("Elevation.db",  file.getParent() , "org.sqlite.JDBC");
 				connection = factory.getConnection();
-				
-				
-				
-				CityGMLContext ctx = new CityGMLContext();
+
+
+
+				/*CityGMLContext ctx = new CityGMLContext();
 				CityGMLBuilder builder = ctx.createCityGMLBuilder();
 				in = builder.createCityGMLInputFactory();
 				CityGMLReader reader = in.createCityGMLReader(file);
 				CityModel cityModel = (CityModel)reader.nextFeature();
 				reader.close();
-				
-				if(cityModel.isSetCityObjectMember()){
-					
-					for (CityObjectMember member : cityModel.getCityObjectMember()) {
-						
-						if (member.isSetCityObject()) {
-							
-							AbstractCityObject cityObject = member.getCityObject();
-							CityGML _CityGML = cityObject;
-							CityGMLClass cityObjectType = _CityGML.getCityGMLClass();
-							
-							AbstractFeature feature = (AbstractFeature)cityObject;
-							
-							// bounding box filter
-							// first of all compute bounding box for cityobject since we need it anyways
-	
-							Envelope envelope = null;
-							if(cityObject.getBoundedBy() != null)
-								envelope = cityObject.getBoundedBy().getEnvelope().convert3d();
-							else 
-								envelope = feature.calcBoundedBy(false).getEnvelope();
-							
-													
-							
-							List<AppearanceProperty> tmpAppearanceList = new ArrayList<AppearanceProperty>();
-							
-							if(cityObject.isSetAppearance())
-								tmpAppearanceList.addAll(cityObject.getAppearance());								
-							else
-								tmpAppearanceList.addAll(cityModel.getAppearanceMember());
-							
-							ReferencedEnvelope _refEnvelope = new ReferencedEnvelope(
-									envelope.getLowerCorner().toList3d().get(0),
-									envelope.getUpperCorner().toList3d().get(0),	
-									envelope.getLowerCorner().toList3d().get(1),							
-									envelope.getUpperCorner().toList3d().get(1),
-									CRS.decode("EPSG:" + this.TargetSrs, true));
 
-							if(_bounds.ContainCentroid(_refEnvelope,TargetSrs))						
-							{
-								ElevationHelper elevation = new ElevationHelper(connection);								
-								KmlSplittingResult splitter = new KmlSplittingResult(cityObject.getId() ,_CityGML , cityObjectType, displayForm, TargetSrs , tmpAppearanceList , elevation);										
-								kmlWorkerPool.addWork(splitter);					
-							}
-						/*	else {
-								Logger.getInstance().error("BoundingBox can not be calculated for the object: " + cityObject.getId());
-							}*/
-						}
+				if(cityModel.isSetCityObjectMember()){
+
+					for (CityObjectMember member : cityModel.getCityObjectMember()) {
+
+						if (member.isSetCityObject()) {*/
+
+
+				try {
+					in = jaxbBuilder.createCityGMLInputFactory();
+					in.setProperty(CityGMLInputFactory.FEATURE_READ_MODE, FeatureReadMode.SPLIT_PER_COLLECTION_MEMBER);
+					in.setProperty(CityGMLInputFactory.FAIL_ON_MISSING_ADE_SCHEMA, false);
+					in.setProperty(CityGMLInputFactory.PARSE_SCHEMA, false);
+					in.setProperty(CityGMLInputFactory.SPLIT_AT_FEATURE_PROPERTY, new QName("generalizesTo"));
+					in.setProperty(CityGMLInputFactory.EXCLUDE_FROM_SPLITTING, CityModel.class);
+
+
+				} catch (CityGMLReadException e) {
+					//throw new CityGMLImportException("Failed to initialize CityGML parser. Aborting.", e);
+				}
+
+
+
+				CityGMLInputFilter inputFilter = new CityGMLInputFilter() {
+					public boolean accept(CityGMLClass type) {
+						return true;
+					}
+				};
+
+				CityGMLReader reader = null;
+				tmpAppearanceList = new CopyOnWriteArrayList<Appearance>();
+
+				//only for reading global appearance
+								reader = in.createFilteredCityGMLReader(in.createCityGMLReader(file), inputFilter);
+				LOG.info("Searching for global appearance ...");
+				while (reader.hasNext()) {
+					XMLChunk chunk = reader.nextChunk();
+					CityGML cityGML = chunk.unmarshal();
+					if(cityGML.getCityGMLClass() == CityGMLClass.APPEARANCE)
+					{
+						Appearance _appreance = (Appearance)cityGML;
+						tmpAppearanceList.add(_appreance);
 					}
 				}
-				
+				reader.close();
+
+				//for reading buildings
+				reader = in.createFilteredCityGMLReader(in.createCityGMLReader(file), inputFilter);
+				LOG.info("Reading city objects ...");
+				String flag = "";
+				while (reader.hasNext()) {
+					
+					try{
+						
+						Envelope envelope = null;
+						XMLChunk chunk = reader.nextChunk();
+						CityGML cityGML = chunk.unmarshal();
+						/*if(cityGML.getCityGMLClass() == CityGMLClass.APPEARANCE)
+						{
+							Appearance _appreance = (Appearance)cityGML;
+							tmpAppearanceList.add(_appreance);
+						}
+						else*/ if(cityGML.getCityGMLClass() == CityGMLClass.BUILDING){
+
+							AbstractCityObject cityObject = (AbstractCityObject)cityGML;
+							CityGMLClass cityObjectType = cityGML.getCityGMLClass();
+
+							if(cityObject.calcBoundedBy(true) != null)
+								envelope = cityObject.calcBoundedBy(true).getEnvelope();
+							
+							if(cityObject.calcBoundedBy(false) != null)
+								envelope = cityObject.calcBoundedBy(false).getEnvelope();
+
+							if(envelope != null){
+								
+								if(cityObject.isSetAppearance()){
+									for(AppearanceProperty appearance : cityObject.getAppearance()){
+										tmpAppearanceList.add((Appearance)appearance.getAppearance());
+									}
+								}else {
+
+									AbstractBuilding building = (AbstractBuilding)cityObject;
+									if(building.isSetConsistsOfBuildingPart())
+									{
+										for(BuildingPartProperty buidingPart : building.getConsistsOfBuildingPart())
+										{
+											BuildingPart tmpBuildingPart = buidingPart.getBuildingPart();
+											if(tmpBuildingPart.isSetAppearance()){
+												for(AppearanceProperty appearance : tmpBuildingPart.getAppearance()){
+													tmpAppearanceList.add((Appearance)appearance.getAppearance());
+												}
+											}
+										}
+									}
+								}
+
+								ReferencedEnvelope _refEnvelope = new ReferencedEnvelope(
+										envelope.getLowerCorner().toList3d().get(0),
+										envelope.getUpperCorner().toList3d().get(0),	
+										envelope.getLowerCorner().toList3d().get(1),							
+										envelope.getUpperCorner().toList3d().get(1),
+										CRS.decode("EPSG:" + this.TargetSrs, true));
+
+								if(_bounds.ContainCentroid(_refEnvelope,TargetSrs))						
+								{
+									ElevationHelper elevation = new ElevationHelper(connection);								
+									KmlSplittingResult splitter = new KmlSplittingResult(cityObject.getId() , cityGML , cityObjectType , displayForm, TargetSrs , tmpAppearanceList , elevation);		
+									Thread.sleep(10);
+									kmlWorkerPool.addWork(splitter);
+								}
+							}
+						}
+						
+					}catch (Exception e) {
+						Logger.getInstance().error(e.toString() +" -> "+flag);
+					}
+				}
+				reader.close();
 
 			} catch (Exception e) {
 
@@ -373,7 +448,7 @@ public class KmlSplitter {
 		shouldRun = false;
 	}
 
-	
+
 
 	private double[] getEnvelopeInWGS84(long id) {
 		double[] ordinatesArray = null;

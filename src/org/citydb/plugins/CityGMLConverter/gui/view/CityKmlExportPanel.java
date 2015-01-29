@@ -1027,8 +1027,10 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 
 						try {
 
+							BboxCalcButton.setEnabled(false);
 							doCalculation();
-
+							BboxCalcButton.setEnabled(true);
+							
 						} catch (Exception e) {
 							Logger.getInstance().error(e.toString());
 						}
@@ -1545,7 +1547,7 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 					themeComboBox.addItem(config.THEME_NONE);
 					themeComboBox.setSelectedItem(config.THEME_NONE);
 					LOG.info("Start fetching themes ...");
-					for (String theme: DSUtil.getAppearanceThemeList(config.getInternal().getImportFiles()[0])) {
+					for (String theme: DSUtil.getAppearanceThemeList(jaxbBuilder, config.getInternal().getImportFiles()[0])) {
 						if (theme == null) continue;
 						themeComboBox.addItem(theme);
 						if (theme.equals(config.getAppearanceTheme())) {

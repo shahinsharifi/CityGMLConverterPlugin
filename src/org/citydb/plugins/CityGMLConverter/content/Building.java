@@ -97,6 +97,7 @@ import org.citygml4j.model.citygml.building.Room;
 import org.citygml4j.model.citygml.texturedsurface._TexturedSurface;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.base.AssociationAttributeGroup;
+import org.citygml4j.model.gml.feature.BoundingShape;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
@@ -130,7 +131,6 @@ import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 import org.postgis.PGgeometry;
 import org.postgis.Polygon;
-
 import org.citydb.plugins.CityGMLConverter.common.xlink.content.DBXlink;
 import org.citydb.plugins.CityGMLConverter.common.xlink.content.DBXlinkBasic;
 import org.citydb.plugins.CityGMLConverter.common.xlink.importer.DBXlinkImporterManager;
@@ -139,7 +139,6 @@ import org.citydb.plugins.CityGMLConverter.concurrent.DBImportXlinkWorker;
 import org.citydb.plugins.CityGMLConverter.config.Balloon;
 import org.citydb.plugins.CityGMLConverter.config.ColladaOptions;
 import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
-
 import org.citydb.plugins.CityGMLConverter.config.DisplayForm;
 import org.citydb.plugins.CityGMLConverter.util.ProjConvertor;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.SqliteImporterManager;
@@ -524,9 +523,8 @@ public class Building extends KmlGenericObject{
         SurfaceGeometry surfaceGeom = new SurfaceGeometry(config , sqlliteImporterManager);
         String _SurfaceType = "undefined";
         String buildingGmlId = _building.getId();
-
-
-
+        
+        
         // lodXSolid
         for (int lod = 1; lod < 5; lod++) {
 
@@ -744,13 +742,14 @@ public class Building extends KmlGenericObject{
 
         }
 
-
+        
         // BoundarySurfaces
         if (_building.isSetBoundedBySurface()) {
 
             long ParentCounter = 1;
             for (BoundarySurfaceProperty boundarySurfaceProperty : _building.getBoundedBySurface()) {
-                AbstractBoundarySurface boundarySurface = boundarySurfaceProperty.getBoundarySurface();
+            	                
+            	AbstractBoundarySurface boundarySurface = boundarySurfaceProperty.getBoundarySurface();
 
                 if (boundarySurface != null) {
 
@@ -1297,7 +1296,7 @@ public class Building extends KmlGenericObject{
 
                 if (buildingPart != null) {
 
-                    GetBuildingGeometries(buildingPart);
+                		_SurfaceList.addAll(GetBuildingGeometries(buildingPart));
 
 
                     // free memory of nested feature
@@ -1312,6 +1311,7 @@ public class Building extends KmlGenericObject{
                     }
                 }
             }
+            
         }
 
 

@@ -34,6 +34,7 @@ import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.io.BufferedInputStream;
 // import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -61,6 +62,7 @@ import java.util.StringTokenizer;
 
 import javax.imageio.ImageIO;
 import javax.media.j3d.GeometryArray;
+import javax.media.jai.JAI;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.vecmath.Point3d;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -87,7 +89,6 @@ import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.log.LogLevel;
 import org.citydb.io.DirectoryScanner;
 import org.citydb.log.Logger;
-
 import org.citydb.modules.common.event.CounterEvent;
 import org.citydb.modules.common.event.CounterType;
 import org.citydb.modules.common.event.GeometryCounterEvent;
@@ -97,7 +98,6 @@ import org.citydb.plugins.CityGMLConverter.config.ColladaOptions;
 import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
 import org.citydb.plugins.CityGMLConverter.config.DisplayForm;
 import org.citydb.plugins.CityGMLConverter.config.Internal;
-
 import org.citydb.plugins.CityGMLConverter.util.ElevationHelper;
 import org.citydb.plugins.CityGMLConverter.util.ProjConvertor;
 import org.citydb.util.Util;
@@ -157,6 +157,7 @@ import org.postgis.Polygon;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.sun.image.codec.jpeg.JPEGCodec;
 import com.sun.j3d.utils.geometry.GeometryInfo;
 
 public abstract class KmlGenericObject {
@@ -2090,8 +2091,11 @@ public abstract class KmlGenericObject {
 
                         String finalImagePath = filePath + "\\" + texImageUri;
                         int fileSeparatorIndex = Math.max(texImageUri.lastIndexOf("\\"), texImageUri.lastIndexOf("/"));
-                        texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1);
+                       texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1);
 
+                   //     texImageUri = texImageUri.substring(fileSeparatorIndex + 1);
+
+                        
                         addTexImageUri(surfaceId, texImageUri);
 
                         if (getTexImage(texImageUri) == null) {
@@ -2099,10 +2103,11 @@ public abstract class KmlGenericObject {
                             texImage = new BufferedInputStream(new FileInputStream(finalImagePath));
 
                             BufferedImage bufferedImage = null;
-
+                            
                             try {
-
+                           	 
                                 bufferedImage = ImageIO.read(texImage);
+
                             }
                             catch (IOException ioe) {}
 

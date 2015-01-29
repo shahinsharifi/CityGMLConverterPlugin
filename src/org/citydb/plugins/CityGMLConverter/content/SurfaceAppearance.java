@@ -116,13 +116,13 @@ public class SurfaceAppearance {
 	}
 
 
-	public Map<String, Object> GetAppearanceBySurfaceID(String _SurfaceID , List<AppearanceProperty> _AppearanceList,String _SelectedTheme)
+	public Map<String, Object> GetAppearanceBySurfaceID(String _SurfaceID , List<Appearance> _AppearanceList,String _SelectedTheme)
 	{
 
 		Map<String, Object> _SurfaceAppearranceData = new HashMap<String, Object>();
-		for(AppearanceProperty _Property: _AppearanceList)
+		for(Appearance _Property: _AppearanceList)
 		{	
-			Appearance _Appearance=_Property.getAppearance();
+			Appearance _Appearance= _Property;
 			String _AppearanceTheme = (_Appearance.getTheme() != null) ? _Appearance.getTheme() : "<unknown>";
 			if(!_SelectedTheme.equals("none"))
 			{
