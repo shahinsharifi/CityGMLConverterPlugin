@@ -17,7 +17,7 @@
  * GNU Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this program. If not, see 
+ * License aString with this program. If not, see 
  * <http://www.gnu.org/licenses/>.
  * 
  * The development of the 3D City Database Importer/Exporter has 
@@ -27,31 +27,58 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package org.citydb.plugins.CityGMLConverter.concurrent;
-
-import org.citydb.api.concurrent.Worker;
-import org.citydb.api.concurrent.WorkerFactory;
-import org.citydb.api.event.EventDispatcher;
-import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
-import org.citydb.plugins.CityGMLConverter.util.Sqlite.SQLiteFactory;
-import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.CacheManager;
-import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlink;
+package org.citydb.plugins.CityGMLConverter.xlink.content;
 
 
-public class DBImportXlinkWorkerFactory implements WorkerFactory<DBXlink> {
+public class DBXlinkGroupToCityObject implements DBXlink {
+	private String groupId;
+	private String gmlId;
+	private boolean isParent;
+	private String role;
 
-	private final ConfigImpl config;
-	private final EventDispatcher eventDispatcher;
-	private final CacheManager dbTempTableManager;
+	public DBXlinkGroupToCityObject(String groupId, String gmlId, boolean isParent) {
+		this.groupId = groupId;
+		this.gmlId = gmlId;
+		this.isParent = isParent;
+	}
+	
+	public String getGroupId() {
+		return groupId;
+	}
 
-	public DBImportXlinkWorkerFactory(CacheManager dbTempTableManager,ConfigImpl config, EventDispatcher eventDispatcher) {
-		this.config = config;
-		this.eventDispatcher = eventDispatcher;
-		this.dbTempTableManager = dbTempTableManager;
+	public void setGroupId(String groupId) {
+		this.groupId = groupId;
+	}
+
+	public String getRole() {
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
 	}
 
 	@Override
-	public Worker<DBXlink> createWorker() {
-		return new DBImportXlinkWorker(dbTempTableManager,config, eventDispatcher);
+	public String getGmlId() {
+		return gmlId;
 	}
+
+	@Override
+	public void setGmlId(String gmlId) {
+		this.gmlId = gmlId;
+	}
+
+	public boolean isParent() {
+		return isParent;
+	}
+
+	public void setParent(boolean isParent) {
+		this.isParent = isParent;
+	}
+
+	@Override
+	public DBXlinkEnum getXlinkType() {
+		return DBXlinkEnum.GROUP_TO_CITYOBJECT;
+	}
+
 }

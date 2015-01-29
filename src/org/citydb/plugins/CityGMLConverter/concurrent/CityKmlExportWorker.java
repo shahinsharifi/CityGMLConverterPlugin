@@ -42,7 +42,6 @@ import net.opengis.kml._2.ObjectFactory;
 import org.citygml4j.factory.GMLGeometryFactory;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.util.xml.SAXEventBuffer;
-
 import org.citydb.api.concurrent.Worker;
 import org.citydb.api.concurrent.WorkerPool;
 import org.citydb.api.concurrent.WorkerPool.WorkQueue;
@@ -58,9 +57,6 @@ import org.citydb.plugins.CityGMLConverter.config.Balloon;
 import org.citydb.plugins.CityGMLConverter.config.BalloonContentMode;
 import org.citydb.plugins.CityGMLConverter.config.ColladaOptions;
 import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
-
-import org.citydb.plugins.CityGMLConverter.common.xlink.content.DBXlink;
-import org.citydb.plugins.CityGMLConverter.common.xlink.importer.DBXlinkImporterManager;
 import org.citydb.plugins.CityGMLConverter.config.DisplayForm;
 import org.citydb.plugins.CityGMLConverter.content.BalloonTemplateHandlerImpl;
 import org.citydb.plugins.CityGMLConverter.content.Building;
@@ -79,6 +75,8 @@ import org.citydb.plugins.CityGMLConverter.content.SolitaryVegetationObject;
 import org.citydb.plugins.CityGMLConverter.content.Transportation;
 import org.citydb.plugins.CityGMLConverter.content.WaterBody;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.SqliteImporterManager;
+import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlink;
+import org.citydb.plugins.CityGMLConverter.xlink.importer.DBXlinkImporterManager;
 
 public class CityKmlExportWorker implements Worker<KmlSplittingResult> {
 

@@ -27,31 +27,47 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package org.citydb.plugins.CityGMLConverter.concurrent;
+package org.citydb.plugins.CityGMLConverter.util.filter;
 
-import org.citydb.api.concurrent.Worker;
-import org.citydb.api.concurrent.WorkerFactory;
-import org.citydb.api.event.EventDispatcher;
+
 import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
-import org.citydb.plugins.CityGMLConverter.util.Sqlite.SQLiteFactory;
-import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.CacheManager;
-import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlink;
 
 
-public class DBImportXlinkWorkerFactory implements WorkerFactory<DBXlink> {
-
-	private final ConfigImpl config;
-	private final EventDispatcher eventDispatcher;
-	private final CacheManager dbTempTableManager;
-
-	public DBImportXlinkWorkerFactory(CacheManager dbTempTableManager,ConfigImpl config, EventDispatcher eventDispatcher) {
-		this.config = config;
-		this.eventDispatcher = eventDispatcher;
-		this.dbTempTableManager = dbTempTableManager;
+public class ExportFilter {
+	private FeatureClassFilter featureClassFilter;
+	private FeatureCounterFilter featureCounterFilter;
+	private GmlIdFilter gmlIdFilter;
+	private GmlNameFilter gmlNameFilter;
+	private BoundingBoxFilter boundingBoxFilter;
+	
+	public ExportFilter(ConfigImpl config) {
+		featureClassFilter = new FeatureClassFilter(config, FilterMode.CityKML);
+		boundingBoxFilter = new BoundingBoxFilter(config, FilterMode.CityKML);
 	}
 
-	@Override
-	public Worker<DBXlink> createWorker() {
-		return new DBImportXlinkWorker(dbTempTableManager,config, eventDispatcher);
+	public ExportFilter(ConfigImpl config, FilterMode filterMode) {
+		featureClassFilter = new FeatureClassFilter(config, filterMode);
+		boundingBoxFilter = new BoundingBoxFilter(config, filterMode);
 	}
+
+	public FeatureClassFilter getFeatureClassFilter() {
+		return featureClassFilter;
+	}
+
+	public FeatureCounterFilter getFeatureCounterFilter() {
+		return featureCounterFilter;
+	}
+
+	public GmlIdFilter getGmlIdFilter() {
+		return gmlIdFilter;
+	}
+
+	public GmlNameFilter getGmlNameFilter() {
+		return gmlNameFilter;
+	}
+
+	public BoundingBoxFilter getBoundingBoxFilter() {
+		return boundingBoxFilter;
+	}
+	
 }

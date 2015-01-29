@@ -34,7 +34,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 
 import org.citydb.api.concurrent.WorkerPool;
-import org.citydb.plugins.CityGMLConverter.common.xlink.content.DBXlink;
+import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlink;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.gml.GMLClass;
 

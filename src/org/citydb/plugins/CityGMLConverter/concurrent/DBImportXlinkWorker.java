@@ -37,21 +37,12 @@ import java.util.concurrent.locks.ReentrantLock;
 
 
 
+
 import org.citydb.api.concurrent.Worker;
 import org.citydb.api.concurrent.WorkerPool.WorkQueue;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.log.Logger;
-import org.citydb.plugins.CityGMLConverter.common.xlink.content.DBXlink;
-import org.citydb.plugins.CityGMLConverter.common.xlink.content.DBXlinkBasic;
-import org.citydb.plugins.CityGMLConverter.common.xlink.content.DBXlinkDeprecatedMaterial;
-import org.citydb.plugins.CityGMLConverter.common.xlink.content.DBXlinkGroupToCityObject;
-import org.citydb.plugins.CityGMLConverter.common.xlink.content.DBXlinkLibraryObject;
-import org.citydb.plugins.CityGMLConverter.common.xlink.content.DBXlinkLinearRing;
-import org.citydb.plugins.CityGMLConverter.common.xlink.content.DBXlinkSurfaceGeometry;
-import org.citydb.plugins.CityGMLConverter.common.xlink.content.DBXlinkTextureAssociation;
-import org.citydb.plugins.CityGMLConverter.common.xlink.content.DBXlinkTextureFile;
-import org.citydb.plugins.CityGMLConverter.common.xlink.content.DBXlinkTextureParam;/*
-import org.citydb.plugins.CityGMLConverter.common.xlink.importer.DBXlinkImporterBasic;
+import org.citydb.plugins.CityGMLConverter.xlink.importer.DBXlinkImporterBasic;/*
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterDeprecatedMaterial;
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterEnum;
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterGroupToCityObject;
@@ -63,12 +54,22 @@ import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImp
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterTextureFile;
 import de.tub.citydb.modules.citygml.importer.database.xlink.importer.DBXlinkImporterTextureParam;
 */
-import org.citydb.plugins.CityGMLConverter.common.xlink.importer.DBXlinkImporterEnum;
-import org.citydb.plugins.CityGMLConverter.common.xlink.importer.DBXlinkImporterManager;
-import org.citydb.plugins.CityGMLConverter.common.xlink.importer.DBXlinkImporterSurfaceGeometry;
 import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.SQLiteFactory;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.CacheManager;
+import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlink;
+import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkBasic;
+import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkDeprecatedMaterial;
+import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkGroupToCityObject;
+import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkLibraryObject;
+import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkLinearRing;
+import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkSurfaceGeometry;
+import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkTextureAssociation;
+import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkTextureFile;
+import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkTextureParam;
+import org.citydb.plugins.CityGMLConverter.xlink.importer.DBXlinkImporterEnum;
+import org.citydb.plugins.CityGMLConverter.xlink.importer.DBXlinkImporterManager;
+import org.citydb.plugins.CityGMLConverter.xlink.importer.DBXlinkImporterSurfaceGeometry;
 public class DBImportXlinkWorker implements Worker<DBXlink> {
 	private final Logger LOG = Logger.getInstance();
 	

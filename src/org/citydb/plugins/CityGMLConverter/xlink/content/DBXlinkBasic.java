@@ -27,31 +27,68 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package org.citydb.plugins.CityGMLConverter.concurrent;
+package org.citydb.plugins.CityGMLConverter.xlink.content;
 
-import org.citydb.api.concurrent.Worker;
-import org.citydb.api.concurrent.WorkerFactory;
-import org.citydb.api.event.EventDispatcher;
-import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
-import org.citydb.plugins.CityGMLConverter.util.Sqlite.SQLiteFactory;
-import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.CacheManager;
-import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlink;
+import org.citydb.plugins.CityGMLConverter.content.TableEnum;
 
 
-public class DBImportXlinkWorkerFactory implements WorkerFactory<DBXlink> {
 
-	private final ConfigImpl config;
-	private final EventDispatcher eventDispatcher;
-	private final CacheManager dbTempTableManager;
+public class DBXlinkBasic implements DBXlink {
+	private String id;
+	private TableEnum fromTable;
+	private String gmlId;
+	private TableEnum toTable;
+	private String attrName;
 
-	public DBImportXlinkWorkerFactory(CacheManager dbTempTableManager,ConfigImpl config, EventDispatcher eventDispatcher) {
-		this.config = config;
-		this.eventDispatcher = eventDispatcher;
-		this.dbTempTableManager = dbTempTableManager;
+	public DBXlinkBasic(String id,TableEnum fromTable, String gmlId, TableEnum toTable) {
+		this.id = id;
+		this.fromTable = fromTable;
+		this.gmlId = gmlId;
+		this.toTable = toTable;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public TableEnum getFromTable() {
+		return fromTable;
+	}
+
+	public void setFromTable(TableEnum fromTable) {
+		this.fromTable = fromTable;
+	}
+
+	public TableEnum getToTable() {
+		return toTable;
+	}
+
+	public void setToTable(TableEnum toTable) {
+		this.toTable = toTable;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getGmlId() {
+		return gmlId;
+	}
+
+	public void setGmlId(String gmlId) {
+		this.gmlId = gmlId;
+	}
+
+	public String getAttrName() {
+		return attrName;
+	}
+
+	public void setAttrName(String attrName) {
+		this.attrName = attrName;
 	}
 
 	@Override
-	public Worker<DBXlink> createWorker() {
-		return new DBImportXlinkWorker(dbTempTableManager,config, eventDispatcher);
+	public DBXlinkEnum getXlinkType() {
+		return DBXlinkEnum.BASIC;
 	}
 }

@@ -17,7 +17,7 @@
  * GNU Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this program. If not, see 
+ * License aString with this program. If not, see 
  * <http://www.gnu.org/licenses/>.
  * 
  * The development of the 3D City Database Importer/Exporter has 
@@ -27,31 +27,47 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package org.citydb.plugins.CityGMLConverter.concurrent;
-
-import org.citydb.api.concurrent.Worker;
-import org.citydb.api.concurrent.WorkerFactory;
-import org.citydb.api.event.EventDispatcher;
-import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
-import org.citydb.plugins.CityGMLConverter.util.Sqlite.SQLiteFactory;
-import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.CacheManager;
-import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlink;
+package org.citydb.plugins.CityGMLConverter.xlink.content;
 
 
-public class DBImportXlinkWorkerFactory implements WorkerFactory<DBXlink> {
+public class DBXlinkDeprecatedMaterial implements DBXlink {
+	private String id;
+	private String gmlId;
+	private String surfaceGeometryId;
 
-	private final ConfigImpl config;
-	private final EventDispatcher eventDispatcher;
-	private final CacheManager dbTempTableManager;
+	public DBXlinkDeprecatedMaterial(String id, String gmlId, String surfaceGeometryId) {
+		this.id = id;
+		this.gmlId = gmlId;
+		this.surfaceGeometryId = surfaceGeometryId;
+	}
 
-	public DBImportXlinkWorkerFactory(CacheManager dbTempTableManager,ConfigImpl config, EventDispatcher eventDispatcher) {
-		this.config = config;
-		this.eventDispatcher = eventDispatcher;
-		this.dbTempTableManager = dbTempTableManager;
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getGmlId() {
+		return gmlId;
+	}
+
+	public void setGmlId(String gmlId) {
+		this.gmlId = gmlId;
+	}
+
+	public String getSurfaceGeometryId() {
+		return surfaceGeometryId;
+	}
+
+	public void setSurfaceGeometryId(String surfaceGeometryId) {
+		this.surfaceGeometryId = surfaceGeometryId;
 	}
 
 	@Override
-	public Worker<DBXlink> createWorker() {
-		return new DBImportXlinkWorker(dbTempTableManager,config, eventDispatcher);
+	public DBXlinkEnum getXlinkType() {
+		return DBXlinkEnum.DEPRECATED_MATERIAL;
 	}
+
 }

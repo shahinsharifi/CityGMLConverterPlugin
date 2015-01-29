@@ -131,10 +131,6 @@ import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 import org.postgis.PGgeometry;
 import org.postgis.Polygon;
-import org.citydb.plugins.CityGMLConverter.common.xlink.content.DBXlink;
-import org.citydb.plugins.CityGMLConverter.common.xlink.content.DBXlinkBasic;
-import org.citydb.plugins.CityGMLConverter.common.xlink.importer.DBXlinkImporterManager;
-import org.citydb.plugins.CityGMLConverter.common.xlink.resolver.DBXlinkSplitter;
 import org.citydb.plugins.CityGMLConverter.concurrent.DBImportXlinkWorker;
 import org.citydb.plugins.CityGMLConverter.config.Balloon;
 import org.citydb.plugins.CityGMLConverter.config.ColladaOptions;
@@ -147,6 +143,10 @@ import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.CacheTable;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.HeapCacheTable;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.TemporaryCacheTable;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.model.CacheTableModelEnum;
+import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlink;
+import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkBasic;
+import org.citydb.plugins.CityGMLConverter.xlink.importer.DBXlinkImporterManager;
+import org.citydb.plugins.CityGMLConverter.xlink.resolver.DBXlinkSplitter;
 
 
 public class Building extends KmlGenericObject{

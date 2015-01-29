@@ -27,31 +27,46 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package org.citydb.plugins.CityGMLConverter.concurrent;
+package org.citydb.plugins.CityGMLConverter.xlink.content;
 
-import org.citydb.api.concurrent.Worker;
-import org.citydb.api.concurrent.WorkerFactory;
-import org.citydb.api.event.EventDispatcher;
-import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
-import org.citydb.plugins.CityGMLConverter.util.Sqlite.SQLiteFactory;
-import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.CacheManager;
-import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlink;
+public class DBXlinkLinearRing implements DBXlink {
+	private String gmlId;
+	private String parentGmlId;
+	private int ringId;
 
+	public DBXlinkLinearRing(String gmlId, String parentGmlId, int ringId) {
+		this.gmlId = gmlId;
+		this.parentGmlId = parentGmlId;
+		this.ringId = ringId;
+	}
 
-public class DBImportXlinkWorkerFactory implements WorkerFactory<DBXlink> {
+	public String getGmlId() {
+		return gmlId;
+	}
 
-	private final ConfigImpl config;
-	private final EventDispatcher eventDispatcher;
-	private final CacheManager dbTempTableManager;
+	public void setGmlId(String gmlId) {
+		this.gmlId = gmlId;
+	}
 
-	public DBImportXlinkWorkerFactory(CacheManager dbTempTableManager,ConfigImpl config, EventDispatcher eventDispatcher) {
-		this.config = config;
-		this.eventDispatcher = eventDispatcher;
-		this.dbTempTableManager = dbTempTableManager;
+	public String getParentGmlId() {
+		return parentGmlId;
+	}
+
+	public void setParentGmlId(String parentGmlId) {
+		this.parentGmlId = parentGmlId;
+	}
+
+	public int getRingId() {
+		return ringId;
+	}
+
+	public void setRingId(int ringId) {
+		this.ringId = ringId;
 	}
 
 	@Override
-	public Worker<DBXlink> createWorker() {
-		return new DBImportXlinkWorker(dbTempTableManager,config, eventDispatcher);
+	public DBXlinkEnum getXlinkType() {
+		return DBXlinkEnum.LINEAR_RING;
 	}
+
 }

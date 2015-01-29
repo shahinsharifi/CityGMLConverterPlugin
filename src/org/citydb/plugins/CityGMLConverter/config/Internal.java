@@ -64,6 +64,7 @@ public class Internal {
 	private String exportPath = "";
 	private String exportFileName = "";
 	private String exportTextureFilePath = "";
+	private String SrsCode = "";
 
 	// database related settings
 	private DatabaseSrs exportTargetSRS;
@@ -199,5 +200,15 @@ public class Internal {
 	public void setExportGlobalAppearances(boolean exportGlobalAppearances) {
 		this.exportGlobalAppearances = exportGlobalAppearances;
 	}
+
+	public String getSrsCode() {
+		return SrsCode;
+	}
+
+	public void setSrsCode(String srsCode) {
+		SrsCode = srsCode;
+	}
+	
+	
 
 }

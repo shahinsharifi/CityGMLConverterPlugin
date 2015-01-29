@@ -133,7 +133,7 @@ import org.citydb.plugins.CityGMLConverter.events.InterruptEvent;
 //import org.citydb.plugins.CityGMLConverter.gui.components.bbox.BoundingBoxPanelImpl;
 import org.citydb.plugins.CityGMLConverter.gui.components.bbox.BoundingBoxPanelImpl;
 import org.citydb.plugins.CityGMLConverter.util.BoundingBox;
-import org.citydb.plugins.CityGMLConverter.util.DSUtil;
+import org.citydb.plugins.CityGMLConverter.util.ThemeUtil;
 import org.citydb.plugins.CityGMLConverter.util.Util;
 import org.citydb.util.gui.GuiUtil;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
@@ -148,9 +148,6 @@ import org.citygml4j.xml.io.reader.CityGMLReadException;
 import org.citygml4j.xml.io.reader.FeatureReadMode;
 import org.citygml4j.xml.io.reader.MissingADESchemaException;
 import org.xml.sax.SAXException;
-
-
-
 
 @SuppressWarnings("serial")
 public class CityKmlExportPanel extends JPanel implements EventHandler {
@@ -550,8 +547,6 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 
 
 
-
-
 		JPanel scrollView = new JPanel();
 		scrollView.setLayout(new GridBagLayout());
 		scrollView.add(browsePanel, GuiUtil.setConstraints(0,0,1.0,0.0,GridBagConstraints.HORIZONTAL,0,5,0,5));		
@@ -721,6 +716,8 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 		gmlIdText.setText(gmlIds);
 
 		bboxComponent.setBoundingBox(citykmlExporter.getConfig().getFilter().getComplexFilter().getTiledBoundingBox());
+		
+        srsField.setText(plugin.getConfig().getInternal().getSrsCode());
 
 		String tilingMode = citykmlExporter.getConfig().getFilter().getComplexFilter().getTiledBoundingBox().getTiling().getMode().value();
 
@@ -775,10 +772,8 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 		themeComboBox.removeAllItems();
 		themeComboBox.addItem(citykmlExporter.getConfig().THEME_NONE);
 		themeComboBox.setSelectedItem(citykmlExporter.getConfig().THEME_NONE);
-
 		setFilterEnabledValues();
-
-
+	
 	}
 
 
@@ -790,6 +785,7 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 
 		config.getInternal().setImportFiles(importFiles);	
 		config.getInternal().setExportFileName(browseText.getText().trim());
+		config.getInternal().setSrsCode(srsField.getText());
 
 		CityKMLExportPlugin kmlExporterPlugin = plugin;
 		ExportFilterConfig kmlExportFilter = kmlExporterPlugin.getConfig().getFilter();
@@ -861,7 +857,6 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 		kmlExportFilter.getComplexFilter().getFeatureClass().setGenericCityObject(fcTree.getCheckingModel().isPathChecked(new TreePath(genericCityObject.getPath())));
 		kmlExportFilter.getComplexFilter().getFeatureClass().setCityObjectGroup(fcTree.getCheckingModel().isPathChecked(new TreePath(cityObjectGroup.getPath())));
 
-	//	config.getProject().setCityKmlExporter(kmlExporter);
 
 	}
 
@@ -968,8 +963,7 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 
 	private void addListeners() {
 
-		enableEvents(AWTEvent.WINDOW_EVENT_MASK);
-		
+		enableEvents(AWTEvent.WINDOW_EVENT_MASK);		
 		
 		OpenFileButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -1016,8 +1010,6 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 				thread.start();
 			}
 		});
-
-
 
 
 		BboxCalcButton.addActionListener(new ActionListener() {
@@ -1102,13 +1094,13 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 			}
 		});
 
-
 	}
 
 
 
 	private File getImportedFile() throws Exception {
-
+		
+		ObjectRegistry.getInstance().getViewController().clearConsole();
         File file = null;
         final CityKMLExportPlugin importer = plugin;
         Internal intConfig = importer.getConfig().getInternal();
@@ -1168,17 +1160,15 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 
 
 	private void doExport() throws Exception {
-
+		
 
 		final ReentrantLock lock = this.mainLock;
 		lock.lock();
 
 		try {
-			//mainView.clearConsole();
+			
 			setSettings();
-
 			ExportFilterConfig filter = config.getFilter();
-			//			Database db = config.getProject().getDatabase();
 
 			// check all input values...	
 			if (config.getInternal().getImportFiles().length==0) {
@@ -1198,7 +1188,6 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 						Util.I18N.getString("CityKmlExport.dialog.error.incompleteData.epsg"));
 				return;
 			}
-
 
 
 			// gmlId
@@ -1547,7 +1536,7 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 					themeComboBox.addItem(config.THEME_NONE);
 					themeComboBox.setSelectedItem(config.THEME_NONE);
 					LOG.info("Start fetching themes ...");
-					for (String theme: DSUtil.getAppearanceThemeList(jaxbBuilder, config.getInternal().getImportFiles()[0])) {
+					for (String theme: ThemeUtil.getAppearanceThemeList(jaxbBuilder, config.getInternal().getImportFiles()[0])) {
 						if (theme == null) continue;
 						themeComboBox.addItem(theme);
 						if (theme.equals(config.getAppearanceTheme())) {

@@ -2107,8 +2107,7 @@ public abstract class KmlGenericObject {
                             try {
                            	 
                                 bufferedImage = ImageIO.read(texImage);
-
-                            }
+                            }                            
                             catch (IOException ioe) {}
 
                             if (bufferedImage != null) { // image in JPEG, PNG or another usual format
@@ -2235,7 +2234,7 @@ public abstract class KmlGenericObject {
             Logger.getInstance().error("The error while querying city object: " + Ex.toString());
         }
         finally {
-
+        		
         }
 
         //	}

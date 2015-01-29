@@ -40,9 +40,9 @@ import org.citydb.api.concurrent.Worker;
 import org.citydb.api.concurrent.WorkerFactory;
 import org.citydb.api.concurrent.WorkerPool;
 import org.citydb.api.event.EventDispatcher;
-import org.citydb.plugins.CityGMLConverter.common.xlink.content.DBXlink;
 import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
 import org.citydb.plugins.CityGMLConverter.content.KmlSplittingResult;
+import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlink;
 import org.citygml4j.factory.GMLGeometryFactory;
 import org.citygml4j.util.xml.SAXEventBuffer;
 

@@ -17,7 +17,7 @@
  * GNU Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this program. If not, see 
+ * License aString with this program. If not, see 
  * <http://www.gnu.org/licenses/>.
  * 
  * The development of the 3D City Database Importer/Exporter has 
@@ -27,31 +27,66 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package org.citydb.plugins.CityGMLConverter.concurrent;
+package org.citydb.plugins.CityGMLConverter.xlink.content;
 
-import org.citydb.api.concurrent.Worker;
-import org.citydb.api.concurrent.WorkerFactory;
-import org.citydb.api.event.EventDispatcher;
-import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
-import org.citydb.plugins.CityGMLConverter.util.Sqlite.SQLiteFactory;
-import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.CacheManager;
-import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlink;
+public class DBXlinkSurfaceGeometry implements DBXlink {
+	private String id;
+	private String parentId;
+	private String rootId;
+	private boolean reverse;
+	private String gmlId;
 
+	public DBXlinkSurfaceGeometry(String id, String parentId, String rootId, boolean reverse, String gmlId) {
+		this.id = id;
+		this.parentId = parentId;
+		this.rootId = rootId;
+		this.reverse = reverse;
+		this.gmlId = gmlId;
+	}
 
-public class DBImportXlinkWorkerFactory implements WorkerFactory<DBXlink> {
+	public String getId() {
+		return id;
+	}
 
-	private final ConfigImpl config;
-	private final EventDispatcher eventDispatcher;
-	private final CacheManager dbTempTableManager;
+	public void setId(String id) {
+		this.id = id;
+	}
 
-	public DBImportXlinkWorkerFactory(CacheManager dbTempTableManager,ConfigImpl config, EventDispatcher eventDispatcher) {
-		this.config = config;
-		this.eventDispatcher = eventDispatcher;
-		this.dbTempTableManager = dbTempTableManager;
+	public String getParentId() {
+		return parentId;
+	}
+
+	public void setParentId(String parentId) {
+		this.parentId = parentId;
+	}
+
+	public String getRootId() {
+		return rootId;
+	}
+
+	public void setRootId(String rootId) {
+		this.rootId = rootId;
+	}
+
+	public boolean isReverse() {
+		return reverse;
+	}
+
+	public void setReverse(boolean reverse) {
+		this.reverse = reverse;
+	}
+
+	public String getGmlId() {
+		return gmlId;
+	}
+
+	public void setGmlId(String gmlId) {
+		this.gmlId = gmlId;
 	}
 
 	@Override
-	public Worker<DBXlink> createWorker() {
-		return new DBImportXlinkWorker(dbTempTableManager,config, eventDispatcher);
+	public DBXlinkEnum getXlinkType() {
+		return DBXlinkEnum.SURFACE_GEOMETRY;
 	}
+
 }

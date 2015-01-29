@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.citydb.log.Logger;
-import org.citydb.plugins.CityGMLConverter.common.xlink.content.DBXlinkLinearRing;
-import org.citydb.plugins.CityGMLConverter.common.xlink.content.DBXlinkSurfaceGeometry;
 import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
 import org.citydb.plugins.CityGMLConverter.config.Internal;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.SqliteImporterManager;
+import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkLinearRing;
+import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkSurfaceGeometry;
 import org.citydb.util.Util;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.building.AbstractBoundarySurface;

@@ -10,8 +10,8 @@ import javax.xml.bind.annotation.XmlType;
 import org.citydb.api.plugin.extension.config.PluginConfig;
 import org.citydb.config.project.exporter.ExportFilterConfig;
 import org.citydb.config.project.general.Path;
-import org.citydb.plugins.CityGMLConverter.common.xlink.resolver.DBXlinkSplitter;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.CacheManager;
+import org.citydb.plugins.CityGMLConverter.xlink.resolver.DBXlinkSplitter;
 import org.citygml4j.util.internal.xml.SystemIDResolver;
 
 

@@ -49,7 +49,6 @@ import org.citydb.config.project.exporter.ExportFilterConfig;
 import org.citydb.config.project.filter.Tiling;
 import org.citydb.config.project.filter.TilingMode;
 import org.citydb.log.Logger;
-import org.citydb.plugins.CityGMLConverter.common.filter.ExportFilter;
 import org.citydb.plugins.CityGMLConverter.content.KmlSplittingResult;
 import org.citydb.plugins.CityGMLConverter.content.Queries;
 import org.citygml4j.CityGMLContext;
@@ -85,6 +84,7 @@ import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
 import org.citydb.plugins.CityGMLConverter.config.DisplayForm;
 import org.citydb.plugins.CityGMLConverter.util.ElevationHelper;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.SQLiteFactory;
+import org.citydb.plugins.CityGMLConverter.util.filter.ExportFilter;
 
 
 public class KmlSplitter {
@@ -105,6 +105,7 @@ public class KmlSplitter {
 	private Connection connection;
 	private DatabaseSrs dbSrs;
 	private String TargetSrs = "";
+	private static boolean isCheckedAppearance = false;
 
 	public KmlSplitter( 
 			WorkerPool<KmlSplittingResult> dbWorkerPool, 
@@ -319,27 +320,31 @@ public class KmlSplitter {
 				tmpAppearanceList = new CopyOnWriteArrayList<Appearance>();
 
 				//only for reading global appearance
-								reader = in.createFilteredCityGMLReader(in.createCityGMLReader(file), inputFilter);
-				LOG.info("Searching for global appearance ...");
-				while (reader.hasNext()) {
-					XMLChunk chunk = reader.nextChunk();
-					CityGML cityGML = chunk.unmarshal();
-					if(cityGML.getCityGMLClass() == CityGMLClass.APPEARANCE)
-					{
-						Appearance _appreance = (Appearance)cityGML;
-						tmpAppearanceList.add(_appreance);
+				if(!isCheckedAppearance && displayForm.getForm() == DisplayForm.COLLADA)
+				{
+					reader = in.createFilteredCityGMLReader(in.createCityGMLReader(file), inputFilter);
+					LOG.info("Searching for global appearance ...");
+					while (reader.hasNext()) {
+						XMLChunk chunk = reader.nextChunk();
+						CityGML cityGML = chunk.unmarshal();
+						if(cityGML.getCityGMLClass() == CityGMLClass.APPEARANCE)
+						{
+							Appearance _appreance = (Appearance)cityGML;
+							tmpAppearanceList.add(_appreance);
+						}
 					}
+					reader.close();
+					isCheckedAppearance = true;
 				}
-				reader.close();
-
+				
 				//for reading buildings
 				reader = in.createFilteredCityGMLReader(in.createCityGMLReader(file), inputFilter);
 				LOG.info("Reading city objects ...");
 				String flag = "";
 				while (reader.hasNext()) {
-					
+
 					try{
-						
+
 						Envelope envelope = null;
 						XMLChunk chunk = reader.nextChunk();
 						CityGML cityGML = chunk.unmarshal();
@@ -355,12 +360,12 @@ public class KmlSplitter {
 
 							if(cityObject.calcBoundedBy(true) != null)
 								envelope = cityObject.calcBoundedBy(true).getEnvelope();
-							
+
 							if(cityObject.calcBoundedBy(false) != null)
 								envelope = cityObject.calcBoundedBy(false).getEnvelope();
 
 							if(envelope != null){
-								
+
 								if(cityObject.isSetAppearance()){
 									for(AppearanceProperty appearance : cityObject.getAppearance()){
 										tmpAppearanceList.add((Appearance)appearance.getAppearance());
@@ -398,7 +403,7 @@ public class KmlSplitter {
 								}
 							}
 						}
-						
+
 					}catch (Exception e) {
 						Logger.getInstance().error(e.toString() +" -> "+flag);
 					}

@@ -94,13 +94,8 @@ import org.citydb.config.project.filter.Tiling;
 import org.citydb.config.project.filter.TilingMode;
 import org.citydb.config.project.resources.Resources;
 import org.citydb.log.Logger;
-
 import org.citydb.modules.common.concurrent.IOWriterWorkerFactory;
 import org.citydb.modules.common.event.*;
-import org.citydb.plugins.CityGMLConverter.common.filter.ExportFilter;
-import org.citydb.plugins.CityGMLConverter.common.filter.FilterMode;
-import org.citydb.plugins.CityGMLConverter.common.xlink.content.DBXlink;
-import org.citydb.plugins.CityGMLConverter.common.xlink.resolver.DBXlinkSplitter;
 import org.citydb.plugins.CityGMLConverter.concurrent.CityKmlExportWorkerFactory;
 import org.citydb.plugins.CityGMLConverter.concurrent.DBImportXlinkWorkerFactory;
 import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
@@ -119,7 +114,6 @@ import org.citydb.plugins.CityGMLConverter.content.Transportation;
 import org.citydb.plugins.CityGMLConverter.content.Tunnel;
 import org.citydb.plugins.CityGMLConverter.content.TypeAttributeValueEnum;
 import org.citydb.plugins.CityGMLConverter.content.WaterBody;
-
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.citygml4j.builder.jaxb.xml.io.reader.JAXBChunkReader;
 import org.citygml4j.factory.GMLGeometryFactory;
@@ -134,7 +128,6 @@ import org.citydb.plugins.CityGMLConverter.config.Balloon;
 import org.citydb.plugins.CityGMLConverter.config.BalloonContentMode;
 import org.citydb.plugins.CityGMLConverter.config.DisplayForm;
 import org.citydb.plugins.CityGMLConverter.config.Internal;
-
 import org.citydb.plugins.CityGMLConverter.util.ProjConvertor;
 import org.citydb.plugins.CityGMLConverter.util.CityObject4JSON;
 import org.citydb.plugins.CityGMLConverter.util.Util;
@@ -144,6 +137,10 @@ import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.CacheTable;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.HeapCacheTable;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.TemporaryCacheTable;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.model.CacheTableModelEnum;
+import org.citydb.plugins.CityGMLConverter.util.filter.ExportFilter;
+import org.citydb.plugins.CityGMLConverter.util.filter.FilterMode;
+import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlink;
+import org.citydb.plugins.CityGMLConverter.xlink.resolver.DBXlinkSplitter;
 
 
 public class CityKmlExporter implements EventHandler {

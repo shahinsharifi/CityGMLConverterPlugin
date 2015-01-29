@@ -17,7 +17,7 @@
  * GNU Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
- * License along with this program. If not, see 
+ * License aString with this program. If not, see 
  * <http://www.gnu.org/licenses/>.
  * 
  * The development of the 3D City Database Importer/Exporter has 
@@ -27,31 +27,57 @@
  * virtualcitySYSTEMS GmbH, Berlin <http://www.virtualcitysystems.de/>
  * Berlin Senate of Business, Technology and Women <http://www.berlin.de/sen/wtf/>
  */
-package org.citydb.plugins.CityGMLConverter.concurrent;
+package org.citydb.plugins.CityGMLConverter.xlink.content;
 
-import org.citydb.api.concurrent.Worker;
-import org.citydb.api.concurrent.WorkerFactory;
-import org.citydb.api.event.EventDispatcher;
-import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
-import org.citydb.plugins.CityGMLConverter.util.Sqlite.SQLiteFactory;
-import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.CacheManager;
-import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlink;
+public class DBXlinkTextureFile implements DBXlink {
+	String id;
+	String fileURI;
+	DBXlinkTextureFileEnum type;
 
+	public DBXlinkTextureFile(String id, String fileURI, DBXlinkTextureFileEnum type) {
+		this.id = id;
+		this.fileURI = fileURI;
+		this.type = type;
+	}
 
-public class DBImportXlinkWorkerFactory implements WorkerFactory<DBXlink> {
+	public String getId() {
+		return id;
+	}
 
-	private final ConfigImpl config;
-	private final EventDispatcher eventDispatcher;
-	private final CacheManager dbTempTableManager;
+	public void setId(String id) {
+		this.id = id;
+	}
 
-	public DBImportXlinkWorkerFactory(CacheManager dbTempTableManager,ConfigImpl config, EventDispatcher eventDispatcher) {
-		this.config = config;
-		this.eventDispatcher = eventDispatcher;
-		this.dbTempTableManager = dbTempTableManager;
+	public String getFileURI() {
+		return fileURI;
+	}
+
+	public void setFileURI(String fileURI) {
+		this.fileURI = fileURI;
+	}
+
+	public DBXlinkTextureFileEnum getType() {
+		return type;
+	}
+
+	public void setType(DBXlinkTextureFileEnum type) {
+		this.type = type;
 	}
 
 	@Override
-	public Worker<DBXlink> createWorker() {
-		return new DBImportXlinkWorker(dbTempTableManager,config, eventDispatcher);
+	public String getGmlId() {
+		// we do not have a gml:id, but fileURI is our identifier
+		return fileURI;
 	}
+
+	@Override
+	public void setGmlId(String gmlid) {
+		// we do not need this here since we are not relying on gml:ids
+	}
+
+	@Override
+	public DBXlinkEnum getXlinkType() {
+		return DBXlinkEnum.TEXTURE_FILE;
+	}
+
 }
