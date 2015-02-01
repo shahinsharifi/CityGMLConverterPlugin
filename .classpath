@@ -60,5 +60,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/third_party/textureAtlas.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/third_party/ucp.jar"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="lib" path="lib/third_party/jai_imageio.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

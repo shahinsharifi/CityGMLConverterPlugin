@@ -64,6 +64,7 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.imageio.spi.IIORegistry;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
@@ -120,7 +121,6 @@ import org.citydb.gui.components.checkboxtree.CheckboxTree;
 import org.citydb.gui.components.checkboxtree.DefaultCheckboxTreeCellRenderer;
 import org.citydb.gui.components.checkboxtree.DefaultTreeCheckingModel;
 import org.citydb.gui.factory.*;
-import org.citydb.gui.factory.SrsComboBoxFactory;
 import org.citydb.io.DirectoryScanner;
 import org.citydb.log.Logger;
 import org.citydb.plugins.CityGMLConverter.CityKMLExportPlugin;
@@ -137,7 +137,6 @@ import org.citydb.plugins.CityGMLConverter.util.ThemeUtil;
 import org.citydb.plugins.CityGMLConverter.util.Util;
 import org.citydb.util.gui.GuiUtil;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
-
 import org.citygml4j.builder.jaxb.xml.io.reader.JAXBChunkReader;
 import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.CityGMLClass;

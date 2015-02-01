@@ -2013,8 +2013,10 @@ public abstract class KmlGenericObject {
         return placemarkList;
     }
 
-    protected void fillGenericObjectForCollada(KmlSplittingResult work , List<BuildingSurface> _SurfaceList ,
-                                               SurfaceAppearance _SurfaceAppearance, List<BuildingSurface> _ParentSurfaceList) throws Exception {
+    protected void fillGenericObjectForCollada(KmlSplittingResult work ,
+    		List<BuildingSurface> _SurfaceList ,
+            SurfaceAppearance _SurfaceAppearance,
+            List<BuildingSurface> _ParentSurfaceList) throws Exception {
 
         String selectedTheme = config.getAppearanceTheme();
         String filePath=GetImagePath();
@@ -2094,7 +2096,6 @@ public abstract class KmlGenericObject {
                        texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1);
 
                    //     texImageUri = texImageUri.substring(fileSeparatorIndex + 1);
-
                         
                         addTexImageUri(surfaceId, texImageUri);
 
@@ -2107,10 +2108,12 @@ public abstract class KmlGenericObject {
                             try {
                            	 
                                 bufferedImage = ImageIO.read(texImage);
+                                
                             }                            
                             catch (IOException ioe) {}
 
                             if (bufferedImage != null) { // image in JPEG, PNG or another usual format
+                            	
                                 addTexImage(texImageUri, bufferedImage);
                             }
 
@@ -2120,14 +2123,13 @@ public abstract class KmlGenericObject {
                                 texImageCounter = 0;
                             }
                         }
-
+                        
                         texCoords = texCoords.replaceAll(";", " "); // substitute of ; for internal ring
                         texCoordsTokenized = new StringTokenizer(texCoords.trim(), " ");
                     }
                     else {
                         X3DMaterial x3dMaterial = new X3DMaterial();
                         fillX3dMaterialValues(x3dMaterial, _AppResult);
-
                         // x3dMaterial will only added if not all x3dMaterial members are null
                         addX3dMaterial(surfaceId, x3dMaterial);
                         if (getX3dMaterial(surfaceId) == null) {

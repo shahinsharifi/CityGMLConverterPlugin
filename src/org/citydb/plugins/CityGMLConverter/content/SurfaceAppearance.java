@@ -104,15 +104,18 @@ public class SurfaceAppearance {
 	}
 
 
-	
+
 	private boolean IsContainSurface(List<String> TargetList,String SurfaceID)
 	{		
+		return TargetList.contains(SurfaceID);
+		/*
 		for(String target : TargetList)
 		{	
 			if(SurfaceID.equals(target))
 				return true;
 		}		
-		return false;		
+		return false;
+		 */		
 	}
 
 
@@ -131,7 +134,7 @@ public class SurfaceAppearance {
 					AbstractSurfaceData _AbstractSurfaceData = _SurfaceAppearranceDataMember.getSurfaceData();
 					if(_AbstractSurfaceData.getCityGMLClass().name().equals("X3D_MATERIAL") 
 							&& _AppearanceTheme.equals(_SelectedTheme)){
-						
+
 						X3DMaterial _X3D = (X3DMaterial)_AbstractSurfaceData;										
 						if(IsContainSurface(_X3D.getTarget(),_SurfaceID))
 						{						
@@ -147,16 +150,16 @@ public class SurfaceAppearance {
 							_SurfaceAppearranceData.put("x3d_emissive_color", _X3D.getEmissiveColor());
 							_SurfaceAppearranceData.put("x3d_is_smooth", _X3D.getIsSmooth());
 						}	
-	
+
 					}else if(_AbstractSurfaceData.getCityGMLClass().name().equals("PARAMETERIZED_TEXTURE") 
 							&& _AppearanceTheme.equals(_SelectedTheme)){
-	
+
 						ParameterizedTexture _Texture = (ParameterizedTexture)_AbstractSurfaceData;					
 						for (TextureAssociation target : _Texture.getTarget()) {
 							String targetURI = target.getUri();
 							if(targetURI.equals(_SurfaceID))
 							{
-							
+
 								_SurfaceAppearranceData.put("id", _Texture.getId());
 								_SurfaceAppearranceData.put("imageuri", _Texture.getImageURI());
 								_SurfaceAppearranceData.put("type", "PARAMETERIZED_TEXTURE");
@@ -167,26 +170,31 @@ public class SurfaceAppearance {
 								_SurfaceAppearranceData.put("x3d_specular_color", null);
 								_SurfaceAppearranceData.put("x3d_emissive_color", null);
 								_SurfaceAppearranceData.put("x3d_is_smooth", null);
-															
-								
+
+
 								if (targetURI != null && targetURI.length() != 0) {
 									if (target.isSetTextureParameterization()) {
 										AbstractTextureParameterization texPara = target.getTextureParameterization();
 										String texParamGmlId = texPara.getId();
 										switch (texPara.getCityGMLClass()) {
-										
-											case TEX_COORD_GEN:
-												TexCoordGen texCoordGen = (TexCoordGen)texPara;
-												if (texCoordGen.isSetWorldToTexture()) {
-													Matrix worldToTexture = texCoordGen.getWorldToTexture().getMatrix();	
-													String worldToTextureString = Util.collection2string(worldToTexture.toRowPackedList(), " ");	
-												}
-												break;
-												
-											case TEX_COORD_LIST:
-												TexCoordList texCoordList = (TexCoordList)texPara;	
-												if (texCoordList.isSetTextureCoordinates()) {
-													HashSet<String> rings = new HashSet<String>(texCoordList.getTextureCoordinates().size());	
+
+										case TEX_COORD_GEN:
+											TexCoordGen texCoordGen = (TexCoordGen)texPara;
+											if (texCoordGen.isSetWorldToTexture()) {
+												Matrix worldToTexture = texCoordGen.getWorldToTexture().getMatrix();	
+												String worldToTextureString = Util.collection2string(worldToTexture.toRowPackedList(), " ");	
+											}
+											break;
+
+										case TEX_COORD_LIST:
+											TexCoordList texCoordList = (TexCoordList)texPara;	
+											if (texCoordList.isSetTextureCoordinates()) {
+
+												int coordinateListSize = texCoordList.getTextureCoordinates().size();
+												if(coordinateListSize > 1)//this condition should be changed in the future.
+													return new HashMap<String, Object>();
+												else{
+													HashSet<String> rings = new HashSet<String>(texCoordList.getTextureCoordinates().size());
 													for (TextureCoordinates texCoord : texCoordList.getTextureCoordinates()) {
 														String ring = texCoord.getRing();
 														if (ring != null && ring.length() != 0 && texCoord.isSetValue()) {
@@ -196,8 +204,9 @@ public class SurfaceAppearance {
 														}
 													}
 												}
-												break;
 											}
+											break;
+										}
 									} 
 									else
 									{
