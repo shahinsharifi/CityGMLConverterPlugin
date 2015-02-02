@@ -366,7 +366,6 @@ public class KmlSplitter {
 								{
 									ElevationHelper elevation = new ElevationHelper(connection);								
 									KmlSplittingResult splitter = new KmlSplittingResult(cityObject.getId() , cityGML , cityObjectType , displayForm, TargetSrs , tmpAppearanceList , elevation);		
-									Thread.sleep(10);
 									kmlWorkerPool.addWork(splitter);
 								}
 							}

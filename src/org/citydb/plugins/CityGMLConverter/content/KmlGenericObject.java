@@ -34,12 +34,15 @@ import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import java.awt.image.RenderedImage;
+import java.awt.image.WritableRaster;
 import java.io.BufferedInputStream;
 // import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,6 +57,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +69,9 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.media.j3d.GeometryArray;
 import javax.media.jai.JAI;
+import javax.media.jai.NullOpImage;
+import javax.media.jai.OpImage;
+import javax.media.jai.PlanarImage;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.vecmath.Point3d;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -160,7 +167,13 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.sun.image.codec.jpeg.JPEGCodec;
+import com.sun.image.codec.jpeg.JPEGImageEncoder;
 import com.sun.j3d.utils.geometry.GeometryInfo;
+import com.sun.media.jai.codec.FileSeekableStream;
+import com.sun.media.jai.codec.ImageCodec;
+import com.sun.media.jai.codec.ImageDecoder;
+import com.sun.media.jai.codec.SeekableStream;
+import com.sun.media.jai.codec.TIFFDecodeParam;
 
 public abstract class KmlGenericObject {
 
@@ -2096,9 +2109,7 @@ public abstract class KmlGenericObject {
                         String finalImagePath = filePath + "\\" + texImageUri;
                         int fileSeparatorIndex = Math.max(texImageUri.lastIndexOf("\\"), texImageUri.lastIndexOf("/"));
                        texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1);
-
-                   //     texImageUri = texImageUri.substring(fileSeparatorIndex + 1);
-                        
+      
                         addTexImageUri(surfaceId, texImageUri);
 
                         if (getTexImage(texImageUri) == null) {
@@ -2109,7 +2120,12 @@ public abstract class KmlGenericObject {
                             
                             try {
 
-                                bufferedImage = ImageIO.read(texImage);                               
+                            	String imageFileExtension = finalImagePath.substring(finalImagePath.lastIndexOf(".") + 1).toLowerCase();
+                            	if(imageFileExtension.equals("tif") || imageFileExtension.equals("tiff"))// this is just for reading tiff images
+                            		bufferedImage = TiffToJpg(finalImagePath);
+                            	else 
+                            		bufferedImage = ImageIO.read(texImage);
+                                
                             }                            
                             catch (Exception ioe) {
                             	Logger.getInstance().error(ioe.toString());
@@ -2200,16 +2216,6 @@ public abstract class KmlGenericObject {
                             double s = Double.parseDouble(texCoordsTokenized.nextToken());
                             double t = Double.parseDouble(texCoordsTokenized.nextToken());
 
-							/*									if (s > 1.1 || s < -0.1 || t < -0.1 || t > 1.1) { // texture wrapping -- it conflicts with texture atlas
-										removeTexImage(texImageUri);
-										BufferedImage bufferedImage = null;
-										try {
-											bufferedImage = ImageIO.read(texImage);
-										} catch (IOException e) {}
-										addTexImage(texImageUri, bufferedImage);
-//										addTexOrdImage(texImageUri, texImage);
-									}
-							 */
                             texCoordsForThisSurface = new TexCoords(s, t);
                         }
                         setVertexInfoForXYZ(surfaceId,
@@ -2629,7 +2635,42 @@ public abstract class KmlGenericObject {
 
         return zOffset;
     }
+    
+    
+    private BufferedImage TiffToJpg(String tiff) throws IOException    	    
+    {
+      File tiffFile = new File(tiff);
+      SeekableStream s = new FileSeekableStream(tiffFile);
+      TIFFDecodeParam param = null;
+      ImageDecoder dec = ImageCodec.createImageDecoder("tiff", s, param);
+      RenderedImage op = dec.decodeAsRenderedImage(0);
+      return convertRenderedImage(op);
+    }
 
+
+    private  BufferedImage convertRenderedImage(RenderedImage img) {
+    	if (img instanceof BufferedImage) {
+    		return (BufferedImage) img;
+    	}
+    	ColorModel cm = img.getColorModel();
+    	int width = img.getWidth();
+    	int height = img.getHeight();
+    	WritableRaster raster = cm
+    			.createCompatibleWritableRaster(width, height);
+    	boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+    	Hashtable properties = new Hashtable();
+    	String[] keys = img.getPropertyNames();
+    	if (keys != null) {
+    		for (int i = 0; i < keys.length; i++) {
+    			properties.put(keys[i], img.getProperty(keys[i]));
+    		}
+    	}
+    	BufferedImage result = new BufferedImage(cm, raster,
+    			isAlphaPremultiplied, properties);
+    	img.copyData(raster);
+    	return result;
+    } 
+    
 
     public String GetImagePath()
     {

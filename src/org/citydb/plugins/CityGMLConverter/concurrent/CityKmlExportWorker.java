@@ -501,7 +501,6 @@ public class CityKmlExportWorker implements Worker<KmlSplittingResult> {
 //			colladaBundle.setTexOrdImages(objectGroup.getTexOrdImages());
 			colladaBundle.setPlacemark(objectGroup.createPlacemarkForColladaModel(work));
 			colladaBundle.setGmlId(objectGroup.getGmlId());
-
 			kmlExporterManager.print(colladaBundle,
 					 				 objectGroup.getId(),					
 					 				 objectGroup.getBalloonSettings().isBalloonContentInSeparateFile());

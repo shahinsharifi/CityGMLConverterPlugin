@@ -229,8 +229,8 @@ public class CityKmlExporter implements EventHandler {
 		// get config shortcuts
 	     Resources resources = new Resources();
 		// worker pool settings
-		int minThreads = resources.getThreadPool().getDefaultPool().getMinThreads();
-		int maxThreads = resources.getThreadPool().getDefaultPool().getMaxThreads();
+		int minThreads = 2;//resources.getThreadPool().getDefaultPool().getMinThreads();
+		int maxThreads = 8;//resources.getThreadPool().getDefaultPool().getMaxThreads();
 		int queueSize = maxThreads * 2;
 
 		// adding listener
