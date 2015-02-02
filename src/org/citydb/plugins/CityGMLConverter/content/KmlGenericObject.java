@@ -61,6 +61,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import javax.media.j3d.GeometryArray;
 import javax.media.jai.JAI;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -2106,11 +2108,12 @@ public abstract class KmlGenericObject {
                             BufferedImage bufferedImage = null;
                             
                             try {
-                           	 
-                                bufferedImage = ImageIO.read(texImage);
-                                
+
+                                bufferedImage = ImageIO.read(texImage);                               
                             }                            
-                            catch (IOException ioe) {}
+                            catch (Exception ioe) {
+                            	Logger.getInstance().error(ioe.toString());
+                            }
 
                             if (bufferedImage != null) { // image in JPEG, PNG or another usual format
                             	

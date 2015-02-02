@@ -3,8 +3,6 @@ package org.citydb.plugins.CityGMLConverter;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import javax.imageio.spi.IIORegistry;
-
 import org.citydb.api.controller.ApplicationStarter;
 import org.citydb.api.plugin.Plugin;
 import org.citydb.api.plugin.extension.config.ConfigExtension;
