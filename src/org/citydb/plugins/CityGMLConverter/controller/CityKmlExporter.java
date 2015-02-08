@@ -99,21 +99,10 @@ import org.citydb.modules.common.event.*;
 import org.citydb.plugins.CityGMLConverter.concurrent.CityKmlExportWorkerFactory;
 import org.citydb.plugins.CityGMLConverter.concurrent.DBImportXlinkWorkerFactory;
 import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
-import org.citydb.plugins.CityGMLConverter.content.Bridge;
 import org.citydb.plugins.CityGMLConverter.content.Building;
-import org.citydb.plugins.CityGMLConverter.content.CityFurniture;
-import org.citydb.plugins.CityGMLConverter.content.CityObjectGroup;
-import org.citydb.plugins.CityGMLConverter.content.GenericCityObject;
 import org.citydb.plugins.CityGMLConverter.content.KmlSplitter;
 import org.citydb.plugins.CityGMLConverter.content.KmlSplittingResult;
-import org.citydb.plugins.CityGMLConverter.content.LandUse;
-import org.citydb.plugins.CityGMLConverter.content.PlantCover;
-import org.citydb.plugins.CityGMLConverter.content.Relief;
-import org.citydb.plugins.CityGMLConverter.content.SolitaryVegetationObject;
-import org.citydb.plugins.CityGMLConverter.content.Transportation;
-import org.citydb.plugins.CityGMLConverter.content.Tunnel;
 import org.citydb.plugins.CityGMLConverter.content.TypeAttributeValueEnum;
-import org.citydb.plugins.CityGMLConverter.content.WaterBody;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.citygml4j.builder.jaxb.xml.io.reader.JAXBChunkReader;
 import org.citygml4j.factory.GMLGeometryFactory;
@@ -959,7 +948,7 @@ public class CityKmlExporter implements EventHandler {
 		
 	//	if (!currentDisplayForm.isActive()) return;
 		switch (featureClass) {
-			case SOLITARY_VEGETATION_OBJECT:
+		/*	case SOLITARY_VEGETATION_OBJECT:
 			case PLANT_COVER:
 				addStyle(currentDisplayForm,
 						 config.getVegetationDisplayForms(),
@@ -978,12 +967,12 @@ public class CityKmlExporter implements EventHandler {
 						 Transportation.STYLE_BASIS_NAME);
 				break;
 
-/*
+
 			case RASTER_RELIEF:
 			case MASSPOINT_RELIEF:
 			case BREAKLINE_RELIEF:
 			case TIN_RELIEF:
-*/
+
 			case RELIEF_FEATURE:
 				addStyle(currentDisplayForm,
 						 config.getReliefDisplayForms(),
@@ -1022,7 +1011,7 @@ public class CityKmlExporter implements EventHandler {
 						 config.getWaterBodyDisplayForms(),
 						 WaterBody.STYLE_BASIS_NAME);
 				break;
-
+*/
 			case BUILDING: // must be last
 			default:
 				addStyle(currentDisplayForm,
@@ -1115,8 +1104,8 @@ public class CityKmlExporter implements EventHandler {
 		case DisplayForm.GEOMETRY:
 
 			boolean isBuilding = Building.STYLE_BASIS_NAME.equals(styleBasisName);
-			boolean isBridge = Bridge.STYLE_BASIS_NAME.equals(styleBasisName); 
-			boolean isTunnel = Tunnel.STYLE_BASIS_NAME.equals(styleBasisName); 
+			boolean isBridge = false;//Bridge.STYLE_BASIS_NAME.equals(styleBasisName);
+			boolean isTunnel = false;//Tunnel.STYLE_BASIS_NAME.equals(styleBasisName);
 
 			indexOfDf = displayFormsForObjectType.indexOf(currentDisplayForm);
 			String wallFillColor = Integer.toHexString(DisplayForm.DEFAULT_WALL_FILL_COLOR);
@@ -1452,7 +1441,7 @@ public class CityKmlExporter implements EventHandler {
 			if (kmlExportObject instanceof Building) {
 				type = CityGMLClass.BUILDING;
 			}
-			else if (kmlExportObject instanceof WaterBody) {
+			/*else if (kmlExportObject instanceof WaterBody) {
 				type = CityGMLClass.WATER_BODY;
 			}
 			else if (kmlExportObject instanceof LandUse) {
@@ -1478,7 +1467,7 @@ public class CityKmlExporter implements EventHandler {
 			}
 			else if (kmlExportObject instanceof CityFurniture) {
 				type = CityGMLClass.CITY_FURNITURE;
-			}
+			}*/
 			else
 				return;
 

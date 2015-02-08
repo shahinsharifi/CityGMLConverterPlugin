@@ -320,7 +320,7 @@ public class Building extends KmlGenericObject{
                             Logger.getInstance().info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");
                         }
 
-                        List<Point3d> anchorCandidates = setOrigins(); // setOrigins() called mainly for the side-effect
+                        List<Point3d> anchorCandidates = getOrigins(); // setOrigins() called mainly for the side-effect
                         double zOffset = getZOffsetFromDB(work.getGmlId(),work.GetElevation());
                         if (zOffset == Double.MAX_VALUE) {
                             zOffset = getZOffsetFromGEService(work.getGmlId(),anchorCandidates,work.getTargetSrs(),work.GetElevation());
@@ -356,14 +356,17 @@ public class Building extends KmlGenericObject{
     }
 
 
-
     public PlacemarkType createPlacemarkForColladaModel(KmlSplittingResult work) throws Exception {
-        // undo trick for very close coordinates
-        List<Double> originInWGS84 = ProjConvertor.transformPoint(getOriginX()/100, getOriginY()/100, getOriginZ()/100, work.getTargetSrs(), "4326");
 
-        setLocationX(reducePrecisionForXorY(originInWGS84.get(1)));
-        setLocationY(reducePrecisionForXorY(originInWGS84.get(0)));
-        setLocationZ(reducePrecisionForZ(originInWGS84.get(2)));
+        List<Double> originInWGS84 = ProjConvertor.transformPoint(
+                getOrigin().x,
+                getOrigin().y,
+                getOrigin().z,
+                work.getTargetSrs(),
+                "4326");
+        setLocation(reducePrecisionForXorY(originInWGS84.get(1)),
+                reducePrecisionForXorY(originInWGS84.get(0)),
+                reducePrecisionForZ(originInWGS84.get(2)));
 
         return super.createPlacemarkForColladaModel(work);
     }

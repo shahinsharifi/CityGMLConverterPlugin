@@ -60,20 +60,12 @@ import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
 import org.citydb.plugins.CityGMLConverter.config.DisplayForm;
 import org.citydb.plugins.CityGMLConverter.content.BalloonTemplateHandlerImpl;
 import org.citydb.plugins.CityGMLConverter.content.Building;
-import org.citydb.plugins.CityGMLConverter.content.CityFurniture;
 import org.citydb.plugins.CityGMLConverter.content.CityObjectGroup;
 import org.citydb.plugins.CityGMLConverter.content.ColladaBundle;
 import org.citydb.plugins.CityGMLConverter.content.ElevationServiceHandler;
-import org.citydb.plugins.CityGMLConverter.content.GenericCityObject;
 import org.citydb.plugins.CityGMLConverter.content.KmlExporterManager;
 import org.citydb.plugins.CityGMLConverter.content.KmlGenericObject;
 import org.citydb.plugins.CityGMLConverter.content.KmlSplittingResult;
-import org.citydb.plugins.CityGMLConverter.content.LandUse;
-import org.citydb.plugins.CityGMLConverter.content.PlantCover;
-import org.citydb.plugins.CityGMLConverter.content.Relief;
-import org.citydb.plugins.CityGMLConverter.content.SolitaryVegetationObject;
-import org.citydb.plugins.CityGMLConverter.content.Transportation;
-import org.citydb.plugins.CityGMLConverter.content.WaterBody;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.SqliteImporterManager;
 import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlink;
 import org.citydb.plugins.CityGMLConverter.xlink.importer.DBXlinkImporterManager;
@@ -316,7 +308,7 @@ public class CityKmlExportWorker implements Worker<KmlSplittingResult> {
 												config);
 					break;
 					
-				case WATER_BODY:
+			/*	case WATER_BODY:
 				case WATER_CLOSURE_SURFACE:
 				case WATER_GROUND_SURFACE:
 				case WATER_SURFACE:
@@ -422,7 +414,7 @@ public class CityKmlExportWorker implements Worker<KmlSplittingResult> {
 												   	   getBalloonTemplateHandler(featureClass),
 												   	   eventDispatcher,
 												   	   config);
-					break;
+					break;*/
 					
 				default:
 					break;
