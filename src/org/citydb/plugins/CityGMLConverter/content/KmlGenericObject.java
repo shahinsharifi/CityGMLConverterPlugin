@@ -1227,177 +1227,92 @@ public abstract class KmlGenericObject {
 
     protected List<PlacemarkType> createPlacemarksForFootprint(List<BuildingSurface> result, KmlSplittingResult work) throws Exception {
 
-        ResultSet rs = null;
-        List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
-        PlacemarkType placemark = kmlFactory.createPlacemarkType();
-        placemark.setName(work.getGmlId());
-        placemark.setId(DisplayForm.FOOTPRINT_PLACEMARK_ID + placemark.getName());
+    	List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
+    	PlacemarkType placemark = kmlFactory.createPlacemarkType();
+    	placemark.setName(work.getGmlId());
+    	placemark.setId(DisplayForm.FOOTPRINT_PLACEMARK_ID + placemark.getName());
 
-        if (work.getDisplayForm().isHighlightingEnabled()) {
-            placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.FOOTPRINT_STR + "Style");
-        }
-        else {
-            placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.FOOTPRINT_STR + "Normal");
-        }
+    	if (work.getDisplayForm().isHighlightingEnabled()) {
+    		placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.FOOTPRINT_STR + "Style");
+    	}
+    	else {
+    		placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.FOOTPRINT_STR + "Normal");
+    	}
 
-        if (getBalloonSettings().isIncludeDescription()) {
-            addBalloonContents(placemark, work.getId());
-        }
-        MultiGeometryType multiGeometry = kmlFactory.createMultiGeometryType();
-        placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
+    	if (getBalloonSettings().isIncludeDescription()) {
+    		addBalloonContents(placemark, work.getId());
+    	}
+    	MultiGeometryType multiGeometry = kmlFactory.createMultiGeometryType();
+    	placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
 
-        PolygonType polygon = null;
-        PolygonType[] multiPolygon = null;
-        for (BuildingSurface Row: result) {
+    	PolygonType polygon = null;
+    	try {
 
+    		for (BuildingSurface Row: result) {
 
-            if (Row != null) {
-                eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
+    			if (Row != null && Row.getType().equals("GroundSurface")) {
 
-                polygon = kmlFactory.createPolygonType();
-                polygon.setTessellate(true);
-                polygon.setExtrude(false);
-                polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.CLAMP_TO_GROUND));
+    				eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
 
+    				@SuppressWarnings("unchecked")
+    				List<Double> _Geometry = (List<Double>)Row.getGeometry();
+    				org.postgis.Point[] tmpPoint = new org.postgis.Point[_Geometry.size()/3];
+    				for (int i = 1,j = 0; i < _Geometry.size(); j++, i = i+3) {
+    					List<Double> Target_Coordinates = ProjConvertor.transformPoint(_Geometry.get(i-1),_Geometry.get(i),_Geometry.get(i+1), work.getTargetSrs(), "4326");
+    					tmpPoint[j] = new org.postgis.Point(
+    							Target_Coordinates.get(1),
+    							Target_Coordinates.get(0),
+    							Target_Coordinates.get(2));
+    				}
+    				Polygon surface = new Polygon(new org.postgis.LinearRing[] {new org.postgis.LinearRing(tmpPoint)});
 
-                //***********************************************************************
+    				int dim = surface.getDimension();
 
-                @SuppressWarnings("unchecked")
-                List<Double> _Geometry = (List<Double>)Row.getGeometry();
+    				for (int i = 0; i < surface.numRings(); i++) {
 
-                org.postgis.Point[] tmpPoint = new org.postgis.Point[_Geometry.size()/3];
+    					LinearRingType linearRing = kmlFactory.createLinearRingType();
+    					BoundaryType boundary = kmlFactory.createBoundaryType();
+    					boundary.setLinearRing(linearRing);
+    					if (surface.getSubGeometry(i).type == org.postgis.Geometry.LINEARRING) {
 
-                for (int i = 1,j = 0; i < _Geometry.size(); j++, i = i+3) {
+    						polygon = kmlFactory.createPolygonType();
+    						polygon.setTessellate(true);
+    						polygon.setExtrude(false);
+    						polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.CLAMP_TO_GROUND));
+    						polygon.setOuterBoundaryIs(boundary);
+    						multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
 
-                    List<Double> Target_Coordinates = ProjConvertor.transformPoint(_Geometry.get(i-1),_Geometry.get(i),_Geometry.get(i+1), work.getTargetSrs(), "4326");
-                    tmpPoint[j] = new org.postgis.Point(
-                            Target_Coordinates.get(1),
-                            Target_Coordinates.get(0),
-                            Target_Coordinates.get(2)
-                    );
+    					} else
+    						polygon.getInnerBoundaryIs().add(boundary);
 
-                }
+    					double[] ordinatesArray = new double[surface.numPoints()*3];
+    					for (int temp = 0, j = 0; temp < surface.numPoints(); temp++, j+=3){
+    						ordinatesArray[j] = surface.getPoint(temp).x;
+    						ordinatesArray[j+1] = surface.getPoint(temp).y;
+    						ordinatesArray[j+2] = surface.getPoint(temp).z;
+    					}
 
-                Polygon surface = new Polygon(
-                        new org.postgis.LinearRing[] {
-                                new org.postgis.LinearRing(
-                                        tmpPoint
-                                )
-                        }
-                );
+    					for (int j = 0; j < ordinatesArray.length; j = j+dim)
+    						linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
+    				}
+    			}
+    		}
 
+    		if (polygon != null) { // if there is at least some content
+    			placemarkList.add(placemark);
+    		}
 
-                //***********************************************************************
-
-                Geometry groundSurface = surface;
-
-                switch (groundSurface.getType()) {
-                    case Geometry.POLYGON:
-                        Polygon polyGeom = (Polygon) groundSurface;
-
-                        for (int ring = 0; ring < polyGeom.numRings(); ring++){
-                            LinearRingType linearRing = kmlFactory.createLinearRingType();
-                            BoundaryType boundary = kmlFactory.createBoundaryType();
-                            boundary.setLinearRing(linearRing);
-
-                            double [] ordinatesArray = new double[polyGeom.getRing(ring).numPoints() * 2];
-
-                            for (int j=polyGeom.getRing(ring).numPoints()-1, k=0; j >= 0; j--, k+=2){
-                                ordinatesArray[k] = polyGeom.getRing(ring).getPoint(j).x;
-                                ordinatesArray[k+1] = polyGeom.getRing(ring).getPoint(j).y;
-                            }
-
-                            // the first ring usually is the outer ring in a PostGIS-Polygon
-                            // e.g. POLYGON((outerBoundary),(innerBoundary),(innerBoundary))
-                            if (ring == 0){
-                                polygon.setOuterBoundaryIs(boundary);
-                                for (int j = 0; j < ordinatesArray.length; j+=2) {
-                                    linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
-                                }
-                            }
-                            else {
-                                polygon.getInnerBoundaryIs().add(boundary);
-                                for (int j = ordinatesArray.length - 2; j >= 0; j-=2) {
-                                    linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
-                                }
-                            }
-                        }
-                        break;
-
-                    case Geometry.MULTIPOLYGON:
-                        MultiPolygon multiPolyGeom = (MultiPolygon) groundSurface;
-                        multiPolygon = new PolygonType[multiPolyGeom.numPolygons()];
-
-                        for (int p = 0; p < multiPolyGeom.numPolygons(); p++){
-                            Polygon subPolyGeom = multiPolyGeom.getPolygon(p);
-
-                            multiPolygon[p] = kmlFactory.createPolygonType();
-                            multiPolygon[p].setTessellate(true);
-                            multiPolygon[p].setExtrude(true);
-                            multiPolygon[p].setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
-
-                            for (int ring = 0; ring < subPolyGeom.numRings(); ring++){
-                                LinearRingType linearRing = kmlFactory.createLinearRingType();
-                                BoundaryType boundary = kmlFactory.createBoundaryType();
-                                boundary.setLinearRing(linearRing);
-
-                                double [] ordinatesArray = new double[subPolyGeom.getRing(ring).numPoints() * 2];
-
-                                for (int j=subPolyGeom.getRing(ring).numPoints()-1, k=0; j >= 0; j--, k+=2){
-                                    ordinatesArray[k] = subPolyGeom.getRing(ring).getPoint(j).x;
-                                    ordinatesArray[k+1] = subPolyGeom.getRing(ring).getPoint(j).y;
-                                }
-
-                                // the first ring usually is the outer ring in a PostGIS-Polygon
-                                // e.g. POLYGON((outerBoundary),(innerBoundary),(innerBoundary))
-                                if (ring == 0){
-                                    multiPolygon[p].setOuterBoundaryIs(boundary);
-                                    for (int j = 0; j < ordinatesArray.length; j+=2) {
-                                        linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
-                                    }
-                                }
-                                else {
-                                    multiPolygon[p].getInnerBoundaryIs().add(boundary);
-                                    for (int j = ordinatesArray.length - 2; j >= 0; j-=2) {
-                                        linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
-                                    }
-                                }
-                            }
-                        }
-                    case Geometry.POINT:
-                    case Geometry.LINESTRING:
-                    case Geometry.MULTIPOINT:
-                    case Geometry.MULTILINESTRING:
-                    case Geometry.GEOMETRYCOLLECTION:
-                        continue;
-                    default:
-                        Logger.getInstance().warn("Unknown geometry for " + work.getGmlId());
-                        continue;
-                }
-
-                if (polygon != null){
-                    multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
-                }
-
-                if (multiPolygon != null){
-                    for (int p = 0; p < multiPolygon.length; p++){
-                        multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(multiPolygon[p]));
-                    }
-                }
-            }
-        }
-        // if there is at least some content
-        if (polygon != null) {
-            placemarkList.add(placemark);
-        }
-        return placemarkList;
+    	} catch (Exception e) {
+    		Logger.getInstance().error(e.toString());
+    	}
+    	return placemarkList;       
     }
+    
 
     protected List<PlacemarkType> createPlacemarksForExtruded(List<BuildingSurface> result,
                                                               KmlSplittingResult work,
                                                               double measuredHeight,
                                                               boolean reversePointOrder) throws Exception {
-
 
         List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
         PlacemarkType placemark = kmlFactory.createPlacemarkType();
@@ -1416,154 +1331,63 @@ public abstract class KmlGenericObject {
             MultiGeometryType multiGeometry = kmlFactory.createMultiGeometryType();
             placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
 
-            PolygonType polygon = null;
-            PolygonType[] multiPolygon = null;
-
+            PolygonType polygon = null;            
             for (BuildingSurface Row: result) {
 
-
-                if (Row != null) {
-                    eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
-
-                    polygon = kmlFactory.createPolygonType();
-                    polygon.setTessellate(true);
-                    polygon.setExtrude(true);
-                    polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
-
-
-                    //***********************************************************************
-
-                    @SuppressWarnings("unchecked")
+            	if (Row != null && Row.getType().equals("GroundSurface")) {
+            		
+            		eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
+            		
+            		@SuppressWarnings("unchecked")
                     List<Double> _Geometry = (List<Double>)Row.getGeometry();
-
                     org.postgis.Point[] tmpPoint = new org.postgis.Point[_Geometry.size()/3];
-
                     for (int i = 1,j = 0; i < _Geometry.size(); j++, i = i+3) {
-
                         List<Double> Target_Coordinates = ProjConvertor.transformPoint(_Geometry.get(i-1),_Geometry.get(i),_Geometry.get(i+1), work.getTargetSrs(), "4326");
                         tmpPoint[j] = new org.postgis.Point(
                                 Target_Coordinates.get(1),
                                 Target_Coordinates.get(0),
-                                Target_Coordinates.get(2)
-                        );
-
+                                Target_Coordinates.get(2));
                     }
-
-                    Polygon surface = new Polygon(
-                            new org.postgis.LinearRing[] {
-                                    new org.postgis.LinearRing(
-                                            tmpPoint
-                                    )
-                            }
-                    );
-
-
-                    //***********************************************************************
-
-                    Geometry groundSurface = surface;
-
-                    switch (groundSurface.getType()) {
-                        case Geometry.POLYGON:
-                            Polygon polyGeom = (Polygon) groundSurface;
-                            for (int ring = 0; ring < polyGeom.numRings(); ring++){
-
-                                LinearRingType linearRing = kmlFactory.createLinearRingType();
-                                BoundaryType boundary = kmlFactory.createBoundaryType();
-                                boundary.setLinearRing(linearRing);
-
-                                double [] ordinatesArray = new double[polyGeom.getRing(ring).numPoints() * 2];
-
-                                if (reversePointOrder) {
-                                    for (int j=polyGeom.getRing(ring).numPoints()-1, k=0; j >= 0; j--, k+=2){
-                                        ordinatesArray[k] = polyGeom.getRing(ring).getPoint(j).x;
-                                        ordinatesArray[k+1] = polyGeom.getRing(ring).getPoint(j).y;
-                                    }
-                                }
-                                else {
-                                    for (int j=0, k=0; j < polyGeom.getRing(ring).numPoints(); j++, k+=2){
-                                        ordinatesArray[k] = polyGeom.getRing(ring).getPoint(j).x;
-                                        ordinatesArray[k+1] = polyGeom.getRing(ring).getPoint(j).y;
-                                    }
-                                }
-
-                                // the first ring usually is the outer ring in a PostGIS-Polygon
-                                // e.g. POLYGON((outerBoundary),(innerBoundary),(innerBoundary))
-                                if (ring == 0){
-                                    polygon.setOuterBoundaryIs(boundary);
-                                    for (int j = 0; j < ordinatesArray.length; j+=2) {
-                                        linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + "," + measuredHeight));
-                                    }
-                                }
-                                else {
-                                    polygon.getInnerBoundaryIs().add(boundary);
-                                    for (int j = ordinatesArray.length - 2; j >= 0; j-=2) {
-                                        linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + "," + measuredHeight));
-                                    }
-                                }
-                            }
-                            break;
-                        case Geometry.MULTIPOLYGON:
-                            MultiPolygon multiPolyGeom = (MultiPolygon) groundSurface;
-                            multiPolygon = new PolygonType[multiPolyGeom.numPolygons()];
-
-                            for (int p = 0; p < multiPolyGeom.numPolygons(); p++){
-                                Polygon subPolyGeom = multiPolyGeom.getPolygon(p);
-
-                                multiPolygon[p] = kmlFactory.createPolygonType();
-                                multiPolygon[p].setTessellate(true);
-                                multiPolygon[p].setExtrude(true);
-                                multiPolygon[p].setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
-
-                                for (int ring = 0; ring < subPolyGeom.numRings(); ring++){
-                                    LinearRingType linearRing = kmlFactory.createLinearRingType();
-                                    BoundaryType boundary = kmlFactory.createBoundaryType();
-                                    boundary.setLinearRing(linearRing);
-
-                                    double [] ordinatesArray = new double[subPolyGeom.getRing(ring).numPoints() * 2];
-
-                                    for (int j=subPolyGeom.getRing(ring).numPoints()-1, k=0; j >= 0; j--, k+=2){
-                                        ordinatesArray[k] = subPolyGeom.getRing(ring).getPoint(j).x;
-                                        ordinatesArray[k+1] = subPolyGeom.getRing(ring).getPoint(j).y;
-                                    }
-
-                                    // the first ring usually is the outer ring in a PostGIS-Polygon
-                                    // e.g. POLYGON((outerBoundary),(innerBoundary),(innerBoundary))
-                                    if (ring == 0){
-                                        multiPolygon[p].setOuterBoundaryIs(boundary);
-                                        for (int j = 0; j < ordinatesArray.length; j+=2) {
-                                            linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
-                                        }
-                                    }
-                                    else {
-                                        multiPolygon[p].getInnerBoundaryIs().add(boundary);
-                                        for (int j = ordinatesArray.length - 2; j >= 0; j-=2) {
-                                            linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + ",0"));
-                                        }
-                                    }
-                                }
-                            }
-                        case Geometry.POINT:
-                        case Geometry.LINESTRING:
-                        case Geometry.MULTIPOINT:
-                        case Geometry.MULTILINESTRING:
-                        case Geometry.GEOMETRYCOLLECTION:
-                            continue;
-                        default:
-                            Logger.getInstance().warn("Unknown geometry for " + work.getGmlId());
-                            continue;
-                    }
-
-                    if (polygon != null){
-                        multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
-                    }
-
-                    if (multiPolygon != null){
-                        for (int p = 0; p < multiPolygon.length; p++){
-                            multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(multiPolygon[p]));
+                    Polygon surface = new Polygon(new org.postgis.LinearRing[] {new org.postgis.LinearRing(tmpPoint)});
+                    
+            		int dim = surface.getDimension();
+            		
+            		for (int i = 0; i < surface.numRings(); i++) {
+            		
+            			LinearRingType linearRing = kmlFactory.createLinearRingType();
+            			BoundaryType boundary = kmlFactory.createBoundaryType();
+            			boundary.setLinearRing(linearRing);
+            			if (surface.getSubGeometry(i).type == org.postgis.Geometry.LINEARRING) {
+            			
+            				polygon = kmlFactory.createPolygonType();
+            				polygon.setTessellate(true);
+            				polygon.setExtrude(true);
+            				polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
+            				polygon.setOuterBoundaryIs(boundary);
+            				multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
+            			
+            			} else
+            				polygon.getInnerBoundaryIs().add(boundary);
+            			
+            			double[] ordinatesArray = new double[surface.numPoints()*3];
+                        for (int temp = 0, j = 0; temp < surface.numPoints(); temp++, j+=3){
+                            ordinatesArray[j] = surface.getPoint(temp).x;
+                            ordinatesArray[j+1] = surface.getPoint(temp).y;
+                            ordinatesArray[j+2] = surface.getPoint(temp).z;
                         }
-                    }
-                }
+            			
+            			if (reversePointOrder) {
+            				for (int j = 0; j < ordinatesArray.length; j = j+dim)
+            					linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + "," + measuredHeight));
+            			} else if (polygon != null)
+            				// order points counter-clockwise
+            				for (int j = ordinatesArray.length - dim; j >= 0; j = j-dim)
+            					linearRing.getCoordinates().add(String.valueOf(ordinatesArray[j] + "," + ordinatesArray[j+1] + "," + measuredHeight));
+            		}
+            	}
             }
+
+            
             if (polygon != null) { // if there is at least some content
                 placemarkList.add(placemark);
             }
@@ -1575,13 +1399,13 @@ public abstract class KmlGenericObject {
         return placemarkList;
     }
 
+    
     protected List<PlacemarkType> createPlacemarksForGeometry(List<BuildingSurface> rs,
                                                               KmlSplittingResult work) throws Exception{
-
         return createPlacemarksForGeometry(rs, work, false, false);
-
     }
 
+    
     protected List<PlacemarkType> createPlacemarksForGeometry(List<BuildingSurface> result,
                                                               KmlSplittingResult work,
                                                               boolean includeGroundSurface,

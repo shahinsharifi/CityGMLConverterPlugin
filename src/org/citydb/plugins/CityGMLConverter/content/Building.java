@@ -262,7 +262,7 @@ public class Building extends KmlGenericObject{
     @SuppressWarnings("unchecked")
     private List<PlacemarkType> readBuildingPart(KmlSplittingResult work) throws Exception {
 
-        boolean reversePointOrder = false;
+        boolean reversePointOrder = true;
 
         try {
 
