@@ -463,7 +463,7 @@ public class Building extends KmlGenericObject{
                 }
 
                 // now convert to WGS84
-                Polygon surface = (Polygon)convertToWGS84(unconvertedSurface);
+                Polygon surface = null;//(Polygon)convertToWGS84(unconvertedSurface);
 
                 for (int i = 0, j = 0; i < surface.numPoints(); i++, j+=3){
                     ordinatesArray[j] = surface.getPoint(i).x;

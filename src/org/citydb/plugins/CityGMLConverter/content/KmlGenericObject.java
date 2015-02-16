@@ -1978,7 +1978,7 @@ public abstract class KmlGenericObject {
                 }
 
                 // now convert to WGS84
-                Polygon surface = (Polygon)convertToWGS84(unconvertedSurface);
+                Polygon surface = null;//(Polygon)convertToWGS84(unconvertedSurface);
 
                 for (int i = 0, j = 0; i < surface.numPoints(); i++, j+=3){
                     ordinatesArray[j] = surface.getPoint(i).x;
@@ -2283,112 +2283,6 @@ public abstract class KmlGenericObject {
         return coords;
     }
 
-
-    protected double[] convertPointCoordinatesToWGS84(double[] coords) throws SQLException {
-
-        double[] pointCoords = null;
-
-        StringBuilder geomEWKT = new StringBuilder("");
-        String coordComma = "";
-
-        geomEWKT.append("SRID=").append(dbSrs.getSrid()).append(";");
-
-        if (coords.length == 3){
-            geomEWKT.append("POINT(")
-                    .append(coords[0]).append(" ")
-                    .append(coords[1]).append(" ")
-                    .append(coords[2]);
-        }
-        else {
-            geomEWKT.append("LINESTRING(");
-
-            for (int i = 0; i < coords.length; i += 3){
-                geomEWKT.append(coordComma)
-                        .append(coords[0]).append(" ")
-                        .append(coords[1]).append(" ")
-                        .append(coords[2]);
-
-                coordComma = ",";
-            }
-        }
-
-        geomEWKT.append(")");
-
-        Geometry geom = PGgeometry.geomFromString(geomEWKT.toString());
-        Geometry convertedPointGeom = convertToWGS84(geom);
-
-        if (convertedPointGeom != null) {
-            pointCoords = new double[3];
-            pointCoords[0] = convertedPointGeom.getFirstPoint().x;
-            pointCoords[1] = convertedPointGeom.getFirstPoint().y;
-            pointCoords[2] = convertedPointGeom.getFirstPoint().z;
-        }
-
-        return pointCoords;
-    }
-
-
-    protected Geometry convertToWGS84(Geometry geometry) throws SQLException {
-
-        double[] originalCoords = new double[(geometry.numPoints()*3)];
-
-        for (int i = 0, j = 0; i < geometry.numPoints(); i++, j+=3){
-            originalCoords[j] = geometry.getPoint(i).x;
-            originalCoords[j+1] = geometry.getPoint(i).y;
-            originalCoords[j+2] = geometry.getPoint(i).z;
-        }
-
-        Geometry convertedPointGeom = null;
-        PreparedStatement convertStmt = null;
-        ResultSet rs2 = null;
-        try {
-            convertStmt = null;/*(dbSrs.is3D() && geometry.getDimension() == 3) ?
-                    connection.prepareStatement(Queries.TRANSFORM_GEOMETRY_TO_WGS84_3D):
-                    connection.prepareStatement(Queries.TRANSFORM_GEOMETRY_TO_WGS84);*/
-            // now convert to WGS84
-            PGgeometry unconverted = new PGgeometry(geometry);
-            convertStmt.setObject(1, unconverted);
-            rs2 = convertStmt.executeQuery();
-            while (rs2.next()) {
-                // ColumnName is ST_Transform(Geometry, 4326)
-                PGgeometry converted = (PGgeometry)rs2.getObject(1);
-                convertedPointGeom = converted.getGeometry();
-            }
-        }
-        catch (Exception e) {
-            Logger.getInstance().warn("Exception when converting geometry to WGS84");
-            e.printStackTrace();
-        }
-        finally {
-            try {
-                if (rs2 != null) rs2.close();
-                if (convertStmt != null) convertStmt.close();
-            }
-            catch (Exception e2) {}
-        }
-
-        if (config.isUseOriginalZCoords()) {
-            for (int i = 0, j = 2; i < convertedPointGeom.numPoints(); i++, j+=3) {
-                convertedPointGeom.getPoint(i).setZ(originalCoords[j]);
-            }
-        }
-
-        return convertedPointGeom;
-    }
-
-
-    private int roundUpPots(int t)
-    {
-        t--;
-        t |= t >> 1;
-        t |= t >> 2;
-        t |= t >> 4;
-        t |= t >> 8;
-        t |= t >> 16;
-        t |= t >> 32;
-        t++;
-        return t;
-    }
 
     protected class Node{
         double key;
