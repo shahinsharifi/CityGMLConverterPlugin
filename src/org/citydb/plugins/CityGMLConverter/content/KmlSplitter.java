@@ -50,7 +50,6 @@ import org.citydb.config.project.filter.Tiling;
 import org.citydb.config.project.filter.TilingMode;
 import org.citydb.log.Logger;
 import org.citydb.plugins.CityGMLConverter.content.KmlSplittingResult;
-import org.citydb.plugins.CityGMLConverter.content.Queries;
 import org.citygml4j.CityGMLContext;
 import org.citygml4j.builder.CityGMLBuilder;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
@@ -418,57 +417,6 @@ public class KmlSplitter {
 
 	public void shutdown() {
 		shouldRun = false;
-	}
-
-
-
-	private double[] getEnvelopeInWGS84(long id) {
-		double[] ordinatesArray = null;
-		PreparedStatement psQuery = null;
-		ResultSet rs = null;
-
-		try {
-			psQuery = dbSrs.is3D() ? 
-					connection.prepareStatement(Queries.GET_ENVELOPE_IN_WGS84_3D_FROM_ID):
-						connection.prepareStatement(Queries.GET_ENVELOPE_IN_WGS84_FROM_ID);
-
-					psQuery.setLong(1, id);
-
-					rs = psQuery.executeQuery();
-					if (rs.next()) {
-						PGgeometry pgGeom = (PGgeometry)rs.getObject(1); 
-						if (!rs.wasNull() && pgGeom != null) {
-							Geometry geom = pgGeom.getGeometry();
-
-							ordinatesArray = new double[geom.numPoints() * 3];
-
-							for (int i=0, j=0; i<geom.numPoints(); i+=3, j++){
-								ordinatesArray[i] = geom.getPoint(j).x;
-								ordinatesArray[i+1] = geom.getPoint(j).y;
-								ordinatesArray[i+2] = geom.getPoint(j).z;
-							}
-						}
-					}
-		} 
-		catch (SQLException sqlEx) {}
-		finally {
-			if (rs != null) {
-				try {
-					rs.close();
-				} catch (SQLException sqlEx) {}
-
-				rs = null;
-			}
-
-			if (psQuery != null) {
-				try {
-					psQuery.close();
-				} catch (SQLException sqlEx) {}
-
-				psQuery = null;
-			}
-		}
-		return ordinatesArray;
 	}
 
 }

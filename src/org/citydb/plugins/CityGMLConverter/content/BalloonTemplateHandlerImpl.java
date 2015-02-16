@@ -48,7 +48,6 @@ import java.util.StringTokenizer;
 
 import org.citydb.api.database.BalloonTemplateHandler;
 import org.citydb.log.Logger;
-import org.citydb.plugins.CityGMLConverter.content.Queries;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.postgis.Geometry;
 import org.postgis.PGgeometry;
@@ -840,7 +839,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			ResultSet rs = null;
 			PreparedStatement query = null;
 			try {
-				query = connection.prepareStatement(Queries.GET_ID_AND_OBJECTCLASS_FROM_GMLID);
+			//	query = connection.prepareStatement(Queries.GET_ID_AND_OBJECTCLASS_FROM_GMLID);
 				query.setString(1, gmlId);
 				rs = query.executeQuery();
 				
@@ -903,7 +902,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			ResultSet rs = null;
 			PreparedStatement query = null;
 			try {
-				query = connection.prepareStatement(Queries.GET_GMLID_AND_OBJECTCLASS_FROM_ID);
+			//	query = connection.prepareStatement(Queries.GET_GMLID_AND_OBJECTCLASS_FROM_ID);
 				query.setLong(1, id);
 				rs = query.executeQuery();
 				

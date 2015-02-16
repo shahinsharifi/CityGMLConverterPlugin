@@ -196,7 +196,7 @@ public class Building extends KmlGenericObject{
     }
 
     protected String getHighlightingQuery() {
-        return Queries.getBuildingPartHighlightingQuery(currentLod);
+        return null;//Queries.getBuildingPartHighlightingQuery(currentLod);
     }
 
     public void read(KmlSplittingResult work) {
@@ -288,7 +288,7 @@ public class Building extends KmlGenericObject{
 
                     case DisplayForm.EXTRUDED:
 
-                        double measuredHeight = (_building.getMeasuredHeight() != null) ? _building.getMeasuredHeight().getValue():0;
+                        double measuredHeight = (_building.getMeasuredHeight() != null) ? _building.getMeasuredHeight().getValue(): 10;
                         return createPlacemarksForExtruded(_surfaceList, work, measuredHeight, reversePointOrder);
 
                     case DisplayForm.GEOMETRY:

@@ -2043,7 +2043,7 @@ public abstract class KmlGenericObject {
 
         try {
             // look for the value in the DB
-            selectQuery = connection.prepareStatement(Queries.GET_STRVAL_GENERICATTRIB_FROM_ID);
+          //  selectQuery = connection.prepareStatement(Queries.GET_STRVAL_GENERICATTRIB_FROM_ID);
             selectQuery.setLong(1, id);
             selectQuery.setString(2, genericAttribName);
             rs = selectQuery.executeQuery();
@@ -2342,9 +2342,9 @@ public abstract class KmlGenericObject {
         PreparedStatement convertStmt = null;
         ResultSet rs2 = null;
         try {
-            convertStmt = (dbSrs.is3D() && geometry.getDimension() == 3) ?
+            convertStmt = null;/*(dbSrs.is3D() && geometry.getDimension() == 3) ?
                     connection.prepareStatement(Queries.TRANSFORM_GEOMETRY_TO_WGS84_3D):
-                    connection.prepareStatement(Queries.TRANSFORM_GEOMETRY_TO_WGS84);
+                    connection.prepareStatement(Queries.TRANSFORM_GEOMETRY_TO_WGS84);*/
             // now convert to WGS84
             PGgeometry unconverted = new PGgeometry(geometry);
             convertStmt.setObject(1, unconverted);
