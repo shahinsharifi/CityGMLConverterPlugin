@@ -133,6 +133,7 @@ import org.citydb.plugins.CityGMLConverter.xlink.resolver.DBXlinkSplitter;
 
 
 public class CityKmlExporter implements EventHandler {
+	
 	private final JAXBContext jaxbKmlContext;
 	private final JAXBContext jaxbColladaContext;
 	private final ConfigImpl config;
@@ -146,42 +147,24 @@ public class CityKmlExporter implements EventHandler {
 	private SingleWorkerPool<SAXEventBuffer> ioWriterPool;
 	private KmlSplitter kmlSplitter;
 	private DBXlinkSplitter tmpSplitter;
-
 	private volatile boolean shouldRun = true;
 	private AtomicBoolean isInterrupted = new AtomicBoolean(false);
-
 	private static final double BORDER_GAP = 0.000001;
-
 	private static final String ENCODING = "UTF-8";
 	private static final Charset CHARSET = Charset.forName(ENCODING);
 	private static final String TEMP_FOLDER = "__temp";
-
-	//private final DatabaseSrs WGS84_2D = Database.PREDEFINED_SRS.get(PredefinedSrsName.WGS84_2D);
-	
-
 	private final Logger LOG = Logger.getInstance();
-
-
 	private BoundingBox tileMatrix;
 	private BoundingBox wgs84TileMatrix;
-
 	private double wgs84DeltaLongitude;
 	private double wgs84DeltaLatitude;
-
 	private static int rows;
 	private static int columns;
-
 	private String path;
 	private String filename;
-
 	private EnumMap<CityGMLClass, Long>featureCounterMap = new EnumMap<CityGMLClass, Long>(CityGMLClass.class);
 	private long geometryCounter;
-	
-
 	private String TargetSrs = "";
-
-	
-
 	private File lastTempFolder;
 	private static HashMap<Long, CityObject4JSON> alreadyExported;
 
@@ -190,12 +173,12 @@ public class CityKmlExporter implements EventHandler {
 						ConfigImpl config,
 						String _TargetSrs,
 						EventDispatcher eventDispatcher) throws SQLException {
+		
 		this.jaxbKmlContext = jaxbKmlContext;
 		this.jaxbColladaContext = jaxbColladaContext;
 		this.config = config;
 		this.eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 		this.TargetSrs = _TargetSrs;
-
 		kmlFactory = new ObjectFactory();		
 		cityGMLFactory = new GMLGeometryFactory();		
 	}
@@ -215,40 +198,17 @@ public class CityKmlExporter implements EventHandler {
 		
 		geometryCounter = 0;
 		
-		// get config shortcuts
-	     Resources resources = new Resources();
-		// worker pool settings
-		int minThreads = 2;//resources.getThreadPool().getDefaultPool().getMinThreads();
-		int maxThreads = 8;//resources.getThreadPool().getDefaultPool().getMaxThreads();
+		// worker pool settings		
+		//  Resources resources = new Resources();	
+		int availableCores = Runtime.getRuntime().availableProcessors();
+		int minThreads = availableCores;//resources.getThreadPool().getDefaultPool().getMinThreads();
+		int maxThreads = availableCores;//resources.getThreadPool().getDefaultPool().getMaxThreads();
 		int queueSize = maxThreads * 2;
 
 		// adding listener
 		eventDispatcher.addEventHandler(EventType.COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.GEOMETRY_COUNTER, this);
 		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
-/*
-		// checking workspace...
-		Workspace workspace = config.getProject().getDatabase().getWorkspaces().getKmlExportWorkspace();
-		if (!workspace.getName().toUpperCase().equals("LIVE")) {
-			boolean workspaceExists = dbPool.existsWorkspace(workspace);
-
-			String name = "'" + workspace.getName().trim() + "'";
-			String timestamp = workspace.getTimestamp().trim();
-			if (timestamp.trim().length() > 0)
-				name += " at timestamp " + timestamp;
-			
-			if (!workspaceExists) {
-				Logger.getInstance().error("Database workspace " + name + " is not available.");
-				return false;
-			} else 
-				Logger.getInstance().info("Switching to database workspace " + name + '.');
-		}
-*/
-		// check whether spatial indexes are enabled
-		
-		
-
-	
 
 		boolean balloonCheck = checkBalloonSettings(CityGMLClass.BUILDING);
 		balloonCheck = checkBalloonSettings(CityGMLClass.WATER_BODY) && balloonCheck;
@@ -328,14 +288,11 @@ public class CityKmlExporter implements EventHandler {
 				continue;
 
 			alreadyExported = new HashMap<Long, CityObject4JSON>();
-
 			for (int i = 0; shouldRun && i < rows; i++) {
-				
 				for (int j = 0; shouldRun && j < columns; j++) {
-
-					if (lastTempFolder != null && lastTempFolder.exists()) deleteFolder(lastTempFolder); // just in case
-
 					
+					if (lastTempFolder != null && lastTempFolder.exists()) 
+						deleteFolder(lastTempFolder); // just in case
 					
 					File file = null;
 					OutputStreamWriter fileWriter = null;
@@ -345,8 +302,7 @@ public class CityKmlExporter implements EventHandler {
 						String fileExtension = config.isExportAsKmz() ? ".kmz" : ".kml";
 						if (isBBoxActive && tiling.getMode() != TilingMode.NO_TILING) {
 							
-							exportFilter.getBoundingBoxFilter().setActiveTile(i, j);
-							
+							exportFilter.getBoundingBoxFilter().setActiveTile(i, j);							
 							file = new File(path + File.separator + filename + "_Tile_"
 									 	 	+ i + "_" + j + "_" + displayForm.getName() + fileExtension);
 						}
@@ -376,7 +332,6 @@ public class CityKmlExporter implements EventHandler {
 						}
 
 						SQLiteFactory sqliteFactory = new SQLiteFactory("tmp_" + filename + ".db",  file.getParent() , "org.sqlite.JDBC");
-						
 						cacheManager = new CacheManager(sqliteFactory.getConnection(), maxThreads);
 						tmpSplitter = new DBXlinkSplitter(cacheManager, 
 								xlinkResolverPool, 
@@ -385,7 +340,6 @@ public class CityKmlExporter implements EventHandler {
 						config.setXlinkSplitter(tmpSplitter);
 						
 						// this pool is for registering xlinks
-						
 						tmpXlinkPool = new WorkerPool<DBXlink>(
 								"xlinkworkerPool",
 								minThreads,
@@ -664,53 +618,6 @@ public class CityKmlExporter implements EventHandler {
 		if (lastTempFolder != null && lastTempFolder.exists()) deleteFolder(lastTempFolder); // just in case
 
 		return shouldRun;
-	}
-	
-
-	public int calculateRowsColumnsAndDelta() throws SQLException {
-		TiledBoundingBox bbox = config.getFilter().getComplexFilter().getTiledBoundingBox();
-		TilingMode tilingMode = bbox.getTiling().getMode();
-		double autoTileSideLength = config.getAutoTileSideLength();
-
-		tileMatrix = new BoundingBox(new BoundingBoxCorner(bbox.getLowerLeftCorner().getX(), bbox.getLowerLeftCorner().getY()),
-										new BoundingBoxCorner(bbox.getUpperRightCorner().getX(), bbox.getUpperRightCorner().getY()));
-
-
-		DatabaseSrs bboxSrs = bbox.getSrs();
-		
-
-
-		if (bboxSrs.getSrid() != 0 && bboxSrs.getSrid() != Integer.parseInt(TargetSrs)) {
-			
-			wgs84TileMatrix = ProjConvertor.transformBBox(tileMatrix, String.valueOf(bbox.getSrs().getSrid()), "4326");
-			tileMatrix = ProjConvertor.transformBBox(tileMatrix, String.valueOf(bbox.getSrs().getSrid()), TargetSrs);
-		
-		}
-		else {
-			wgs84TileMatrix = ProjConvertor.transformBBox(tileMatrix, TargetSrs, "4326");
-		}
-		
-		if (tilingMode == TilingMode.NO_TILING) {
-			rows = 1;
-			columns = 1;
-		}
-		else if (tilingMode == TilingMode.AUTOMATIC) {
-			// approximate
-			rows = (int)((tileMatrix.getUpperRightCorner().getY() - tileMatrix.getLowerLeftCorner().getY()) / autoTileSideLength) + 1;
-			columns = (int)((tileMatrix.getUpperRightCorner().getX() - tileMatrix.getLowerLeftCorner().getX()) / autoTileSideLength) + 1;
-			bbox.getTiling().setRows(rows);
-			bbox.getTiling().setColumns(columns);
-		}
-		else {
-			rows = bbox.getTiling().getRows();
-			columns = bbox.getTiling().getColumns();
-		}
-
-		// must be done like this to avoid non-matching tile limits
-		wgs84DeltaLatitude = (wgs84TileMatrix.getUpperRightCorner().getY() - wgs84TileMatrix.getLowerLeftCorner().getY()) / rows;
-		wgs84DeltaLongitude = (wgs84TileMatrix.getUpperRightCorner().getX() - wgs84TileMatrix.getLowerLeftCorner().getX()) / columns;
-		
-		return rows*columns;
 	}
 
 
@@ -1020,6 +927,7 @@ public class CityKmlExporter implements EventHandler {
 		}
 	}
 
+	
 	private void addStyle(DisplayForm currentDisplayForm,
 						  List<DisplayForm> displayFormsForObjectType,
 						  String styleBasisName) throws JAXBException {
@@ -1404,6 +1312,42 @@ public class CityKmlExporter implements EventHandler {
 			}
 		}
 		return true;
+	}
+	
+	public int calculateRowsColumnsAndDelta() throws SQLException {
+		
+		TiledBoundingBox bbox = config.getFilter().getComplexFilter().getTiledBoundingBox();
+		TilingMode tilingMode = bbox.getTiling().getMode();
+		double autoTileSideLength = config.getAutoTileSideLength();
+		tileMatrix = new BoundingBox(new BoundingBoxCorner(bbox.getLowerLeftCorner().getX(), bbox.getLowerLeftCorner().getY()),
+				new BoundingBoxCorner(bbox.getUpperRightCorner().getX(), bbox.getUpperRightCorner().getY()));
+		DatabaseSrs bboxSrs = bbox.getSrs();
+		if (bboxSrs.getSrid() != 0 && bboxSrs.getSrid() != Integer.parseInt(TargetSrs)) {
+			wgs84TileMatrix = ProjConvertor.transformBBox(tileMatrix, String.valueOf(bbox.getSrs().getSrid()), "4326");
+			tileMatrix = ProjConvertor.transformBBox(tileMatrix, String.valueOf(bbox.getSrs().getSrid()), TargetSrs);
+		}
+		else {
+			wgs84TileMatrix = ProjConvertor.transformBBox(tileMatrix, TargetSrs, "4326");
+		}
+		if (tilingMode == TilingMode.NO_TILING) {
+			rows = 1;
+			columns = 1;
+		}
+		else if (tilingMode == TilingMode.AUTOMATIC) {
+			// approximate
+			rows = (int)((tileMatrix.getUpperRightCorner().getY() - tileMatrix.getLowerLeftCorner().getY()) / autoTileSideLength) + 1;
+			columns = (int)((tileMatrix.getUpperRightCorner().getX() - tileMatrix.getLowerLeftCorner().getX()) / autoTileSideLength) + 1;
+			bbox.getTiling().setRows(rows);
+			bbox.getTiling().setColumns(columns);
+		}
+		else {
+			rows = bbox.getTiling().getRows();
+			columns = bbox.getTiling().getColumns();
+		}
+		// must be done like this to avoid non-matching tile limits
+		wgs84DeltaLatitude = (wgs84TileMatrix.getUpperRightCorner().getY() - wgs84TileMatrix.getLowerLeftCorner().getY()) / rows;
+		wgs84DeltaLongitude = (wgs84TileMatrix.getUpperRightCorner().getX() - wgs84TileMatrix.getLowerLeftCorner().getX()) / columns;
+		return rows*columns;
 	}
 
 	private static void getAllFiles(File startFolder, List<File> fileList) {

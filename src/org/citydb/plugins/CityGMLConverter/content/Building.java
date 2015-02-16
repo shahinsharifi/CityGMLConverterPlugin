@@ -258,7 +258,6 @@ public class Building extends KmlGenericObject{
 
     }
 
-
     @SuppressWarnings("unchecked")
     private List<PlacemarkType> readBuildingPart(KmlSplittingResult work) throws Exception {
 
@@ -327,11 +326,14 @@ public class Building extends KmlGenericObject{
                         }
 
                         setZOffset(zOffset);
-                        //System.out.println(zOffset);
+
                         ColladaOptions colladaOptions = getColladaOptions();
                         setIgnoreSurfaceOrientation(colladaOptions.isIgnoreSurfaceOrientation());
                         try {
 
+                        	if (work.getDisplayForm().isHighlightingEnabled()) {
+                        		return createPlacemarksForHighlighting(_surfaceList, work);
+                        	}
                             // just COLLADA, no KML
                             List<PlacemarkType> dummy = new ArrayList<PlacemarkType>();
                             dummy.add(null);
@@ -355,7 +357,6 @@ public class Building extends KmlGenericObject{
         // nothing found
     }
 
-
     public PlacemarkType createPlacemarkForColladaModel(KmlSplittingResult work) throws Exception {
 
         List<Double> originInWGS84 = ProjConvertor.transformPoint(
@@ -371,155 +372,7 @@ public class Building extends KmlGenericObject{
         return super.createPlacemarkForColladaModel(work);
     }
 
-    // overloaded for just one line, but this is safest
-    protected List<PlacemarkType> createPlacemarksForHighlighting(List<BuildingSurface> result, KmlSplittingResult work) throws SQLException {
-
-
-        int buildingPartId = 1;
-
-        List<PlacemarkType> placemarkList= new ArrayList<PlacemarkType>();
-
-        PlacemarkType placemark = kmlFactory.createPlacemarkType();
-        placemark.setStyleUrl("#" + getStyleBasisName() + work.getDisplayForm().getName() + "Style");
-        placemark.setName(work.getGmlId());
-        placemark.setId(DisplayForm.GEOMETRY_HIGHLIGHTED_PLACEMARK_ID + placemark.getName());
-        placemarkList.add(placemark);
-
-        if (getBalloonSettings().isIncludeDescription()) {
-            addBalloonContents(placemark, work.getId());
-        }
-
-        MultiGeometryType multiGeometry =  kmlFactory.createMultiGeometryType();
-        placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
-
-        PreparedStatement getGeometriesStmt = null;
-        ResultSet rs = null;
-
-        double hlDistance = work.getDisplayForm().getHighlightingDistance();
-
-        try {
-            getGeometriesStmt = connection.prepareStatement(getHighlightingQuery(),
-                    ResultSet.TYPE_SCROLL_INSENSITIVE,
-                    ResultSet.CONCUR_READ_ONLY);
-
-            for (int i = 1; i <= getGeometriesStmt.getParameterMetaData().getParameterCount(); i++) {
-                // this is THE LINE
-                getGeometriesStmt.setLong(i, buildingPartId);
-            }
-            rs = getGeometriesStmt.executeQuery();
-
-            double zOffset = getZOffsetFromDB(work.getGmlId(),work.GetElevation());
-            if (zOffset == Double.MAX_VALUE) {
-                List<Point3d> lowestPointCandidates = getLowestPointsCoordinates(result,  work);
-                rs.beforeFirst(); // return cursor to beginning
-                zOffset = getZOffsetFromGEService(work.getGmlId(),lowestPointCandidates,work.getTargetSrs(),work.GetElevation());
-            }
-
-            while (rs.next()) {
-                PGgeometry unconverted = (PGgeometry)rs.getObject(1);
-                Polygon unconvertedSurface = (Polygon)unconverted.getGeometry();
-                double[] ordinatesArray = new double[unconvertedSurface.numPoints()*3];
-
-                for (int i = 0, j = 0; i < unconvertedSurface.numPoints(); i++, j+=3){
-                    ordinatesArray[j] = unconvertedSurface.getPoint(i).x;
-                    ordinatesArray[j+1] = unconvertedSurface.getPoint(i).y;
-                    ordinatesArray[j+2] = unconvertedSurface.getPoint(i).z;
-                }
-
-                int contourCount = unconvertedSurface.numRings();
-                // remove normal-irrelevant points
-                int startContour1 = 0;
-                int endContour1 = (contourCount == 1) ?
-                        ordinatesArray.length: // last
-                        (unconvertedSurface.getRing(startContour1).numPoints()*3); // holes are irrelevant for normal calculation
-                // last point of polygons in gml is identical to first and useless for GeometryInfo
-                endContour1 = endContour1 - 3;
-
-                double nx = 0;
-                double ny = 0;
-                double nz = 0;
-                int cellCount = 0;
-
-                for (int current = startContour1; current < endContour1; current = current+3) {
-                    int next = current+3;
-                    if (next >= endContour1) next = 0;
-                    nx = nx + ((ordinatesArray[current+1] - ordinatesArray[next+1]) * (ordinatesArray[current+2] + ordinatesArray[next+2]));
-                    ny = ny + ((ordinatesArray[current+2] - ordinatesArray[next+2]) * (ordinatesArray[current] + ordinatesArray[next]));
-                    nz = nz + ((ordinatesArray[current] - ordinatesArray[next]) * (ordinatesArray[current+1] + ordinatesArray[next+1]));
-                }
-
-                double value = Math.sqrt(nx * nx + ny * ny + nz * nz);
-                if (value == 0) { // not a surface, but a line
-                    continue;
-                }
-                nx = nx / value;
-                ny = ny / value;
-                nz = nz / value;
-
-                for (int i = 0, j = 0; i < unconvertedSurface.numPoints(); i++, j+=3){
-                    unconvertedSurface.getPoint(i).x = ordinatesArray[j] + hlDistance * nx;
-                    unconvertedSurface.getPoint(i).y = ordinatesArray[j+1] + hlDistance * ny;
-                    unconvertedSurface.getPoint(i).z = ordinatesArray[j+2] + zOffset + hlDistance * nz;
-                }
-
-                // now convert to WGS84
-                Polygon surface = null;//(Polygon)convertToWGS84(unconvertedSurface);
-
-                for (int i = 0, j = 0; i < surface.numPoints(); i++, j+=3){
-                    ordinatesArray[j] = surface.getPoint(i).x;
-                    ordinatesArray[j+1] = surface.getPoint(i).y;
-                    ordinatesArray[j+2] = surface.getPoint(i).z;
-                }
-
-                PolygonType polygon = kmlFactory.createPolygonType();
-                switch (config.getAltitudeMode()) {
-                    case ABSOLUTE:
-                        polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
-                        break;
-                    case RELATIVE:
-                        polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
-                        break;
-                }
-                multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
-
-                for (int i = 0; i < surface.numRings(); i++){
-                    LinearRingType linearRing = kmlFactory.createLinearRingType();
-                    BoundaryType boundary = kmlFactory.createBoundaryType();
-                    boundary.setLinearRing(linearRing);
-                    if (i == 0) { // EXTERIOR_POLYGON_RING
-                        polygon.setOuterBoundaryIs(boundary);
-                    }
-                    else { // INTERIOR_POLYGON_RING
-                        polygon.getInnerBoundaryIs().add(boundary);
-                    }
-
-                    int startNextRing = ((i+1) < surface.numRings()) ?
-                            (surface.getRing(i).numPoints()*3): // still holes to come
-                            ordinatesArray.length; // default
-
-                    // order points clockwise
-                    for (int j = cellCount; j < startNextRing; j+=3) {
-                        linearRing.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArray[j]) + ","
-                                + reducePrecisionForXorY(ordinatesArray[j+1]) + ","
-                                + reducePrecisionForZ(ordinatesArray[j+2])));
-                    }
-                    cellCount += (surface.getRing(i).numPoints()*3);
-                }
-            }
-        }
-        catch (Exception e) {
-            Logger.getInstance().warn("Exception when generating highlighting geometry of object " + work.getGmlId());
-            e.printStackTrace();
-        }
-        finally {
-            if (rs != null) rs.close();
-            if (getGeometriesStmt != null) getGeometriesStmt.close();
-        }
-
-        return placemarkList;
-    }
-
-
+    
     public List<BuildingSurface> GetBuildingGeometries(AbstractBuilding _building) throws Exception
     {
         List<BuildingSurface> _SurfaceList = new ArrayList<BuildingSurface>();
@@ -1321,7 +1174,5 @@ public class Building extends KmlGenericObject{
         return _SurfaceList;
 
     }
-
-
 
 }

@@ -281,6 +281,7 @@ public abstract class KmlGenericObject {
     }
 
     protected Point3d getLocation() {
+    	
         return location;
     }
 
@@ -1421,18 +1422,14 @@ public abstract class KmlGenericObject {
             List<Point3d> lowestPointCandidates = getLowestPointsCoordinates(result,  work);
             zOffset = getZOffsetFromGEService(work.getGmlId(),lowestPointCandidates,work.getTargetSrs(),work.GetElevation());
         }
+        
 
-        int counter = 0;
         for (BuildingSurface Row: result) {
-
-
-            String _SurfaceData = Row.getId();
 
             String surfaceType = (String)Row.getType();
             if (surfaceType != null && !surfaceType.endsWith("Surface")) {
                 surfaceType = surfaceType + "Surface";
             }
-
             if ((!includeGroundSurface && TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_GROUND_SURFACE).toString().equalsIgnoreCase(surfaceType)) ||
                     (!includeClosureSurface && TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_CLOSURE_SURFACE).toString().equalsIgnoreCase(surfaceType)))	{
                 continue;
@@ -1450,21 +1447,10 @@ public abstract class KmlGenericObject {
                 tmpPoint[j] = new org.postgis.Point(
                         Target_Coordinates.get(1),
                         Target_Coordinates.get(0),
-                        Target_Coordinates.get(2)
-                );
+                        Target_Coordinates.get(2));
             }
 
-            Polygon surface = new Polygon(
-                    new org.postgis.LinearRing[] {
-                            new org.postgis.LinearRing(
-                                    tmpPoint
-                            )
-                    }
-            );
-
-
-
-
+            Polygon surface = new Polygon(new org.postgis.LinearRing[] {new org.postgis.LinearRing(tmpPoint)});
             double[] ordinatesArray = new double[surface.numPoints()*3];
 
             for (int i = 0, j = 0; i < surface.numPoints(); i++, j+=3){
@@ -1473,15 +1459,11 @@ public abstract class KmlGenericObject {
                 ordinatesArray[j+2] = surface.getPoint(i).z;
             }
 
-
-
             eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
             //		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE,counter , this));
 
             polygon = kmlFactory.createPolygonType();
-
             switch (config.getAltitudeMode()) {
-
                 case ABSOLUTE:
                     polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
                     break;
@@ -1489,8 +1471,6 @@ public abstract class KmlGenericObject {
                     polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.RELATIVE_TO_GROUND));
                     break;
             }
-
-
 
 
             // just in case surfaceType == null
@@ -1520,10 +1500,6 @@ public abstract class KmlGenericObject {
                     linearRing.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArray[j]) + ","
                             + reducePrecisionForXorY(ordinatesArray[j+1]) + ","
                             + reducePrecisionForZ(ordinatesArray[j+2] + zOffset)));
-
-
-                    //		probablyRoof = probablyRoof && (reducePrecisionForZ(ordinatesArray[j+2] - lowestZCoordinate) > 0);
-                    // not touching the ground
 
                     if (currentLod == 1) { // calculate normal
                         int current = j;
@@ -1569,7 +1545,6 @@ public abstract class KmlGenericObject {
                 multiGeometries.put(surfaceType, multiGeometry);
             }
             multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
-            counter++;
         }
 
         List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
@@ -1607,22 +1582,17 @@ public abstract class KmlGenericObject {
         try {
 
             for(BuildingSurface Row:_ParentSurfaceList){
-
                 String parentid= String.valueOf(Row.getPId());
                 String id = Row.getId();
-
                 Map<String, Object> tmpResult = _SurfaceAppearance.GetAppearanceBySurfaceID("#" + id , work.getAppearanceList() , selectedTheme);
                 String AppreanceType = (String)tmpResult.get("type");
 
-
                 if(AppreanceType != null){
-
                     if(AppreanceType.equals("X3D_MATERIAL"))
                     {
                         X3DMaterial x3dMaterial = new X3DMaterial();
                         fillX3dMaterialValues(x3dMaterial, tmpResult);
                         addX3dMaterial(parentid, x3dMaterial);
-
                     }
                 }
             }
@@ -1630,29 +1600,23 @@ public abstract class KmlGenericObject {
             for (BuildingSurface Row: _SurfaceList)  {
 
                 Map<String, Object> _AppResult = _SurfaceAppearance.GetAppearanceBySurfaceID("#" + Row.getId() , work.getAppearanceList() , selectedTheme);
-
                 String surfaceId = Row.getId();
                 String parentId = String.valueOf(Row.getPId());
 
                 // from here on it is a surfaceMember
                 eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
-
                 String texImageUri = null;
-                //						OrdImage texImage = null;
                 InputStream texImage = null;
-                //						byte buf[] = null;
                 StringTokenizer texCoordsTokenized = null;
 
                 if (_AppResult.get("type") == null) {
 
                     if(getX3dMaterial(parentId) != null)  {
-
                         addX3dMaterial(surfaceId, getX3dMaterial(parentId));
                     }
                     else {
 
                         if (getX3dMaterial(surfaceId) == null) {
-
                             defaultX3dMaterial = new X3DMaterial();
                             defaultX3dMaterial.setAmbientIntensity(0.2d);
                             defaultX3dMaterial.setShininess(0.2d);
@@ -1661,68 +1625,64 @@ public abstract class KmlGenericObject {
                             defaultX3dMaterial.setSpecularColor(getX3dColorFromString("1.0 1.0 1.0"));
                             defaultX3dMaterial.setEmissiveColor(getX3dColorFromString("0.0 0.0 0.0"));
                             addX3dMaterial(surfaceId, defaultX3dMaterial);
-
                         }
                     }
                 }
                 else{
 
+                	texImageUri = (_AppResult.get("imageuri") != null) ? _AppResult.get("imageuri").toString() : null;
+                	String texCoords = (_AppResult.get("coord") != null) ? _AppResult.get("coord").toString() : null;
 
-                    texImageUri = (_AppResult.get("imageuri") != null) ? _AppResult.get("imageuri").toString() : null;
-                    String texCoords = (_AppResult.get("coord") != null) ? _AppResult.get("coord").toString() : null;
+                	if (texImageUri != null && texImageUri.trim().length() != 0 &&  texCoords != null && texCoords.trim().length() != 0) {
 
-                    if (texImageUri != null && texImageUri.trim().length() != 0 &&  texCoords != null && texCoords.trim().length() != 0) {
+                		String finalImagePath = filePath + "\\" + texImageUri;
+                		int fileSeparatorIndex = Math.max(texImageUri.lastIndexOf("\\"), texImageUri.lastIndexOf("/"));
+                		texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1);    
+                		addTexImageUri(surfaceId, texImageUri);
 
-                        String finalImagePath = filePath + "\\" + texImageUri;
-                        int fileSeparatorIndex = Math.max(texImageUri.lastIndexOf("\\"), texImageUri.lastIndexOf("/"));
-                       texImageUri = "_" + texImageUri.substring(fileSeparatorIndex + 1);
-      
-                        addTexImageUri(surfaceId, texImageUri);
+                		if (getTexImage(texImageUri) == null) {
 
-                        if (getTexImage(texImageUri) == null) {
+                			texImage = new BufferedInputStream(new FileInputStream(finalImagePath));
 
-                            texImage = new BufferedInputStream(new FileInputStream(finalImagePath));
+                			BufferedImage bufferedImage = null;
 
-                            BufferedImage bufferedImage = null;
-                            
-                            try {
+                			try {
 
-                            	String imageFileExtension = finalImagePath.substring(finalImagePath.lastIndexOf(".") + 1).toLowerCase();
-                            	if(imageFileExtension.equals("tif") || imageFileExtension.equals("tiff"))// this is just for reading tiff images
-                            		bufferedImage = TiffToJpg(finalImagePath);
-                            	else 
-                            		bufferedImage = ImageIO.read(texImage);
-                                
-                            }                            
-                            catch (Exception ioe) {
-                            	Logger.getInstance().error(ioe.toString());
-                            }
+                				String imageFileExtension = finalImagePath.substring(finalImagePath.lastIndexOf(".") + 1).toLowerCase();
+                				if(imageFileExtension.equals("tif") || imageFileExtension.equals("tiff"))// this is just for reading tiff images
+                					bufferedImage = TiffToJpg(finalImagePath);
+                				else 
+                					bufferedImage = ImageIO.read(texImage);
 
-                            if (bufferedImage != null) { // image in JPEG, PNG or another usual format
-                            	
-                                addTexImage(texImageUri, bufferedImage);
-                            }
+                			}                            
+                			catch (Exception ioe) {
+                				Logger.getInstance().error(ioe.toString());
+                			}
 
-                            texImageCounter++;
-                            if (texImageCounter > 20) {
-                                eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
-                                texImageCounter = 0;
-                            }
-                        }
-                        
-                        texCoords = texCoords.replaceAll(";", " "); // substitute of ; for internal ring
-                        texCoordsTokenized = new StringTokenizer(texCoords.trim(), " ");
-                    }
-                    else {
-                        X3DMaterial x3dMaterial = new X3DMaterial();
-                        fillX3dMaterialValues(x3dMaterial, _AppResult);
-                        // x3dMaterial will only added if not all x3dMaterial members are null
-                        addX3dMaterial(surfaceId, x3dMaterial);
-                        if (getX3dMaterial(surfaceId) == null) {
-                            // untextured surface and no x3dMaterial -> default x3dMaterial (gray)
-                            addX3dMaterial(surfaceId, defaultX3dMaterial);
+                			if (bufferedImage != null) { // image in JPEG, PNG or another usual format
+                				addTexImage(texImageUri, bufferedImage);
+                			}
 
-                        }
+                			texImageCounter++;
+                			if (texImageCounter > 20) {
+                				eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
+                				texImageCounter = 0;
+                			}
+                		}
+
+                		texCoords = texCoords.replaceAll(";", " "); // substitute of ; for internal ring
+                		texCoordsTokenized = new StringTokenizer(texCoords.trim(), " ");
+                	}
+                	else {
+                		X3DMaterial x3dMaterial = new X3DMaterial();
+                		fillX3dMaterialValues(x3dMaterial, _AppResult);
+                		// x3dMaterial will only added if not all x3dMaterial members are null
+                		addX3dMaterial(surfaceId, x3dMaterial);
+                		if (getX3dMaterial(surfaceId) == null) {
+                			// untextured surface and no x3dMaterial -> default x3dMaterial (gray)
+                			addX3dMaterial(surfaceId, defaultX3dMaterial);
+
+                		}
                     }
                 }
 
@@ -1803,10 +1763,6 @@ public abstract class KmlGenericObject {
         finally {
         		
         }
-
-        //	}
-
-        // count rest images
         eventDispatcher.triggerEvent(new CounterEvent(CounterType.TEXTURE_IMAGE, texImageCounter, this));
     }
 
@@ -1890,10 +1846,9 @@ public abstract class KmlGenericObject {
     }
 
 
-    protected List<PlacemarkType> createPlacemarksForHighlighting(List<BuildingSurface> result,
-                                                                  KmlSplittingResult work) throws SQLException {
+    protected List<PlacemarkType> createPlacemarksForHighlighting(List<BuildingSurface> result , KmlSplittingResult work) throws SQLException {
 
-        List<PlacemarkType> placemarkList= new ArrayList<PlacemarkType>();
+    	List<PlacemarkType> placemarkList= new ArrayList<PlacemarkType>();
 
         PlacemarkType placemark = kmlFactory.createPlacemarkType();
         placemark.setStyleUrl("#" + getStyleBasisName() + work.getDisplayForm().getName() + "Style");
@@ -1908,33 +1863,26 @@ public abstract class KmlGenericObject {
         MultiGeometryType multiGeometry =  kmlFactory.createMultiGeometryType();
         placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
 
-        PreparedStatement getGeometriesStmt = null;
-        ResultSet rs = null;
-
         double hlDistance = work.getDisplayForm().getHighlightingDistance();
 
         try {
-            getGeometriesStmt = connection.prepareStatement(getHighlightingQuery(),
-                    ResultSet.TYPE_SCROLL_INSENSITIVE,
-                    ResultSet.CONCUR_READ_ONLY);
-
-            for (int i = 1; i <= getGeometriesStmt.getParameterMetaData().getParameterCount(); i++) {
-                getGeometriesStmt.setLong(i, work.getId());
-            }
-            rs = getGeometriesStmt.executeQuery();
-
-            double zOffset = getZOffsetFromDB(work.getGmlId(),work.GetElevation());
+        	double zOffset = getZOffsetFromDB(work.getGmlId(),work.GetElevation());
             if (zOffset == Double.MAX_VALUE) {
                 List<Point3d> lowestPointCandidates = getLowestPointsCoordinates(result,  work);
-                rs.beforeFirst(); // return cursor to beginning
                 zOffset = getZOffsetFromGEService(work.getGmlId(),lowestPointCandidates,work.getTargetSrs(),work.GetElevation());
             }
 
-            while (rs.next()) {
-                PGgeometry unconverted = (PGgeometry)rs.getObject(1);
-                Polygon unconvertedSurface = (Polygon)unconverted.getGeometry();
-                double[] ordinatesArray = new double[unconvertedSurface.numPoints()*3];
+            for (BuildingSurface Row: result) {
+            	
+            	List<Double> _Geometry = (List<Double>)Row.getGeometry();
+                org.postgis.Point[] tmpPoint = new org.postgis.Point[_Geometry.size()/3];
+                for (int i = 1,j = 0; i < _Geometry.size(); j++, i = i+3) {
+                   tmpPoint[j] = new org.postgis.Point(_Geometry.get(i-1),_Geometry.get(i),_Geometry.get(i+1));
+                }
+                Polygon unconvertedSurface = new Polygon(new org.postgis.LinearRing[] {new org.postgis.LinearRing(tmpPoint)});
+            	
 
+                double[] ordinatesArray = new double[unconvertedSurface.numPoints()*3];
                 for (int i = 0, j = 0; i < unconvertedSurface.numPoints(); i++, j+=3){
                     ordinatesArray[j] = unconvertedSurface.getPoint(i).x;
                     ordinatesArray[j+1] = unconvertedSurface.getPoint(i).y;
@@ -1978,7 +1926,21 @@ public abstract class KmlGenericObject {
                 }
 
                 // now convert to WGS84
-                Polygon surface = null;//(Polygon)convertToWGS84(unconvertedSurface);
+                org.postgis.Point[] tmpPointWGS84 = new org.postgis.Point[_Geometry.size()/3];
+                for (int i = 0; i < unconvertedSurface.numPoints(); i++){
+                	List<Double> Target_Coordinates = ProjConvertor.transformPoint(
+                			unconvertedSurface.getPoint(i).x,
+                			unconvertedSurface.getPoint(i).y,
+                			unconvertedSurface.getPoint(i).z,
+                			work.getTargetSrs(),
+                			"4326");
+                	tmpPointWGS84[i] = new org.postgis.Point(
+                            Target_Coordinates.get(1),
+                            Target_Coordinates.get(0),
+                            Target_Coordinates.get(2));
+                }
+                Polygon surface = new Polygon(new org.postgis.LinearRing[] {new org.postgis.LinearRing(tmpPointWGS84)});
+                //End of conversion
 
                 for (int i = 0, j = 0; i < surface.numPoints(); i++, j+=3){
                     ordinatesArray[j] = surface.getPoint(i).x;
@@ -2001,10 +1963,10 @@ public abstract class KmlGenericObject {
                     LinearRingType linearRing = kmlFactory.createLinearRingType();
                     BoundaryType boundary = kmlFactory.createBoundaryType();
                     boundary.setLinearRing(linearRing);
-                    if (i == 0) {
+                    if (i == 0) { // EXTERIOR_POLYGON_RING
                         polygon.setOuterBoundaryIs(boundary);
                     }
-                    else {
+                    else { // INTERIOR_POLYGON_RING
                         polygon.getInnerBoundaryIs().add(boundary);
                     }
 
@@ -2025,10 +1987,6 @@ public abstract class KmlGenericObject {
         catch (Exception e) {
             Logger.getInstance().warn("Exception when generating highlighting geometry of object " + work.getGmlId());
             e.printStackTrace();
-        }
-        finally {
-            if (rs != null) rs.close();
-            if (getGeometriesStmt != null) getGeometriesStmt.close();
         }
 
         return placemarkList;
