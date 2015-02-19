@@ -803,7 +803,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}
 	
 	public String getBalloonContent(String template, long id, int lod) throws Exception {
-		if (connection == null) throw new SQLException("Null or invalid connection");
+		//if (connection == null) throw new SQLException("Null or invalid connection");
 
 		String balloonContent = "";
 		List<BalloonStatement> statementListBackup = statementList;
@@ -824,8 +824,8 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}
 
 	public String getBalloonContent(String gmlId, int lod) throws Exception {
-		if (connection == null) throw new SQLException("Null or invalid connection");
-		if (statementList == null && htmlChunkList == null) throw new Exception("Invalid template file"); 
+	//	if (connection == null) throw new SQLException("Null or invalid connection");
+	//	if (statementList == null && htmlChunkList == null) throw new Exception("Invalid template file"); 
 
 		StringBuffer balloonContent = new StringBuffer();
 		
@@ -887,8 +887,8 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	}
 	
 	public String getBalloonContent(long id, int lod) throws Exception {
-		if (connection == null) throw new SQLException("Null or invalid connection");
-		if (statementList == null && htmlChunkList == null) throw new Exception("Invalid template file"); 
+	//	if (connection == null) throw new SQLException("Null or invalid connection");
+	//	if (statementList == null && htmlChunkList == null) throw new Exception("Invalid template file"); 
 
 		StringBuffer balloonContent = new StringBuffer();
 		
@@ -903,14 +903,15 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			PreparedStatement query = null;
 			try {
 			//	query = connection.prepareStatement(Queries.GET_GMLID_AND_OBJECTCLASS_FROM_ID);
-				query.setLong(1, id);
-				rs = query.executeQuery();
+			//	query.setLong(1, id);
+			//	rs = query.executeQuery();
 				
-				if (rs.next()) {
-					cityObjectTypeForId = org.citydb.util.Util.classId2cityObject(rs.getInt("class_id"));
-				}
+	//			if (rs.next()) {
+					cityObjectTypeForId = CityGMLClass.BUILDING;
+					//org.citydb.util.Util.classId2cityObject(rs.getInt("class_id"));
+		//		}
 			}
-			catch (SQLException sqlEx) {}
+			catch (Exception sqlEx) {}
 			finally {
 				if (rs != null) {
 					try { rs.close(); }	catch (SQLException sqlEx) {}
@@ -923,7 +924,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				}
 			}
 			
-			if (cityGMLClassForBalloonHandler != cityObjectTypeForId) {
+			if (cityGMLClassForBalloonHandler != CityGMLClass.BUILDING) {
 				for (BalloonStatement statement: statementList) {
 					statement.setConversionTried(false);
 				}

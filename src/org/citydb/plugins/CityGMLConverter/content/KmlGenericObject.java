@@ -118,6 +118,15 @@ import org.citygml4j.factory.GMLGeometryFactory;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.Color;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
+import org.citygml4j.model.citygml.core.AbstractCityObject;
+import org.citygml4j.model.citygml.generics.AbstractGenericAttribute;
+import org.citygml4j.model.citygml.generics.DateAttribute;
+import org.citygml4j.model.citygml.generics.DoubleAttribute;
+import org.citygml4j.model.citygml.generics.GenericAttributeSet;
+import org.citygml4j.model.citygml.generics.IntAttribute;
+import org.citygml4j.model.citygml.generics.MeasureAttribute;
+import org.citygml4j.model.citygml.generics.StringAttribute;
+import org.citygml4j.model.citygml.generics.UriAttribute;
 import org.collada._2005._11.colladaschema.*;
 //import org.collada._2005._11.colladaschema.Geometry;					// collides with org.postgis.Geometry
 import org.geotools.geometry.jts.GeometryBuilder;
@@ -1241,7 +1250,7 @@ public abstract class KmlGenericObject {
     	}
 
     	if (getBalloonSettings().isIncludeDescription()) {
-    		addBalloonContents(placemark, work.getId());
+    		addBalloonContents(placemark, work);
     	}
     	MultiGeometryType multiGeometry = kmlFactory.createMultiGeometryType();
     	placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
@@ -1327,7 +1336,7 @@ public abstract class KmlGenericObject {
                 placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.EXTRUDED_STR + "Normal");
             }
             if (getBalloonSettings().isIncludeDescription()) {
-                addBalloonContents(placemark, work.getId());
+                addBalloonContents(placemark, work);
             }
             MultiGeometryType multiGeometry = kmlFactory.createMultiGeometryType();
             placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
@@ -1561,7 +1570,7 @@ public abstract class KmlGenericObject {
                 placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.GEOMETRY_STR + "Normal");
             if (getBalloonSettings().isIncludeDescription() &&
                     !work.getDisplayForm().isHighlightingEnabled()) { // avoid double description
-                addBalloonContents(placemark, work.getId());
+                addBalloonContents(placemark, work);
             }
             multiGeometry = multiGeometries.get(surfaceType);
             placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
@@ -1785,7 +1794,7 @@ public abstract class KmlGenericObject {
 
             ColladaOptions colladaOptions = getColladaOptions();
             if (!colladaOptions.isGroupObjects() || colladaOptions.getGroupSize() == 1) {
-                addBalloonContents(placemark, getId());
+                addBalloonContents(placemark, work);
             }
         }
 
@@ -1857,7 +1866,7 @@ public abstract class KmlGenericObject {
         placemarkList.add(placemark);
 
         if (getBalloonSettings().isIncludeDescription()) {
-            addBalloonContents(placemark, work.getId());
+            addBalloonContents(placemark, work);
         }
 
         MultiGeometryType multiGeometry =  kmlFactory.createMultiGeometryType();
@@ -1992,39 +2001,54 @@ public abstract class KmlGenericObject {
         return placemarkList;
     }
 
-    private String getBalloonContentFromGenericAttribute(long id) {
+    private String getBalloonContentFromGenericAttribute(KmlSplittingResult work) {
 
         String balloonContent = null;
         String genericAttribName = "Balloon_Content";
-        PreparedStatement selectQuery = null;
-        ResultSet rs = null;
 
         try {
-            // look for the value in the DB
-          //  selectQuery = connection.prepareStatement(Queries.GET_STRVAL_GENERICATTRIB_FROM_ID);
-            selectQuery.setLong(1, id);
-            selectQuery.setString(2, genericAttribName);
-            rs = selectQuery.executeQuery();
-            if (rs.next()) {
-                balloonContent = rs.getString(1);
-            }
+        	
+        	AbstractCityObject cityObject = (AbstractCityObject)work.getCityGmlClass();
+        	if(cityObject.isSetGenericAttribute())
+        	{
+        		for(AbstractGenericAttribute genericAttribute :  cityObject.getGenericAttribute()){
+        			if (genericAttribute.getCityGMLClass() == CityGMLClass.GENERIC_ATTRIBUTE_SET) {
+        				GenericAttributeSet set = (GenericAttributeSet)genericAttribute;
+        				for(AbstractGenericAttribute subGenericAttribute :  set.getGenericAttribute()){
+        	    			if(subGenericAttribute.getCityGMLClass() == CityGMLClass.STRING_ATTRIBUTE && subGenericAttribute.isSetName()){
+        	    				if(subGenericAttribute.getName().equals(genericAttribName)){
+        	    					StringAttribute stringAttribute = (StringAttribute)subGenericAttribute;
+        	    					if (stringAttribute.isSetValue())
+        	    						balloonContent = stringAttribute.getValue();
+        	    				}
+        	    			}
+        	    		}
+        					
+        			}else{
+        				if(genericAttribute.getCityGMLClass() == CityGMLClass.STRING_ATTRIBUTE && genericAttribute.isSetName()){
+            				if(genericAttribute.getName().equals(genericAttribName)){
+            					StringAttribute stringAttribute = (StringAttribute)genericAttribute;
+            					if (stringAttribute.isSetValue())
+            						balloonContent = stringAttribute.getValue();
+            				}
+            			}
+        			}
+        		}
+        	}
         }
-        catch (Exception e) {}
-        finally {
-            try {
-                if (rs != null) rs.close();
-                if (selectQuery != null) selectQuery.close();
-            }
-            catch (Exception e2) {}
-        }
+        catch (Exception ex) {}
+        
         return balloonContent;
     }
+   
+    
+    protected void addBalloonContents(PlacemarkType placemark, KmlSplittingResult work) {
+    	
 
-    protected void addBalloonContents(PlacemarkType placemark, long id) {
         try {
             switch (getBalloonSettings().getBalloonContentMode()) {
                 case GEN_ATTRIB:
-                    String balloonTemplate = getBalloonContentFromGenericAttribute(id);
+                    String balloonTemplate = getBalloonContentFromGenericAttribute(work);
                     if (balloonTemplate != null) {
                         if (balloonTemplateHandler == null) { // just in case
                             balloonTemplateHandler = new BalloonTemplateHandlerImpl((File) null, connection);
@@ -2033,7 +2057,7 @@ public abstract class KmlGenericObject {
                     }
                     break;
                 case GEN_ATTRIB_AND_FILE:
-                    balloonTemplate = getBalloonContentFromGenericAttribute(id);
+                    balloonTemplate = getBalloonContentFromGenericAttribute(work);
                     if (balloonTemplate != null) {
                         placemark.setDescription(balloonTemplateHandler.getBalloonContent(balloonTemplate, id, currentLod));
                         break;

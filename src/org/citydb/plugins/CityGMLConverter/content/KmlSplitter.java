@@ -64,6 +64,7 @@ import org.citygml4j.model.citygml.building.BuildingPartProperty;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.CityModel;
 import org.citygml4j.model.citygml.core.CityObjectMember;
+import org.citygml4j.model.common.base.ModelType;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
 import org.citygml4j.xml.io.CityGMLInputFactory;
@@ -320,7 +321,7 @@ public class KmlSplitter {
 						XMLChunk chunk = reader.nextChunk();
 						CityGML cityGML = chunk.unmarshal();
 						
-						if(cityGML.getCityGMLClass() == CityGMLClass.BUILDING){
+						if(cityGML.getCityGMLClass() != CityGMLClass.APPEARANCE && cityGML.getModelType() == ModelType.CITYGML ){
 
 							AbstractCityObject cityObject = (AbstractCityObject)cityGML;
 							CityGMLClass cityObjectType = cityGML.getCityGMLClass();
@@ -337,7 +338,7 @@ public class KmlSplitter {
 									for(AppearanceProperty appearance : cityObject.getAppearance()){
 										tmpAppearanceList.add((Appearance)appearance.getAppearance());
 									}
-								}else {
+								}else if(cityObjectType == CityGMLClass.BUILDING){
 
 									AbstractBuilding building = (AbstractBuilding)cityObject;
 									if(building.isSetConsistsOfBuildingPart())

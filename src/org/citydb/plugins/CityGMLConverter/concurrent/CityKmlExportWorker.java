@@ -292,6 +292,7 @@ public class CityKmlExportWorker implements Worker<KmlSplittingResult> {
 		final ReentrantLock runLock = this.runLock;
 		runLock.lock();
 		
+		singleObject = null;
 		CityGMLClass featureClass = work.getCityObjectType();
 		
 		try {
@@ -420,6 +421,8 @@ public class CityKmlExportWorker implements Worker<KmlSplittingResult> {
 					break;
 			}
 
+			if(singleObject == null)
+				return;
 			
 			singleObject.read(work);
 			
