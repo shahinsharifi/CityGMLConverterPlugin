@@ -94,6 +94,7 @@ import org.citydb.config.project.filter.Tiling;
 import org.citydb.config.project.filter.TilingMode;
 import org.citydb.config.project.resources.Resources;
 import org.citydb.log.Logger;
+import org.citydb.modules.citygml.exporter.util.FeatureProcessor;
 import org.citydb.modules.common.concurrent.IOWriterWorkerFactory;
 import org.citydb.modules.common.event.*;
 import org.citydb.plugins.CityGMLConverter.concurrent.CityKmlExportWorkerFactory;
@@ -553,7 +554,15 @@ public class CityKmlExporter implements EventHandler {
 						ioWriterPool = null;
 						kmlWorkerPool = null;
 						kmlSplitter = null;					
-						sqliteFactory.KillConnection();
+						boolean IsConnectionKilled = sqliteFactory.KillConnection();
+						if(IsConnectionKilled)
+						{
+							boolean IsDbDropped = sqliteFactory.dropDatabase();
+							if(IsDbDropped)
+								LOG.info("Temporary database has been dropped");
+							else
+								LOG.error("Temporary database can not be dropped");
+						}
 
 					}
 					finally {}

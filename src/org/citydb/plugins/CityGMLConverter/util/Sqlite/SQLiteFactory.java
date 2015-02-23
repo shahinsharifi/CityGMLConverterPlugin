@@ -36,6 +36,7 @@ import java.sql.SQLException;
 import java.sql.DriverManager;
 
 import org.citydb.log.Logger;
+import org.h2.tools.DeleteDbFiles;
 
 
 
@@ -117,7 +118,20 @@ public class SQLiteFactory {
 		
 	}
 	
-
+	
+	public boolean dropDatabase(){		
+		
+		try{			
+			File file = new File(dbPath +"\\"+ dbName);	
+    		if(file.delete())
+    			return true;
+    		else
+    			return false;   		    	
+		}catch(Exception e){ 
+    		return false;
+    	}		
+	}
+	
 }
 
 

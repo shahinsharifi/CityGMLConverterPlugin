@@ -320,7 +320,7 @@ public class Building extends KmlGenericObject{
                         }
 
                         List<Point3d> anchorCandidates = getOrigins(); // setOrigins() called mainly for the side-effect
-                        double zOffset = getZOffsetFromDB(work.getGmlId(),work.GetElevation());
+                        double zOffset = getZOffsetFromDBorConfig(work.getGmlId(),work.GetElevation());
                         if (zOffset == Double.MAX_VALUE) {
                             zOffset = getZOffsetFromGEService(work.getGmlId(),anchorCandidates,work.getTargetSrs(),work.GetElevation());
                         }

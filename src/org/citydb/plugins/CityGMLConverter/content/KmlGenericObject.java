@@ -1426,7 +1426,7 @@ public abstract class KmlGenericObject {
         MultiGeometryType multiGeometry = null;
         PolygonType polygon = null;
 
-        double zOffset = getZOffsetFromDB(work.getGmlId(),work.GetElevation());
+        double zOffset = getZOffsetFromDBorConfig(work.getGmlId(),work.GetElevation());
         if (zOffset == Double.MAX_VALUE) {
             List<Point3d> lowestPointCandidates = getLowestPointsCoordinates(result,  work);
             zOffset = getZOffsetFromGEService(work.getGmlId(),lowestPointCandidates,work.getTargetSrs(),work.GetElevation());
@@ -1472,6 +1472,7 @@ public abstract class KmlGenericObject {
             //		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE,counter , this));
 
             polygon = kmlFactory.createPolygonType();
+         
             switch (config.getAltitudeMode()) {
                 case ABSOLUTE:
                     polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
@@ -1875,7 +1876,7 @@ public abstract class KmlGenericObject {
         double hlDistance = work.getDisplayForm().getHighlightingDistance();
 
         try {
-        	double zOffset = getZOffsetFromDB(work.getGmlId(),work.GetElevation());
+        	double zOffset = getZOffsetFromDBorConfig(work.getGmlId(),work.GetElevation());
             if (zOffset == Double.MAX_VALUE) {
                 List<Point3d> lowestPointCandidates = getLowestPointsCoordinates(result,  work);
                 zOffset = getZOffsetFromGEService(work.getGmlId(),lowestPointCandidates,work.getTargetSrs(),work.GetElevation());
@@ -2131,21 +2132,29 @@ public abstract class KmlGenericObject {
     }
 
 
-    protected double getZOffsetFromDB (String id , ElevationHelper Elevation) throws SQLException {
+    protected double getZOffsetFromDBorConfig (String id , ElevationHelper Elevation) throws SQLException {
 
         double zOffset = Double.MAX_VALUE;
-
-        if(Elevation.IsTableCreated())
-        {
-            ResultSet rs = Elevation.SelectElevationOffSet(id, 0);
-            while ( rs.next() ) {
-                zOffset = rs.getDouble("zoffset");
-            }
+        
+        switch (config.getAltitudeOffsetMode()) {
+	        case NO_OFFSET:
+				zOffset = 0;
+				break;
+			case CONSTANT:
+				zOffset = config.getAltitudeOffsetValue();
+				break;
+			case GENERIC_ATTRIBUTE:
+		        if(Elevation.IsTableCreated())
+		        {
+		            ResultSet rs = Elevation.SelectElevationOffSet(id, 0);
+		            while ( rs.next() ) {
+		                zOffset = rs.getDouble("zoffset");
+		            }
+		        }
         }
-
         return zOffset;
     }
-
+    
 
     protected double getZOffsetFromGEService (String gmlId, List<Point3d> candidates, String _TargetSrs , ElevationHelper Elevation) {
 
