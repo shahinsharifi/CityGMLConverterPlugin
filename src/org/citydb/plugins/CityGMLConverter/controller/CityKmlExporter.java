@@ -167,7 +167,7 @@ public class CityKmlExporter implements EventHandler {
 	private long geometryCounter;
 	private String TargetSrs = "";
 	private File lastTempFolder;
-	private static HashMap<Long, CityObject4JSON> alreadyExported;
+	private static HashMap<String, CityObject4JSON> alreadyExported;
 
 	public CityKmlExporter (JAXBContext jaxbKmlContext,
 						JAXBContext jaxbColladaContext,
@@ -288,7 +288,7 @@ public class CityKmlExporter implements EventHandler {
 			if (!displayForm.isActive()) 
 				continue;
 
-			alreadyExported = new HashMap<Long, CityObject4JSON>();
+			alreadyExported = new HashMap<String, CityObject4JSON>();
 			for (int i = 0; shouldRun && i < rows; i++) {
 				for (int j = 0; shouldRun && j < columns; j++) {
 					
@@ -592,9 +592,9 @@ public class CityKmlExporter implements EventHandler {
 				else
 					outputStream.write("{\n".getBytes(CHARSET));
 
-				Iterator<Long> iterator = alreadyExported.keySet().iterator();
+				Iterator<String> iterator = alreadyExported.keySet().iterator();
 				while (iterator.hasNext()) {
-					Long id = iterator.next();
+					String id = iterator.next();
 //					outputStream.write(("\t\"" + id + "\": {").toString().getBytes(CHARSET));
 					outputStream.write(alreadyExported.get(id).toString().getBytes(CHARSET));
 					if (iterator.hasNext()) {
@@ -1457,7 +1457,7 @@ public class CityKmlExporter implements EventHandler {
 		}
 	}
 
-	public static HashMap<Long, CityObject4JSON> getAlreadyExported() {
+	public static HashMap<String, CityObject4JSON> getAlreadyExported() {
 		return alreadyExported;
 	}
 

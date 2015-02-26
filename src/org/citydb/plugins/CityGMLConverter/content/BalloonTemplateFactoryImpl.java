@@ -32,12 +32,6 @@ package org.citydb.plugins.CityGMLConverter.content;
 import java.io.File;
 import java.sql.Connection;
 
-import org.citydb.api.database.BalloonTemplateFactory;
-import org.citydb.api.database.BalloonTemplateHandler;
-
-
-
-
 
 
 public class BalloonTemplateFactoryImpl implements BalloonTemplateFactory {

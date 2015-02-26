@@ -313,7 +313,7 @@ public class Building extends KmlGenericObject{
 
                         fillGenericObjectForCollada(work,_surfaceList,_SurfaceAppear,_ParentSurfaceList);
                         setGmlId(work.getGmlId());
-                        setId(work.getId());
+                    //    setId(work.getId());
 
                         if (getGeometryAmount() > GEOMETRY_AMOUNT_WARNING) {
                             Logger.getInstance().info("Object " + work.getGmlId() + " has more than " + GEOMETRY_AMOUNT_WARNING + " geometries. This may take a while to process...");

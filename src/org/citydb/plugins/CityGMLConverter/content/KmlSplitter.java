@@ -50,6 +50,7 @@ import org.citydb.config.project.filter.Tiling;
 import org.citydb.config.project.filter.TilingMode;
 import org.citydb.log.Logger;
 import org.citydb.plugins.CityGMLConverter.content.KmlSplittingResult;
+import org.citydb.plugins.CityGMLConverter.controller.CityKmlExporter;
 import org.citygml4j.CityGMLContext;
 import org.citygml4j.builder.CityGMLBuilder;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
@@ -82,6 +83,7 @@ import org.postgis.PGgeometry;
 
 import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
 import org.citydb.plugins.CityGMLConverter.config.DisplayForm;
+import org.citydb.plugins.CityGMLConverter.util.CityObject4JSON;
 import org.citydb.plugins.CityGMLConverter.util.ElevationHelper;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.SQLiteFactory;
 import org.citydb.plugins.CityGMLConverter.util.filter.ExportFilter;
@@ -312,7 +314,6 @@ public class KmlSplitter {
 				//for reading buildings
 				reader = in.createFilteredCityGMLReader(in.createCityGMLReader(file), inputFilter);
 				LOG.info("Reading city objects ...");
-				String flag = "";
 				while (reader.hasNext()) {
 
 					try{
@@ -366,13 +367,25 @@ public class KmlSplitter {
 								{
 									ElevationHelper elevation = new ElevationHelper(connection);								
 									KmlSplittingResult splitter = new KmlSplittingResult(cityObject.getId() , cityGML , cityObjectType , displayForm, TargetSrs , tmpAppearanceList , elevation);		
-									kmlWorkerPool.addWork(splitter);
+									
+									CityObject4JSON cityObject4Json = new CityObject4JSON(cityObject.getId());
+									cityObject4Json.setTileRow(exportFilter.getBoundingBoxFilter().getTileRow());
+									cityObject4Json.setTileColumn(exportFilter.getBoundingBoxFilter().getTileColumn());
+
+									cityObject4Json.setEnvelopeXmin(_refEnvelope.getLowerCorner().getCoordinate()[0]);
+									cityObject4Json.setEnvelopeXmax(_refEnvelope.getUpperCorner().getCoordinate()[0]);
+									cityObject4Json.setEnvelopeYmin(_refEnvelope.getLowerCorner().getCoordinate()[1]);
+									cityObject4Json.setEnvelopeYmax(_refEnvelope.getUpperCorner().getCoordinate()[1]);					
+									
+									kmlWorkerPool.addWork(splitter);									
+									CityKmlExporter.getAlreadyExported().put(cityObject.getId(), cityObject4Json);
+									
 								}
 							}
 						}
 
 					}catch (Exception e) {
-						Logger.getInstance().error(e.toString() +" -> "+flag);
+						Logger.getInstance().error(e.toString());
 					}
 				}
 				reader.close();

@@ -2054,24 +2054,25 @@ public abstract class KmlGenericObject {
                         if (balloonTemplateHandler == null) { // just in case
                             balloonTemplateHandler = new BalloonTemplateHandlerImpl((File) null, connection);
                         }
-                        placemark.setDescription(balloonTemplateHandler.getBalloonContent(balloonTemplate, id, currentLod));
+                        placemark.setDescription(balloonTemplateHandler.getBalloonContent(balloonTemplate, work, currentLod));
                     }
                     break;
                 case GEN_ATTRIB_AND_FILE:
                     balloonTemplate = getBalloonContentFromGenericAttribute(work);
                     if (balloonTemplate != null) {
-                        placemark.setDescription(balloonTemplateHandler.getBalloonContent(balloonTemplate, id, currentLod));
+                        placemark.setDescription(balloonTemplateHandler.getBalloonContent(balloonTemplate, work, currentLod));
                         break;
                     }
                 case FILE :
                     if (balloonTemplateHandler != null) {
-                        placemark.setDescription(balloonTemplateHandler.getBalloonContent(id, currentLod));
+                        placemark.setDescription(balloonTemplateHandler.getBalloonContent(work, currentLod));
                     }
                     break;
             }
         }
         catch (Exception e) { } // invalid balloons are silently discarded
     }
+    
 
     protected void fillX3dMaterialValues (X3DMaterial x3dMaterial, Map<String, Object> rs) throws SQLException {
 

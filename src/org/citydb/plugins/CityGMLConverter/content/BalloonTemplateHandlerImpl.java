@@ -46,17 +46,11 @@ import java.util.ListIterator;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.citydb.api.database.BalloonTemplateHandler;
+
 import org.citydb.log.Logger;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.postgis.Geometry;
 import org.postgis.PGgeometry;
-
-//import oracle.jdbc.OracleResultSet;
-//import oracle.spatial.geometry.JGeometry;
-//import oracle.sql.STRUCT;
-
-
 
 
 @SuppressWarnings("serial")
@@ -802,8 +796,8 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		}
 	}
 	
-	public String getBalloonContent(String template, long id, int lod) throws Exception {
-		//if (connection == null) throw new SQLException("Null or invalid connection");
+	
+	public String getBalloonContent(String template, KmlSplittingResult work, int lod) throws Exception {
 
 		String balloonContent = "";
 		List<BalloonStatement> statementListBackup = statementList;
@@ -812,10 +806,10 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		htmlChunkList = new ArrayList<String>();
 		try {
 			fillStatementAndHtmlChunkList(template);
-			balloonContent = getBalloonContent(id, lod);
+			balloonContent = getBalloonContent(work, lod);
 		}
 		catch (Exception e) {
-			Logger.getInstance().warn("Following message applies to generic attribute 'Balloon_Content' for cityobject with id = " + id);
+			Logger.getInstance().warn("Following message applies to generic attribute 'Balloon_Content' for cityobject with id = " + work.getGmlId());
 			Logger.getInstance().warn(e.getMessage());
 		}
 		statementList = statementListBackup;
@@ -823,54 +817,32 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		return balloonContent;
 	}
 
-	public String getBalloonContent(String gmlId, int lod) throws Exception {
-	//	if (connection == null) throw new SQLException("Null or invalid connection");
-	//	if (statementList == null && htmlChunkList == null) throw new Exception("Invalid template file"); 
+	
+	public String getBalloonContent(KmlSplittingResult work, int lod) throws Exception {
 
-		StringBuffer balloonContent = new StringBuffer();
-		
+		StringBuffer balloonContent = new StringBuffer();		
 		if (statementList != null) {
-			// when properly initialized this happens only at the first object
-			// otherwise it avoids problems from lousy initialization of BalloonTemplateHandlers in threads
-			// at the cost of performance
+
 			CityGMLClass cityObjectTypeForGmlId = null;
 			long id = -1;
-			
-			ResultSet rs = null;
-			PreparedStatement query = null;
-			try {
-			//	query = connection.prepareStatement(Queries.GET_ID_AND_OBJECTCLASS_FROM_GMLID);
-				query.setString(1, gmlId);
-				rs = query.executeQuery();
-				
-				if (rs.next()) {
-					cityObjectTypeForGmlId = org.citydb.util.Util.classId2cityObject(rs.getInt("class_id"));
-					id = rs.getLong("id");
-				}
-			}
-			catch (SQLException sqlEx) {}
-			finally {
-				if (rs != null) {
-					try { rs.close(); }	catch (SQLException sqlEx) {}
-					rs = null;
-				}
 
-				if (query != null) {
-					try { query.close(); } catch (SQLException sqlEx) {}
-					query = null;
-				}
+			try {
+				cityObjectTypeForGmlId =  work.getCityObjectType();
 			}
+			catch (Exception sqlEx) {}
+			finally {}
 			
+
 			if (cityGMLClassForBalloonHandler != cityObjectTypeForGmlId) {
 				for (BalloonStatement statement: statementList) {
 					statement.setConversionTried(false);
 				}
 				cityGMLClassForBalloonHandler = cityObjectTypeForGmlId;
 			}
-			
+
 			List<String> resultList = new ArrayList<String>();
 			for (BalloonStatement statement: statementList) {
-				resultList.add(executeStatement(statement, id, lod));
+				resultList.add(executeStatement(statement, work, lod));
 			}
 
 			Iterator<String> htmlChunkIterator = htmlChunkList.iterator();
@@ -886,77 +858,16 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		return balloonContent.toString();
 	}
 	
-	public String getBalloonContent(long id, int lod) throws Exception {
-	//	if (connection == null) throw new SQLException("Null or invalid connection");
-	//	if (statementList == null && htmlChunkList == null) throw new Exception("Invalid template file"); 
 
-		StringBuffer balloonContent = new StringBuffer();
-		
-		if (statementList != null) {
-			// when properly initialized this happens only at the first object
-			// otherwise it avoids problems from lousy initialization of BalloonTemplateHandlers in threads
-			// at the cost of performance
-
-			CityGMLClass cityObjectTypeForId = null;
-			
-			ResultSet rs = null;
-			PreparedStatement query = null;
-			try {
-			//	query = connection.prepareStatement(Queries.GET_GMLID_AND_OBJECTCLASS_FROM_ID);
-			//	query.setLong(1, id);
-			//	rs = query.executeQuery();
-				
-	//			if (rs.next()) {
-					cityObjectTypeForId = CityGMLClass.BUILDING;
-					//org.citydb.util.Util.classId2cityObject(rs.getInt("class_id"));
-		//		}
-			}
-			catch (Exception sqlEx) {}
-			finally {
-				if (rs != null) {
-					try { rs.close(); }	catch (SQLException sqlEx) {}
-					rs = null;
-				}
-
-				if (query != null) {
-					try { query.close(); } catch (SQLException sqlEx) {}
-					query = null;
-				}
-			}
-			
-			if (cityGMLClassForBalloonHandler != CityGMLClass.BUILDING) {
-				for (BalloonStatement statement: statementList) {
-					statement.setConversionTried(false);
-				}
-				cityGMLClassForBalloonHandler = cityObjectTypeForId;
-			}
-			
-			List<String> resultList = new ArrayList<String>();
-			for (BalloonStatement statement: statementList) {
-				resultList.add(executeStatement(statement, id, lod));
-			}
-
-			Iterator<String> htmlChunkIterator = htmlChunkList.iterator();
-			Iterator<String> resultIterator = resultList.iterator();
-
-			while (htmlChunkIterator.hasNext()) {
-				balloonContent.append(htmlChunkIterator.next());
-				if (resultIterator.hasNext()) {
-					balloonContent.append(resultIterator.next());
-				}
-			}
-		}
-		return balloonContent.toString();
-	}
 	
-	private String executeStatement(BalloonStatement statement, long id, int lod) {
+	private String executeStatement(BalloonStatement statement, KmlSplittingResult work, int lod) {
 		String result = "";
 		if (statement != null) {
-			PreparedStatement preparedStatement = null;
-			ResultSet rs = null;
+			//PreparedStatement preparedStatement = null;
+			//ResultSet rs = null;
 			try {
 				if (statement.isForeach()) {
-					return executeForeachStatement(statement, id, lod);
+				//	return executeForeachStatement(statement, id, lod);
 				}
 
 				if (statement.isNested()) {
@@ -998,7 +909,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 					if (nestedStatementList != null) {
 						List<String> resultList = new ArrayList<String>();
 						for (BalloonStatement nestedStatement: nestedStatementList) {
-							resultList.add(executeStatement(nestedStatement, id, lod));
+					//		resultList.add(executeStatement(nestedStatement, id, lod));
 						}
 
 						Iterator<String> textIterator = textBetweenNestedStatements.iterator();
@@ -1013,17 +924,17 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 					}
 
 					BalloonStatement dummy = new BalloonStatement(notNestedAnymore.toString());
-					preparedStatement = connection.prepareStatement(dummy.getProperSQLStatement(lod));
+			//		preparedStatement = connection.prepareStatement(dummy.getProperSQLStatement(lod));
 				}
 				else { // not nested
 					if (statement.getProperSQLStatement(lod) == null) {
 						// malformed expression between proper START_TAG and END_TAG
 						return result; // skip db call, rs and preparedStatement are currently null
 					}
-					preparedStatement = connection.prepareStatement(statement.getProperSQLStatement(lod));
+				//	preparedStatement = connection.prepareStatement(statement.getProperSQLStatement(lod));
 				}
 
-				for (int i = 1; i <= preparedStatement.getParameterMetaData().getParameterCount(); i++) {
+				/*for (int i = 1; i <= preparedStatement.getParameterMetaData().getParameterCount(); i++) {
 					preparedStatement.setLong(i, id);
 				}
 				rs = preparedStatement.executeQuery();
@@ -1065,7 +976,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 							result = result + rs.getObject(1).toString().replaceAll("\"", "&quot;"); // workaround, the JAXB KML marshaler does not escape " properly;
 						}
 					}
-				}
+				}*/
 			}
 			catch (Exception e) {
 //				Logger.getInstance().warn("Exception when executing balloon statement: " + statement + "\n");
@@ -1073,11 +984,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 //				e.printStackTrace();
 			}
 			finally {
-				try {
-					if (rs != null) rs.close();
-					if (preparedStatement != null) preparedStatement.close();
-				}
-				catch (Exception e2) {}
+				
 			}
 		}
 		return result;
