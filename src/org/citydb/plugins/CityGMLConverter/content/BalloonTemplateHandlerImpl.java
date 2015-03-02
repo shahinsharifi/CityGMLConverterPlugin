@@ -46,11 +46,30 @@ import java.util.ListIterator;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-
+import org.citydb.api.geometry.GeometryObject;
 import org.citydb.log.Logger;
+import org.citydb.util.Util;
 import org.citygml4j.model.citygml.CityGMLClass;
+import org.citygml4j.model.citygml.building.AbstractBuilding;
+import org.citygml4j.model.citygml.core.Address;
+import org.citygml4j.model.citygml.core.AddressProperty;
+import org.citygml4j.model.citygml.core.XalAddressProperty;
+import org.citygml4j.model.xal.AddressDetails;
+import org.citygml4j.model.xal.Country;
+import org.citygml4j.model.xal.CountryName;
+import org.citygml4j.model.xal.DependentLocality;
+import org.citygml4j.model.xal.Locality;
+import org.citygml4j.model.xal.LocalityName;
+import org.citygml4j.model.xal.PostBox;
+import org.citygml4j.model.xal.PostalCode;
+import org.citygml4j.model.xal.PostalCodeNumber;
+import org.citygml4j.model.xal.Thoroughfare;
+import org.citygml4j.model.xal.ThoroughfareName;
+import org.citygml4j.model.xal.ThoroughfareNumberOrRange;
 import org.postgis.Geometry;
 import org.postgis.PGgeometry;
+
+import com.sun.xml.xsom.impl.scd.Iterators.Map;
 
 
 @SuppressWarnings("serial")
@@ -858,9 +877,10 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		return balloonContent.toString();
 	}
 	
-
 	
 	private String executeStatement(BalloonStatement statement, KmlSplittingResult work, int lod) {
+		
+
 		String result = "";
 		if (statement != null) {
 			//PreparedStatement preparedStatement = null;
@@ -909,7 +929,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 					if (nestedStatementList != null) {
 						List<String> resultList = new ArrayList<String>();
 						for (BalloonStatement nestedStatement: nestedStatementList) {
-					//		resultList.add(executeStatement(nestedStatement, id, lod));
+							resultList.add(executeStatement(nestedStatement, work, lod));
 						}
 
 						Iterator<String> textIterator = textBetweenNestedStatements.iterator();
@@ -924,13 +944,15 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 					}
 
 					BalloonStatement dummy = new BalloonStatement(notNestedAnymore.toString());
+					dummy.getProperSQLStatement(lod, work);
 			//		preparedStatement = connection.prepareStatement(dummy.getProperSQLStatement(lod));
 				}
 				else { // not nested
-					if (statement.getProperSQLStatement(lod) == null) {
+					if (statement.getProperSQLStatement(lod, work) == null) {
 						// malformed expression between proper START_TAG and END_TAG
 						return result; // skip db call, rs and preparedStatement are currently null
 					}
+					statement.getProperSQLStatement(lod, work);
 				//	preparedStatement = connection.prepareStatement(statement.getProperSQLStatement(lod));
 				}
 
@@ -990,13 +1012,14 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		return result;
 	}
 
-	private String executeForeachStatement(BalloonStatement statement, long id, int lod) {
+	
+	private String executeForeachStatement(BalloonStatement statement, long id, int lod , KmlSplittingResult work) {
 		String resultBody = "";
 		PreparedStatement preparedStatement = null;
 		ResultSet rs = null;
 		try {
-			if (statement != null && statement.getProperSQLStatement(lod) != null) {
-				preparedStatement = connection.prepareStatement(statement.getProperSQLStatement(lod));
+			if (statement != null && statement.getProperSQLStatement(lod, work) != null) {
+				preparedStatement = connection.prepareStatement(statement.getProperSQLStatement(lod, work));
 				for (int i = 1; i <= preparedStatement.getParameterMetaData().getParameterCount(); i++) {
 					preparedStatement.setLong(i, id);
 				}
@@ -1065,6 +1088,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		return resultBody;
 	}
 
+	
 	private void fillStatementAndHtmlChunkList(String template) throws Exception {
 		// parse like it's 1999
 	    int lastIndex = 0;
@@ -1156,9 +1180,9 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			this.properSQLStatement = properSQLStatement;
 		}
 
-		private String getProperSQLStatement(int lod) throws Exception {
+		private String getProperSQLStatement(int lod,KmlSplittingResult work) throws Exception {
 			if (!conversionTried && properSQLStatement == null) {
-				this.convertStatementToProperSQL(lod);
+				this.convertStatementToProperSQL(lod, work);
 				conversionTried = true;
 			}
 			return properSQLStatement;
@@ -1192,13 +1216,14 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			this.columnAmount = columnAmount;
 		}
 		
-		private void convertStatementToProperSQL(int lod) throws Exception {
+		private void convertStatementToProperSQL(int lod , KmlSplittingResult work) throws Exception {
 
-			String sqlStatement = null;
+			List<HashMap<String, Object>> sqlStatement = null;
 			String table = null;
 			String aggregateFunction = null;
 			List<String> columns = null;
 			String condition = null;
+			
 			
 			int index = rawStatement.indexOf('/');
 			if (index == -1) {
@@ -1310,27 +1335,26 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 
 			switch (cityGMLClassForBalloonHandler) {
 				case CITY_FURNITURE:
-					sqlStatement = sqlStatementForCityFurniture(table, columns, aggregateString, aggregateClosingString, lod);
-					break;
+				
 				case PLANT_COVER:
-					sqlStatement = sqlStatementForPlantCover(table, columns, aggregateString, aggregateClosingString, lod);
+					
 					break;
 				case SOLITARY_VEGETATION_OBJECT:
-					sqlStatement = sqlStatementForSolVegObj(table, columns, aggregateString, aggregateClosingString, lod);
+					
 					break;
 				case TRAFFIC_AREA:
 				case AUXILIARY_TRAFFIC_AREA:
-					sqlStatement = sqlStatementForTrafficArea(table, columns, aggregateString, aggregateClosingString, lod);
+					
 					break;
 				case TRANSPORTATION_COMPLEX:
 				case TRACK:
 				case RAILWAY:
 				case ROAD:
 				case SQUARE:
-					sqlStatement = sqlStatementForTransportationComplex(table, columns, aggregateString, aggregateClosingString, lod);
+					
 					break;
 				case LAND_USE:
-					sqlStatement = sqlStatementForLandUse(table, columns, aggregateString, aggregateClosingString, lod);
+			
 					break;
 /*
 				case RASTER_RELIEF:
@@ -1339,28 +1363,28 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 				case TIN_RELIEF:
 */
 				case RELIEF_FEATURE:
-					sqlStatement = sqlStatementForRelief(table, columns, aggregateString, aggregateClosingString, lod);
+			
 					break;
 				case WATER_BODY:
-					sqlStatement = sqlStatementForWaterBody(table, columns, aggregateString, aggregateClosingString, lod);
+
 					break;
 				case WATER_CLOSURE_SURFACE:
 				case WATER_GROUND_SURFACE:
 				case WATER_SURFACE:
-					sqlStatement = sqlStatementForWaterSurface(table, columns, aggregateString, aggregateClosingString, lod);
+
 					break;
 				case GENERIC_CITY_OBJECT:
-					sqlStatement = sqlStatementForGenCityObj(table, columns, aggregateString, aggregateClosingString, lod);
+
 					break;
 				case BUILDING:
-					sqlStatement = sqlStatementForBuilding(table, columns, aggregateString, aggregateClosingString, lod);
+					sqlStatement = sqlStatementForBuilding(table, columns, aggregateString, aggregateClosingString, lod , work);
 					break;
 				default:
-					sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
+				//	sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod , work);
 					break;
 			}
 
-			if (sqlStatement != null) {
+		/*	if (sqlStatement != null) {
 				int rownum = 0;
 				if (condition != null) {
 					try {
@@ -1401,24 +1425,35 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 					}
 					// no ORDER by for MAX, MIN, AVG, COUNT, SUM
 				}
-			}
-			setProperSQLStatement(sqlStatement);
+			}*/
+			
+			//setProperSQLStatement(sqlStatement);
 		}
+		
 
-		private String sqlStatementForBuilding(String table,
+		private List<HashMap<String, Object>> sqlStatementForBuilding(String table,
 											   List<String> columns,
 											   String aggregateString,
 											   String aggregateClosingString,
-											   int lod) throws Exception {
-			String sqlStatement = null; 
-
-			if (ADDRESS_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM ADDRESS_TO_BUILDING a2b, ADDRESS a" +
-							   " WHERE a2b.building_id = ?" +
-							   " AND a.id = a2b.address_id";
+											   int lod,
+											   KmlSplittingResult work) throws Exception {
+			
+			List<HashMap<String, Object>> Result = new ArrayList<HashMap<String, Object>>();
+			AbstractBuilding building =  (AbstractBuilding) work.getCityGmlClass();
+			
+			
+			if (ADDRESS_TABLE.equalsIgnoreCase(table)) {				
+				for(AddressProperty addressProperty:building.getAddress()){
+					 HashMap<String, Object> addressMap = getAddressProperties(addressProperty.getAddress());
+					 HashMap<String, Object> tmpMap = new HashMap<String, Object>();
+					 for(String columnName : columns){
+						 if(addressMap.containsKey(columnName))
+							 tmpMap.put(columnName, addressMap.get(columnName));
+					 }
+					 Result.add(tmpMap);
+				}				
 			}
-			else if (ADDRESS_TO_BUILDING_TABLE.equalsIgnoreCase(table)) {
+			/*else if (ADDRESS_TO_BUILDING_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 							   " FROM ADDRESS_TO_BUILDING a2b" +
 							   " WHERE a2b.building_id = ?";
@@ -1507,627 +1542,18 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 							   " AND ts.building_id = b.id";
 			}
 			else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
-			}
+				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, work);
+			}*/
 
-			return sqlStatement; 
+			return Result; 
 		}
-
-		private String sqlStatementForLandUse(String table,
-											  List<String> columns,
-											  String aggregateString,
-											  String aggregateClosingString,
-											  int lod) throws Exception {
-			String sqlStatement = null; 
-
-			if (LAND_USE_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM LAND_USE lu" +
-							   " WHERE lu.id = ?";
-			}
-			else if (SURFACE_DATA_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd" +
-							   " WHERE a.cityobject_id = ?" +
-							   " AND a2sd.appearance_id = a.id" +
-							   " AND sd.id = a2sd.surface_data_id";
-			}
-			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM SURFACE_GEOMETRY sg, LAND_USE lu" + 
-							   " WHERE lu.id = ?" +
-							   " AND sg.root_id = lu.lod" + lod + "_multi_surface_id" + 
-							   " AND sg.geometry IS NOT NULL";
-			}
-			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM TEXTUREPARAM tp, SURFACE_GEOMETRY sg, LAND_USE lu" +
-							   " WHERE lu.id = ?" +
-							   " AND sg.root_id = lu.lod" + lod + "_multi_surface_id" + 
-							   " AND sg.geometry IS NOT NULL" + 
-							   " AND tp.surface_geometry_id = sg.id";
-			}
-			else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
-			}
-
-			return sqlStatement; 
-		}
-
-		private String sqlStatementForSolVegObj(String table,
-												List<String> columns,
-												String aggregateString,
-												String aggregateClosingString,
-												int lod) throws Exception {
-			String sqlStatement = null; 
-
-			if (SOLITARY_VEGETAT_OBJECT_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM SOLITARY_VEGETAT_OBJECT svo" +
-							   " WHERE svo.id = ?";
-			}
-			else if (SURFACE_DATA_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd" +
-							   " WHERE a.cityobject_id = ?" +
-							   " AND a2sd.appearance_id = a.id" +
-							   " AND sd.id = a2sd.surface_data_id";
-			}
-			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM SURFACE_GEOMETRY sg" +
-							   " WHERE sg.root_id IN" +
-							   " (SELECT ig.relative_geometry_id" + 
-							   " FROM SOLITARY_VEGETAT_OBJECT svo, IMPLICIT_GEOMETRY ig" + 
-							   " WHERE svo.id = ?" +
-							   " AND ig.id = svo.lod" + lod + "_implicit_rep_id" +
-							   " UNION " +
-							   "SELECT svo.lod" + lod + "_geometry_id" +
-							   " FROM SOLITARY_VEGETAT_OBJECT svo" + 
-							   " WHERE svo.id = ?)" +
-							   " AND sg.geometry IS NOT NULL";
-			}
-			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM TEXTUREPARAM tp" +
-							   " WHERE tp.surface_geometry_id IN" +
-							   " (SELECT sg.id" + 
-							   " FROM SURFACE_GEOMETRY sg" +
-							   " WHERE sg.root_id IN" +
-							   " (SELECT ig.relative_geometry_id" + 
-							   " FROM SOLITARY_VEGETAT_OBJECT svo, IMPLICIT_GEOMETRY ig" + 
-							   " WHERE svo.id = ?" +
-							   " AND ig.id = svo.lod" + lod + "_implicit_rep_id" +
-							   " UNION " +
-							   "SELECT svo.lod" + lod + "_geometry_id" +
-							   " FROM SOLITARY_VEGETAT_OBJECT svo" + 
-							   " WHERE svo.id = ?)" +
-							   " AND sg.geometry IS NOT NULL)";
-			}
-			else if (PLANT_COVER_TABLE.equalsIgnoreCase(table)) { } // tolerate but do nothing
-			else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
-			}
-
-			return sqlStatement; 
-		}
-
-		private String sqlStatementForPlantCover(String table,
-												 List<String> columns,
-												 String aggregateString,
-												 String aggregateClosingString,
-												 int lod) throws Exception {
-			String sqlStatement = null; 
-
-			if (PLANT_COVER_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM PLANT_COVER pc" +
-							   " WHERE pc.id = ?";
-			}
-			else if (SURFACE_DATA_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd" +
-							   " WHERE a.cityobject_id = ?" +
-							   " AND a2sd.appearance_id = a.id" +
-							   " AND sd.id = a2sd.surface_data_id";
-			}
-			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM SURFACE_GEOMETRY sg, PLANT_COVER pc" + 
-							   " WHERE pc.id = ?" +
-							   " AND sg.root_id = pc.lod" + lod + "_geometry_id" + 
-							   " AND sg.geometry IS NOT NULL";
-			}
-			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM TEXTUREPARAM tp, SURFACE_GEOMETRY sg, PLANT_COVER pc" +
-							   " WHERE pc.id = ?" +
-							   " AND sg.root_id = pc.lod" + lod + "_geometry_id" + 
-							   " AND sg.geometry IS NOT NULL" + 
-							   " AND tp.surface_geometry_id = sg.id";
-			}
-			else if (SOLITARY_VEGETAT_OBJECT_TABLE.equalsIgnoreCase(table)) { } // tolerate but do nothing
-			else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
-			}
-
-			return sqlStatement; 
-		}
-
-		private String sqlStatementForWaterBody(String table,
-												List<String> columns,
-												String aggregateString,
-												String aggregateClosingString,
-												int lod) throws Exception {
-			String sqlStatement = null; 
-
-			if (SURFACE_DATA_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd" +
-							   " WHERE a.cityobject_id = ?" +
-							   " AND a2sd.appearance_id = a.id" +
-							   " AND sd.id = a2sd.surface_data_id";
-			}
-			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM SURFACE_GEOMETRY sg" +
-							   " WHERE sg.id IN" +
-							   " (SELECT sg.id" +
-							   " FROM WATERBODY wb, SURFACE_GEOMETRY sg" +
-							   " WHERE wb.id = ?" +
-							   " AND sg.root_id = wb.lod" + lod + "_solid_id";
-				if (lod < 2) {
-					sqlStatement = sqlStatement +
-							   " UNION " +
-							   "SELECT sg.id" +
-							   " FROM WATERBODY wb, SURFACE_GEOMETRY sg" +
-							   " WHERE wb.id = ?" +
-							   " AND sg.root_id = wb.lod" + lod + "_multi_surface_id";
-				}
-				else {
-					sqlStatement = sqlStatement +
-							   " UNION " +
-							   "SELECT sg.id" +
-							   " FROM WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBOUNDARY_SURFACE wbs, SURFACE_GEOMETRY sg" +
-							   " WHERE wb2wbs.waterbody_id = ?" +
-							   " AND wbs.id = wb2wbs.waterboundary_surface_id" +
-							   " AND sg.root_id = wbs.lod" + lod + "_surface_id";
-				}
-				sqlStatement = sqlStatement + ")";
-			}
-			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM TEXTUREPARAM tp" +
-							   " WHERE tp.surface_geometry_id IN" +
-							   " (SELECT sg.id" +
-							   " FROM WATERBODY wb, SURFACE_GEOMETRY sg" +
-							   " WHERE wb.id = ?" +
-							   " AND sg.root_id = wb.lod" + lod + "_solid_id";
-				if (lod < 2) {
-					sqlStatement = sqlStatement +
-							   " UNION " +
-							   "SELECT sg.id" +
-							   " FROM WATERBODY wb, SURFACE_GEOMETRY sg" +
-							   " WHERE wb.id = ?" +
-							   " AND sg.root_id = wb.lod" + lod + "_multi_surface_id";
-				}
-				else {
-					sqlStatement = sqlStatement +
-							   " UNION " +
-							   "SELECT sg.id" +
-							   " FROM WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBOUNDARY_SURFACE wbs, SURFACE_GEOMETRY sg" +
-							   " WHERE wb2wbs.waterbody_id = ?" +
-							   " AND wbs.id = wb2wbs.waterboundary_surface_id" +
-							   " AND sg.root_id = wbs.lod" + lod + "_surface_id";
-				}
-				sqlStatement = sqlStatement + ")";
-			}
-			else if (WATERBODY_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM WATERBODY wb" +
-							   " WHERE wb.id = ?";
-			}
-			else if (WATERBOUNDARY_SURFACE_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBOUNDARY_SURFACE wbs" +
-							   " WHERE wb2wbs.waterbody_id = ?" +
-							   " AND wbs.id = wb2wbs.waterboundary_surface_id";
-			}
-			else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
-			}
-
-			return sqlStatement; 
-		}
-
-		private String sqlStatementForWaterSurface(String table,
-												   List<String> columns,
-												   String aggregateString,
-												   String aggregateClosingString,
-												   int lod) throws Exception {
-			String sqlStatement = null; 
-
-			if (SURFACE_DATA_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd" +
-							   " WHERE a.cityobject_id = ?" +
-							   " AND a2sd.appearance_id = a.id" +
-							   " AND sd.id = a2sd.surface_data_id";
-			}
-			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM SURFACE_GEOMETRY sg" +
-							   " WHERE sg.id IN ";
-				if (lod > 1) {
-					sqlStatement = sqlStatement +
-							   "(SELECT sg.id" +
-							   " FROM WATERBOUNDARY_SURFACE wbs, SURFACE_GEOMETRY sg" +
-							   " WHERE wbs.id = ?" +
-							   " AND sg.root_id = wbs.lod" + lod + "_surface_id" +
-							   " UNION " +
-							   "SELECT sg.id" +
-							   " FROM WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBODY wb, SURFACE_GEOMETRY sg" +
-							   " WHERE wb2wbs.waterboundary_surface_id = ?" +
-							   " AND wb2wbs.waterbody_id = wb.id" +
-							   " AND sg.root_id = wb.lod" + lod + "_solid_id)";
-				}
-				else {
-					sqlStatement = sqlStatement +
-							   "(SELECT sg.id" +
-							   " FROM WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBODY wb, SURFACE_GEOMETRY sg" +
-							   " WHERE wb2wbs.waterboundary_surface_id = ?" +
-							   " AND wb2wbs.waterbody_id = wb.id" +
-							   " AND sg.root_id = wb.lod" + lod + "_multi_surface_id)";
-				}
-			}
-			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM TEXTUREPARAM tp" +
-							   " WHERE tp.surface_geometry_id IN ";
-				if (lod > 1) {
-					sqlStatement = sqlStatement +
-							   "(SELECT sg.id" +
-							   " FROM WATERBOUNDARY_SURFACE wbs, SURFACE_GEOMETRY sg" +
-							   " WHERE wbs.id = ?" +
-							   " AND sg.root_id = wbs.lod" + lod + "_surface_id" +
-							   " UNION " +
-							   "SELECT sg.id" +
-							   " FROM WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBODY wb, SURFACE_GEOMETRY sg" +
-							   " WHERE wb2wbs.waterboundary_surface_id = ?" +
-							   " AND wb2wbs.waterbody_id = wb.id" +
-							   " AND sg.root_id = wb.lod" + lod + "_solid_id)";
-				}
-				else {
-					sqlStatement = sqlStatement +
-							   "(SELECT sg.id" +
-							   " FROM WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBODY wb, SURFACE_GEOMETRY sg" +
-							   " WHERE wb2wbs.waterboundary_surface_id = ?" +
-							   " AND wb2wbs.waterbody_id = wb.id" +
-							   " AND sg.root_id = wb.lod" + lod + "_multi_surface_id)";
-				}
-			}
-			else if (WATERBODY_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM WATERBOD_TO_WATERBND_SRF wb2wbs, WATERBODY wb" +
-							   " WHERE wb2wbs.waterboundary_surface_id = ?" +
-							   " AND wb2wbs.waterbody_id = wb.id";
-			}
-			else if (WATERBOUNDARY_SURFACE_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM WATERBOUNDARY_SURFACE wbs" +
-							   " WHERE wbs.id = ?";
-			}
-			else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
-			}
-
-			return sqlStatement; 
-		}
-
-		private String sqlStatementForTrafficArea(String table,
-												  List<String> columns,
-												  String aggregateString,
-												  String aggregateClosingString,
-												  int lod) throws Exception {
-			String sqlStatement = null; 
-
-			if (SURFACE_DATA_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd" +
-							   " WHERE a.cityobject_id = ?" +
-							   " AND a2sd.appearance_id = a.id" +
-							   " AND sd.id = a2sd.surface_data_id";
-			}
-			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table) && (lod > 0)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM SURFACE_GEOMETRY sg" +
-							   " WHERE sg.id IN" +
-							   " (SELECT sg.id" +
-							   " FROM TRAFFIC_AREA ta, TRANSPORTATION_COMPLEX tc, SURFACE_GEOMETRY sg" +
-							   " WHERE ta.id = ?" +
-							   " AND tc.id = ta.transportation_complex_id" +
-							   " AND sg.root_id = tc.lod" + lod + "_multi_surface_id";
-				if (lod > 1) {
-					sqlStatement = sqlStatement +
-							   " UNION " +
-							   "SELECT sg.id" +
-							   " FROM TRAFFIC_AREA ta, SURFACE_GEOMETRY sg" +
-							   " WHERE ta.id = ?" +
-							   " AND sg.root_id = ta.lod" + lod + "_multi_surface_id";
-				}
-				sqlStatement = sqlStatement + ")";
-			}
-			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table) && (lod > 0)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM TEXTUREPARAM tp" +
-							   " WHERE tp.surface_geometry_id IN" +
-							   " (SELECT sg.id" +
-							   " FROM TRAFFIC_AREA ta, TRANSPORTATION_COMPLEX tc, SURFACE_GEOMETRY sg" +
-							   " WHERE ta.id = ?" +
-							   " AND tc.id = ta.transportation_complex_id" +
-							   " AND sg.root_id = tc.lod" + lod + "_multi_surface_id";
-				if (lod > 1) {
-					sqlStatement = sqlStatement +
-							   " UNION " +
-							   "SELECT sg.id" +
-							   " FROM TRAFFIC_AREA ta, SURFACE_GEOMETRY sg" +
-							   " WHERE ta.id = ?" +
-							   " AND sg.root_id = ta.lod" + lod + "_multi_surface_id";
-				}
-				sqlStatement = sqlStatement + ")";
-			}
-			else if (TRAFFIC_AREA_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM TRAFFIC_AREA ta" +
-							   " WHERE ta.id = ?";
-			}
-			else if (TRANSPORTATION_COMPLEX_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM TRAFFIC_AREA ta, TRANSPORTATION_COMPLEX tc" +
-							   " WHERE ta.id = ?" +
-							   " AND tc.id = ta.transportation_complex_id";
-			}
-			else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
-			}
-
-			return sqlStatement; 
-		}
-
-		private String sqlStatementForTransportationComplex(String table,
-															List<String> columns,
-															String aggregateString,
-															String aggregateClosingString,
-															int lod) throws Exception {
-			String sqlStatement = null;
-
-			if (SURFACE_DATA_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd" +
-							   " WHERE a.cityobject_id = ?" +
-							   " AND a2sd.appearance_id = a.id" +
-							   " AND sd.id = a2sd.surface_data_id";
-			}
-			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table) && (lod > 0)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM SURFACE_GEOMETRY sg" +
-							   " WHERE sg.id IN " +
-							   "(SELECT sg.id" +
-							   " FROM TRANSPORTATION_COMPLEX tc, SURFACE_GEOMETRY sg" +
-							   " WHERE tc.id = ?" +
-							   " AND sg.root_id = tc.lod" + lod + "_multi_surface_id)";
-			}
-			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table) && (lod > 0)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM TEXTUREPARAM tp" +
-							   " WHERE tp.surface_geometry_id IN " +
-							   "(SELECT sg.id" +
-							   " FROM TRANSPORTATION_COMPLEX tc, SURFACE_GEOMETRY sg" +
-							   " WHERE tc.id = ?" +
-							   " AND sg.root_id = tc.lod" + lod + "_multi_surface_id)";
-			}
-			else if (TRAFFIC_AREA_TABLE.equalsIgnoreCase(table)) { } // tolerate but do nothing
-			else if (TRANSPORTATION_COMPLEX_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM TRANSPORTATION_COMPLEX tc" +
-							   " WHERE tc.id = ?";
-			}
-			else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
-			}
-
-			return sqlStatement; 
-		}
-
-		private String sqlStatementForRelief(String table,
-				 							 List<String> columns,
-				 							 String aggregateString,
-				 							 String aggregateClosingString,
-				 							 int lod) throws Exception {
-			String sqlStatement = null; 
-
-			if (RASTER_RELIEF_IMP_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM RASTER_RELIEF_IMP rri" +
-							   " WHERE rri.id = ?";
-			}
-			else if (RELIEF_COMPONENT_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = /* "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-								  " FROM CITYOBJECT co, RELIEF_COMPONENT rc" +
-								  " WHERE co.gmlid = ?" +
-								  " AND rc.id = co.id" +
-								  " UNION " + */
-							   "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM RELIEF_FEATURE rf, RELIEF_FEAT_TO_REL_COMP rf2rc, RELIEF_COMPONENT rc" +
-							   " WHERE rf.id = ?" +
-							   " AND rf.lod = " + lod +
-							   " AND rf2rc.relief_feature_id = rf.id" +
-							   " AND rc.id = rf2rc.relief_component_id";
-			}
-			else if (RELIEF_FEATURE_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM RELIEF_FEATURE rf" +
-							   " WHERE rf.id = ?";
-			}
-			else if (SURFACE_DATA_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd" +
-							   " WHERE a.cityobject_id = ?" +
-							   " AND a2sd.appearance_id = a.id" +
-							   " AND sd.id = a2sd.surface_data_id";
-			}
-			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table) && (lod > 0)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM SURFACE_GEOMETRY sg" +
-							   " WHERE sg.id IN " +
-							   "(SELECT sg.id" +
-							   " FROM TIN_RELIEF tr, SURFACE_GEOMETRY sg" +
-							   " WHERE tr.id = ?" +
-							   " AND sg.root_id = tr.surface_geometry_id)";
-			}
-			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table) && (lod > 0)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM TEXTUREPARAM tp" +
-							   " WHERE tp.surface_geometry_id IN " +
-							   "(SELECT sg.id" +
-							   " FROM TIN_RELIEF tr, SURFACE_GEOMETRY sg" +
-							   " WHERE tr.id = ?" +
-							   " AND sg.root_id = tr.surface_geometry_id)";
-			}
-/*
-			else if (TIN_RELIEF_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM CITYOBJECT co, TIN_RELIEF tr" +
-							   " WHERE co.gmlid = ?" +
-							   " AND tr.id = co.id";
-			}
-*/
-			else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
-			}
-
-			return sqlStatement; 
-		}
-
-		private String sqlStatementForGenCityObj(String table,
-												 List<String> columns,
-												 String aggregateString,
-												 String aggregateClosingString,
-												 int lod) throws Exception {
-			String sqlStatement = null; 
-
-			if (GENERIC_CITYOBJECT_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM GENERIC_CITYOBJECT gco" +
-							   " WHERE gco.id = ?";
-			}
-			else if (SURFACE_DATA_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd" +
-							   " WHERE a.cityobject_id = ?" +
-							   " AND a2sd.appearance_id = a.id" +
-							   " AND sd.id = a2sd.surface_data_id";
-			}
-			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM SURFACE_GEOMETRY sg" +
-							   " WHERE sg.root_id IN" +
-							   " (SELECT ig.relative_geometry_id" + 
-							   " FROM GENERIC_CITYOBJECT gco, IMPLICIT_GEOMETRY ig" + 
-							   " WHERE gco.id = ?" +
-							   " AND ig.id = gco.lod" + lod + "_implicit_rep_id" +
-							   " UNION " +
-							   "SELECT gco.lod" + lod + "_geometry_id" +
-							   " FROM GENERIC_CITYOBJECT gco" + 
-							   " WHERE gco.id = ?)" +
-							   " AND sg.geometry IS NOT NULL";
-			}
-			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM TEXTUREPARAM tp" +
-							   " WHERE tp.surface_geometry_id IN" +
-							   " (SELECT sg.id" + 
-							   " FROM SURFACE_GEOMETRY sg" +
-							   " WHERE sg.root_id IN" +
-							   " (SELECT ig.relative_geometry_id" + 
-							   " FROM GENERIC_CITYOBJECT gco, IMPLICIT_GEOMETRY ig" + 
-							   " WHERE gco.id = ?" +
-							   " AND ig.id = gco.lod" + lod + "_implicit_rep_id" +
-							   " UNION " +
-							   "SELECT gco.lod" + lod + "_geometry_id" +
-							   " FROM GENERIC_CITYOBJECT gco" + 
-							   " WHERE gco.id = ?)" +
-							   " AND sg.geometry IS NOT NULL)";
-			}
-			else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
-			}
-
-			return sqlStatement; 
-		}
-
-		private String sqlStatementForCityFurniture(String table,
-													List<String> columns,
-													String aggregateString,
-													String aggregateClosingString,
-													int lod) throws Exception {
-			String sqlStatement = null;
-
-			if (CITY_FURNITURE_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM CITY_FURNITURE cf" +
-							   " WHERE cf.id = ?";
-			}
-			else if (SURFACE_DATA_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd, SURFACE_DATA sd" +
-							   " WHERE a.cityobject_id = ?" +
-							   " AND a2sd.appearance_id = a.id" +
-							   " AND sd.id = a2sd.surface_data_id";
-			}
-			else if (SURFACE_GEOMETRY_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM SURFACE_GEOMETRY sg" +
-							   " WHERE sg.root_id IN" +
-							   " (SELECT ig.relative_geometry_id" + 
-							   " FROM CITY_FURNITURE cf, IMPLICIT_GEOMETRY ig" + 
-							   " WHERE cf.id = ?" +
-							   " AND ig.id = cf.lod" + lod + "_implicit_rep_id" +
-							   " UNION " +
-							   "SELECT cf.lod" + lod + "_geometry_id" +
-							   " FROM CITY_FURNITURE cf" + 
-							   " WHERE cf.id = ?)" +
-							   " AND sg.geometry IS NOT NULL";
-			}
-			else if (TEXTUREPARAM_TABLE.equalsIgnoreCase(table)) {
-				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
-							   " FROM TEXTUREPARAM tp" +
-							   " WHERE tp.surface_geometry_id IN" +
-							   " (SELECT sg.id" + 
-							   " FROM SURFACE_GEOMETRY sg" +
-							   " WHERE sg.root_id IN" +
-							   " (SELECT ig.relative_geometry_id" + 
-							   " FROM CITY_FURNITURE cf, IMPLICIT_GEOMETRY ig" + 
-							   " WHERE cf.id = ?" +
-							   " AND ig.id = cf.lod" + lod + "_implicit_rep_id" +
-							   " UNION " +
-							   "SELECT cf.lod" + lod + "_geometry_id" +
-							   " FROM CITY_FURNITURE cf" + 
-							   " WHERE cf.id = ?)" +
-							   " AND sg.geometry IS NOT NULL)";
-			}
-			else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod);
-			}
-
-			return sqlStatement; 
-		}
-
+		
 		private String sqlStatementForAnyObject(String table,
 												List<String> columns,
 												String aggregateString,
 												String aggregateClosingString,
-												int lod) throws Exception {
+												int lod,
+												KmlSplittingResult work) throws Exception {
 			String sqlStatement = null; 
 
 			if (APPEAR_TO_SURFACE_DATA_TABLE.equalsIgnoreCase(table)) {
@@ -2401,7 +1827,153 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			return columnsClause;
 		}
 
-		
+
+		private HashMap<String,Object> getAddressProperties(Address address){
+			
+			HashMap<String, Object> addressMap = new HashMap<String,Object>();
+			if (!address.isSetXalAddress() || !address.getXalAddress().isSetAddressDetails())
+				return addressMap;
+
+			XalAddressProperty xalAddressProperty = address.getXalAddress();
+			AddressDetails addressDetails = xalAddressProperty.getAddressDetails();
+			
+			String streetAttr, houseNoAttr, poBoxAttr, zipCodeAttr, cityAttr, countryAttr, xalSource;
+			streetAttr = houseNoAttr = poBoxAttr = zipCodeAttr = cityAttr = countryAttr = xalSource = null;
+			GeometryObject multiPoint = null;		
+
+			// try and interpret <country> child element
+			if (addressDetails.isSetCountry()) {
+				Country country = addressDetails.getCountry();
+
+				// country name
+				if (country.isSetCountryName()) {
+					List<String> countryName = new ArrayList<String>();				
+					for (CountryName name : country.getCountryName())
+						countryName.add(name.getContent());
+
+					countryAttr = Util.collection2string(countryName, ",");
+					addressMap.put("COUNTRY", countryAttr);
+				} 
+
+				// locality
+				if (country.isSetLocality()) {
+					Locality locality = country.getLocality();
+
+					// check whether we deal with a city or a town
+					if (locality.isSetType() && 
+							(locality.getType().toUpperCase().equals("CITY") ||
+									locality.getType().toUpperCase().equals("TOWN"))) {
+
+						// city name
+						if (locality.isSetLocalityName()) {
+							List<String> localityName = new ArrayList<String>();						
+							for (LocalityName name : locality.getLocalityName())
+								localityName.add(name.getContent());
+
+							cityAttr = Util.collection2string(localityName, ",");
+							addressMap.put("CITY", cityAttr);
+						} 
+
+						// thoroughfare - just streets are supported
+						if (locality.isSetThoroughfare()) {
+							Thoroughfare thoroughfare = locality.getThoroughfare();
+
+							// check whether we deal with a street
+							if (thoroughfare.isSetType() && 
+									(thoroughfare.getType().toUpperCase().equals("STREET") ||
+											thoroughfare.getType().toUpperCase().equals("ROAD"))) {
+
+								// street name
+								if (thoroughfare.isSetThoroughfareName()) {
+									List<String> fareName = new ArrayList<String>();								
+									for (ThoroughfareName name : thoroughfare.getThoroughfareName())
+										fareName.add(name.getContent());
+
+									streetAttr = Util.collection2string(fareName, ",");
+									addressMap.put("STREET", streetAttr);
+								}
+
+								// house number - we do not support number ranges so far...						
+								if (thoroughfare.isSetThoroughfareNumberOrThoroughfareNumberRange()) {
+									List<String> houseNumber = new ArrayList<String>();								
+									for (ThoroughfareNumberOrRange number : thoroughfare.getThoroughfareNumberOrThoroughfareNumberRange()) {
+										if (number.isSetThoroughfareNumber())
+											houseNumber.add(number.getThoroughfareNumber().getContent());
+									}
+
+									houseNoAttr = Util.collection2string(houseNumber, ",");
+									addressMap.put("HOUSE_NUMBER", streetAttr);
+								}
+							}
+						}
+
+						// dependent locality
+						if (streetAttr == null && houseNoAttr == null && locality.isSetDependentLocality()) {
+							DependentLocality dependentLocality = locality.getDependentLocality();
+
+							if (dependentLocality.isSetType() && 
+									dependentLocality.getType().toUpperCase().equals("DISTRICT")) {
+
+								if (dependentLocality.isSetThoroughfare()) {
+									Thoroughfare thoroughfare = dependentLocality.getThoroughfare();
+
+									// street name
+									if (streetAttr == null && thoroughfare.isSetThoroughfareName()) {
+										List<String> fareName = new ArrayList<String>();								
+										for (ThoroughfareName name : thoroughfare.getThoroughfareName())
+											fareName.add(name.getContent());
+
+										streetAttr = Util.collection2string(fareName, ",");
+										addressMap.put("STREET", streetAttr);
+									}
+
+									// house number - we do not support number ranges so far...						
+									if (houseNoAttr == null && thoroughfare.isSetThoroughfareNumberOrThoroughfareNumberRange()) {
+										List<String> houseNumber = new ArrayList<String>();								
+										for (ThoroughfareNumberOrRange number : thoroughfare.getThoroughfareNumberOrThoroughfareNumberRange()) {
+											if (number.isSetThoroughfareNumber())
+												houseNumber.add(number.getThoroughfareNumber().getContent());
+										}
+
+										houseNoAttr = Util.collection2string(houseNumber, ",");
+										addressMap.put("HOUSE_NUMBER", houseNoAttr);
+									}
+								}
+							}
+						}
+
+						// postal code
+						if (locality.isSetPostalCode()) {
+							PostalCode postalCode = locality.getPostalCode();
+
+							// get postal code number
+							if (postalCode.isSetPostalCodeNumber()) {
+								List<String> zipCode = new ArrayList<String>();							
+								for (PostalCodeNumber number : postalCode.getPostalCodeNumber())
+									zipCode.add(number.getContent());
+
+								zipCodeAttr = Util.collection2string(zipCode, ",");
+								addressMap.put("ZIP_CODE", zipCodeAttr);
+							}
+						}
+
+						// post box
+						if (locality.isSetPostBox()) {
+							PostBox postBox = locality.getPostBox();
+
+							// get post box nummber
+							if (postBox.isSetPostBoxNumber()){
+								poBoxAttr = postBox.getPostBoxNumber().getContent();
+								addressMap.put("PO_BOX", poBoxAttr);
+							}
+								
+						}
+					}
+				}
+							
+			}
+			return addressMap;
+		}		
 	}
-	
+
 }

@@ -1420,8 +1420,14 @@ public abstract class KmlGenericObject {
                                                               KmlSplittingResult work,
                                                               boolean includeGroundSurface,
                                                               boolean includeClosureSurface) throws Exception {
-
-
+		
+    	if(work.getGmlId().equals("BLDG_0003000b0004b60b")){
+			
+    		for(BuildingSurface surface : result ){
+    			System.out.println(work.getGmlId() + " -> " + surface.getId() + "->" +surface.getPId() + "->" + surface.getType());
+    		}
+    	}
+    	
         HashMap<String, MultiGeometryType> multiGeometries = new HashMap<String, MultiGeometryType>();
         MultiGeometryType multiGeometry = null;
         PolygonType polygon = null;
@@ -1858,6 +1864,7 @@ public abstract class KmlGenericObject {
 
     protected List<PlacemarkType> createPlacemarksForHighlighting(List<BuildingSurface> result , KmlSplittingResult work) throws SQLException {
 
+    
     	List<PlacemarkType> placemarkList= new ArrayList<PlacemarkType>();
 
         PlacemarkType placemark = kmlFactory.createPlacemarkType();
@@ -2045,7 +2052,6 @@ public abstract class KmlGenericObject {
     
     protected void addBalloonContents(PlacemarkType placemark, KmlSplittingResult work) {
     	
-
         try {
             switch (getBalloonSettings().getBalloonContentMode()) {
                 case GEN_ATTRIB:
@@ -2054,18 +2060,18 @@ public abstract class KmlGenericObject {
                         if (balloonTemplateHandler == null) { // just in case
                             balloonTemplateHandler = new BalloonTemplateHandlerImpl((File) null, connection);
                         }
-                        placemark.setDescription(balloonTemplateHandler.getBalloonContent(balloonTemplate, work, currentLod));
+                        placemark.setDescription(balloonTemplateHandler.getBalloonContent(balloonTemplate, work, config.getLodToExportFrom()));
                     }
                     break;
                 case GEN_ATTRIB_AND_FILE:
                     balloonTemplate = getBalloonContentFromGenericAttribute(work);
                     if (balloonTemplate != null) {
-                        placemark.setDescription(balloonTemplateHandler.getBalloonContent(balloonTemplate, work, currentLod));
+                        placemark.setDescription(balloonTemplateHandler.getBalloonContent(balloonTemplate, work, config.getLodToExportFrom()));
                         break;
                     }
                 case FILE :
                     if (balloonTemplateHandler != null) {
-                        placemark.setDescription(balloonTemplateHandler.getBalloonContent(work, currentLod));
+                        placemark.setDescription(balloonTemplateHandler.getBalloonContent(work, config.getLodToExportFrom()));
                     }
                     break;
             }
