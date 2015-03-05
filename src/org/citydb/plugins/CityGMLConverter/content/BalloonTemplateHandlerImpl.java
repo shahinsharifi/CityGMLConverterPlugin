@@ -85,8 +85,8 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		add("CITY");
 		add("STATE");
 		add("COUNTRY");
-		add("MULTI_POINT");
-		add("XAL_SOURCE");
+	//	add("MULTI_POINT");
+	//	add("XAL_SOURCE");
 	}};
 
 	private static final String ADDRESS_TO_BUILDING_TABLE = "ADDRESS_TO_BUILDING";
@@ -123,7 +123,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 */
 	private static final String BUILDING_TABLE = "BUILDING";
 	private static final LinkedHashSet<String> BUILDING_COLUMNS = new LinkedHashSet<String>() {{
-		add("ID");
+		add("GMLID");
 		add("NAME");
 		add("NAME_CODESPACE");
 		add("BUILDING_PARENT_ID");
@@ -140,7 +140,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		add("STOREYS_BELOW_GROUND");
 		add("STOREY_HEIGHTS_ABOVE_GROUND");
 		add("STOREY_HEIGHTS_BELOW_GROUND");
-		add("LOD1_TERRAIN_INTERSECTION");
+		/*add("LOD1_TERRAIN_INTERSECTION");
 		add("LOD2_TERRAIN_INTERSECTION");
 		add("LOD3_TERRAIN_INTERSECTION");
 		add("LOD4_TERRAIN_INTERSECTION");
@@ -150,7 +150,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		add("LOD1_GEOMETRY_ID");
 		add("LOD2_GEOMETRY_ID");
 		add("LOD3_GEOMETRY_ID");
-		add("LOD4_GEOMETRY_ID");
+		add("LOD4_GEOMETRY_ID");*/
 	}};
 
 	private static final String BUILDING_INSTALLATION_TABLE = "BUILDING_INSTALLATION";
@@ -879,15 +879,16 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	
 	
 	private String executeStatement(BalloonStatement statement, KmlSplittingResult work, int lod) {
-		
+
 
 		String result = "";
 		if (statement != null) {
 			//PreparedStatement preparedStatement = null;
+			List<HashMap<String, Object>> Result = new ArrayList<HashMap<String, Object>>();			
 			//ResultSet rs = null;
 			try {
 				if (statement.isForeach()) {
-				//	return executeForeachStatement(statement, id, lod);
+					//	return executeForeachStatement(statement, id, lod);
 				}
 
 				if (statement.isNested()) {
@@ -924,7 +925,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 						}
 					}
 					textBetweenNestedStatements.add(rawStatement.substring(index));
-					
+
 					StringBuffer notNestedAnymore = new StringBuffer();
 					if (nestedStatementList != null) {
 						List<String> resultList = new ArrayList<String>();
@@ -944,42 +945,42 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 					}
 
 					BalloonStatement dummy = new BalloonStatement(notNestedAnymore.toString());
-					dummy.getProperSQLStatement(lod, work);
-			//		preparedStatement = connection.prepareStatement(dummy.getProperSQLStatement(lod));
+					Result.addAll(dummy.getProperSQLStatement(lod, work));
+					//		preparedStatement = connection.prepareStatement(dummy.getProperSQLStatement(lod));
 				}
 				else { // not nested
 					if (statement.getProperSQLStatement(lod, work) == null) {
 						// malformed expression between proper START_TAG and END_TAG
 						return result; // skip db call, rs and preparedStatement are currently null
 					}
-					statement.getProperSQLStatement(lod, work);
-				//	preparedStatement = connection.prepareStatement(statement.getProperSQLStatement(lod));
+					Result.addAll(statement.getProperSQLStatement(lod, work));
+					//	preparedStatement = connection.prepareStatement(statement.getProperSQLStatement(lod));
 				}
 
-				/*for (int i = 1; i <= preparedStatement.getParameterMetaData().getParameterCount(); i++) {
-					preparedStatement.setLong(i, id);
-				}
-				rs = preparedStatement.executeQuery();
-				while (rs.next()) {
-					if (rs.getRow() > 1) {
+
+				for(HashMap<String, Object> row : Result){
+
+					if (Result.size() > 1) {
 						result = result + ", ";
 					}
-					Object object = rs.getObject(1);
-					if (object != null) {
-						if (object instanceof PGgeometry){
+
+					for(String itr:row.keySet()){
+						Object object = row.get(itr);
+						if (object != null) {
+							/*					if (object instanceof PGgeometry){
 							PGgeometry pgBuildingGeometry = (PGgeometry)rs.getObject(1); 
 							Geometry surface = pgBuildingGeometry.getGeometry();
 							int dimensions = surface.getDimension();
-							
+
 							double[] ordinatesArray = new double[surface.numPoints() * dimensions];
-							
+
 							for (int i=0, j=0; i<surface.numPoints(); i++, j+=dimensions){
 								ordinatesArray[j] = surface.getPoint(i).x;
 								ordinatesArray[j+1] = surface.getPoint(i).y;
 								if (dimensions < 3) continue;
 								ordinatesArray[j+2] = surface.getPoint(i).z;
 							}
-							
+
 							result = result + "(";
 							for (int i = 0; i < ordinatesArray.length; i = i + dimensions) {
 								for (int j = 0; j < dimensions; j++) {
@@ -994,25 +995,27 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 							}
 							result = result + ")";
 						}
-						else {
-							result = result + rs.getObject(1).toString().replaceAll("\"", "&quot;"); // workaround, the JAXB KML marshaler does not escape " properly;
+						else {*/
+							result = result + row.get(itr).toString().replaceAll("\"", "&quot;"); // workaround, the JAXB KML marshaler does not escape " properly;
+							//}
 						}
 					}
-				}*/
+					break;
+				}
 			}
 			catch (Exception e) {
-//				Logger.getInstance().warn("Exception when executing balloon statement: " + statement + "\n");
+				//				Logger.getInstance().warn("Exception when executing balloon statement: " + statement + "\n");
 				Logger.getInstance().warn(e.getMessage());
-//				e.printStackTrace();
+				//				e.printStackTrace();
 			}
 			finally {
-				
+
 			}
 		}
 		return result;
 	}
 
-	
+	/*
 	private String executeForeachStatement(BalloonStatement statement, long id, int lod , KmlSplittingResult work) {
 		String resultBody = "";
 		PreparedStatement preparedStatement = null;
@@ -1086,7 +1089,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			catch (Exception e2) {}
 		}
 		return resultBody;
-	}
+	}*/
 
 	
 	private void fillStatementAndHtmlChunkList(String template) throws Exception {
@@ -1147,7 +1150,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 	private class BalloonStatement {
 		private String rawStatement;
 		private boolean nested = false;
-		private String properSQLStatement = null;
+		private List<HashMap<String, Object>> properSQLStatement = null;
 		private boolean conversionTried = false;
 		private int columnAmount;
 		private boolean foreach = false;
@@ -1176,13 +1179,13 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			return nested;
 		}
 
-		private void setProperSQLStatement(String properSQLStatement) {
+		private void setProperSQLStatement(List<HashMap<String, Object>> properSQLStatement) {
 			this.properSQLStatement = properSQLStatement;
 		}
 
-		private String getProperSQLStatement(int lod,KmlSplittingResult work) throws Exception {
+		private List<HashMap<String, Object>> getProperSQLStatement(int lod,KmlSplittingResult work) throws Exception {
 			if (!conversionTried && properSQLStatement == null) {
-				this.convertStatementToProperSQL(lod, work);
+				properSQLStatement = this.convertStatementToProperSQL(lod, work);
 				conversionTried = true;
 			}
 			return properSQLStatement;
@@ -1216,7 +1219,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			this.columnAmount = columnAmount;
 		}
 		
-		private void convertStatementToProperSQL(int lod , KmlSplittingResult work) throws Exception {
+		private List<HashMap<String, Object>> convertStatementToProperSQL(int lod , KmlSplittingResult work) throws Exception {
 
 			List<HashMap<String, Object>> sqlStatement = null;
 			String table = null;
@@ -1426,7 +1429,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 					// no ORDER by for MAX, MIN, AVG, COUNT, SUM
 				}
 			}*/
-			
+			return sqlStatement;
 			//setProperSQLStatement(sqlStatement);
 		}
 		
@@ -1444,7 +1447,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			
 			if (ADDRESS_TABLE.equalsIgnoreCase(table)) {				
 				for(AddressProperty addressProperty:building.getAddress()){
-					 HashMap<String, Object> addressMap = getAddressProperties(addressProperty.getAddress());
+					 HashMap<String, Object> addressMap = Building.getBuildingAddressProperties(addressProperty.getAddress());
 					 HashMap<String, Object> tmpMap = new HashMap<String, Object>();
 					 for(String columnName : columns){
 						 if(addressMap.containsKey(columnName))
@@ -1452,6 +1455,16 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 					 }
 					 Result.add(tmpMap);
 				}				
+			}
+			else if (BUILDING_TABLE.equalsIgnoreCase(table) || CITYOBJECT_TABLE.equalsIgnoreCase(table)) {
+				
+				 HashMap<String, Object> buildingMap = Building.getBuildingProperties(building);
+				 HashMap<String, Object> tmpMap = new HashMap<String, Object>();
+				 for(String columnName : columns){
+					 if(buildingMap.containsKey(columnName))
+						 tmpMap.put(columnName, buildingMap.get(columnName));
+				 }
+				 Result.add(tmpMap);			
 			}
 			/*else if (ADDRESS_TO_BUILDING_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
@@ -1828,152 +1841,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		}
 
 
-		private HashMap<String,Object> getAddressProperties(Address address){
-			
-			HashMap<String, Object> addressMap = new HashMap<String,Object>();
-			if (!address.isSetXalAddress() || !address.getXalAddress().isSetAddressDetails())
-				return addressMap;
-
-			XalAddressProperty xalAddressProperty = address.getXalAddress();
-			AddressDetails addressDetails = xalAddressProperty.getAddressDetails();
-			
-			String streetAttr, houseNoAttr, poBoxAttr, zipCodeAttr, cityAttr, countryAttr, xalSource;
-			streetAttr = houseNoAttr = poBoxAttr = zipCodeAttr = cityAttr = countryAttr = xalSource = null;
-			GeometryObject multiPoint = null;		
-
-			// try and interpret <country> child element
-			if (addressDetails.isSetCountry()) {
-				Country country = addressDetails.getCountry();
-
-				// country name
-				if (country.isSetCountryName()) {
-					List<String> countryName = new ArrayList<String>();				
-					for (CountryName name : country.getCountryName())
-						countryName.add(name.getContent());
-
-					countryAttr = Util.collection2string(countryName, ",");
-					addressMap.put("COUNTRY", countryAttr);
-				} 
-
-				// locality
-				if (country.isSetLocality()) {
-					Locality locality = country.getLocality();
-
-					// check whether we deal with a city or a town
-					if (locality.isSetType() && 
-							(locality.getType().toUpperCase().equals("CITY") ||
-									locality.getType().toUpperCase().equals("TOWN"))) {
-
-						// city name
-						if (locality.isSetLocalityName()) {
-							List<String> localityName = new ArrayList<String>();						
-							for (LocalityName name : locality.getLocalityName())
-								localityName.add(name.getContent());
-
-							cityAttr = Util.collection2string(localityName, ",");
-							addressMap.put("CITY", cityAttr);
-						} 
-
-						// thoroughfare - just streets are supported
-						if (locality.isSetThoroughfare()) {
-							Thoroughfare thoroughfare = locality.getThoroughfare();
-
-							// check whether we deal with a street
-							if (thoroughfare.isSetType() && 
-									(thoroughfare.getType().toUpperCase().equals("STREET") ||
-											thoroughfare.getType().toUpperCase().equals("ROAD"))) {
-
-								// street name
-								if (thoroughfare.isSetThoroughfareName()) {
-									List<String> fareName = new ArrayList<String>();								
-									for (ThoroughfareName name : thoroughfare.getThoroughfareName())
-										fareName.add(name.getContent());
-
-									streetAttr = Util.collection2string(fareName, ",");
-									addressMap.put("STREET", streetAttr);
-								}
-
-								// house number - we do not support number ranges so far...						
-								if (thoroughfare.isSetThoroughfareNumberOrThoroughfareNumberRange()) {
-									List<String> houseNumber = new ArrayList<String>();								
-									for (ThoroughfareNumberOrRange number : thoroughfare.getThoroughfareNumberOrThoroughfareNumberRange()) {
-										if (number.isSetThoroughfareNumber())
-											houseNumber.add(number.getThoroughfareNumber().getContent());
-									}
-
-									houseNoAttr = Util.collection2string(houseNumber, ",");
-									addressMap.put("HOUSE_NUMBER", streetAttr);
-								}
-							}
-						}
-
-						// dependent locality
-						if (streetAttr == null && houseNoAttr == null && locality.isSetDependentLocality()) {
-							DependentLocality dependentLocality = locality.getDependentLocality();
-
-							if (dependentLocality.isSetType() && 
-									dependentLocality.getType().toUpperCase().equals("DISTRICT")) {
-
-								if (dependentLocality.isSetThoroughfare()) {
-									Thoroughfare thoroughfare = dependentLocality.getThoroughfare();
-
-									// street name
-									if (streetAttr == null && thoroughfare.isSetThoroughfareName()) {
-										List<String> fareName = new ArrayList<String>();								
-										for (ThoroughfareName name : thoroughfare.getThoroughfareName())
-											fareName.add(name.getContent());
-
-										streetAttr = Util.collection2string(fareName, ",");
-										addressMap.put("STREET", streetAttr);
-									}
-
-									// house number - we do not support number ranges so far...						
-									if (houseNoAttr == null && thoroughfare.isSetThoroughfareNumberOrThoroughfareNumberRange()) {
-										List<String> houseNumber = new ArrayList<String>();								
-										for (ThoroughfareNumberOrRange number : thoroughfare.getThoroughfareNumberOrThoroughfareNumberRange()) {
-											if (number.isSetThoroughfareNumber())
-												houseNumber.add(number.getThoroughfareNumber().getContent());
-										}
-
-										houseNoAttr = Util.collection2string(houseNumber, ",");
-										addressMap.put("HOUSE_NUMBER", houseNoAttr);
-									}
-								}
-							}
-						}
-
-						// postal code
-						if (locality.isSetPostalCode()) {
-							PostalCode postalCode = locality.getPostalCode();
-
-							// get postal code number
-							if (postalCode.isSetPostalCodeNumber()) {
-								List<String> zipCode = new ArrayList<String>();							
-								for (PostalCodeNumber number : postalCode.getPostalCodeNumber())
-									zipCode.add(number.getContent());
-
-								zipCodeAttr = Util.collection2string(zipCode, ",");
-								addressMap.put("ZIP_CODE", zipCodeAttr);
-							}
-						}
-
-						// post box
-						if (locality.isSetPostBox()) {
-							PostBox postBox = locality.getPostBox();
-
-							// get post box nummber
-							if (postBox.isSetPostBoxNumber()){
-								poBoxAttr = postBox.getPostBoxNumber().getContent();
-								addressMap.put("PO_BOX", poBoxAttr);
-							}
-								
-						}
-					}
-				}
-							
-			}
-			return addressMap;
-		}		
+		
 	}
 
 }

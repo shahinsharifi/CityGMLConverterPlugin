@@ -34,6 +34,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -52,6 +53,7 @@ import net.opengis.kml._2.PlacemarkType;
 import net.opengis.kml._2.PolygonType;
 
 import org.citydb.api.event.EventDispatcher;
+import org.citydb.api.geometry.GeometryObject;
 import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.log.Logger;
 import org.citydb.modules.common.event.CounterEvent;
@@ -94,9 +96,13 @@ import org.citygml4j.model.citygml.building.InteriorFurnitureProperty;
 import org.citygml4j.model.citygml.building.InteriorRoomProperty;
 import org.citygml4j.model.citygml.building.OpeningProperty;
 import org.citygml4j.model.citygml.building.Room;
+import org.citygml4j.model.citygml.core.Address;
+import org.citygml4j.model.citygml.core.XalAddressProperty;
 import org.citygml4j.model.citygml.texturedsurface._TexturedSurface;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.base.AssociationAttributeGroup;
+import org.citygml4j.model.gml.basicTypes.DoubleOrNull;
+import org.citygml4j.model.gml.basicTypes.MeasureOrNullList;
 import org.citygml4j.model.gml.feature.BoundingShape;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
@@ -128,6 +134,18 @@ import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
 import org.citygml4j.model.gml.geometry.primitives.Triangle;
 import org.citygml4j.model.gml.geometry.primitives.TrianglePatchArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
+import org.citygml4j.model.xal.AddressDetails;
+import org.citygml4j.model.xal.Country;
+import org.citygml4j.model.xal.CountryName;
+import org.citygml4j.model.xal.DependentLocality;
+import org.citygml4j.model.xal.Locality;
+import org.citygml4j.model.xal.LocalityName;
+import org.citygml4j.model.xal.PostBox;
+import org.citygml4j.model.xal.PostalCode;
+import org.citygml4j.model.xal.PostalCodeNumber;
+import org.citygml4j.model.xal.Thoroughfare;
+import org.citygml4j.model.xal.ThoroughfareName;
+import org.citygml4j.model.xal.ThoroughfareNumberOrRange;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 import org.postgis.PGgeometry;
 import org.postgis.Polygon;
@@ -147,6 +165,7 @@ import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlink;
 import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkBasic;
 import org.citydb.plugins.CityGMLConverter.xlink.importer.DBXlinkImporterManager;
 import org.citydb.plugins.CityGMLConverter.xlink.resolver.DBXlinkSplitter;
+import org.citydb.util.Util;
 
 
 public class Building extends KmlGenericObject{
@@ -183,22 +202,27 @@ public class Building extends KmlGenericObject{
         return config.getBuildingDisplayForms();
     }
 
+    
     public ColladaOptions getColladaOptions() {
         return config.getBuildingColladaOptions();
     }
 
+    
     public Balloon getBalloonSettings() {
         return config.getBuildingBalloon();
     }
 
+    
     public String getStyleBasisName() {
         return STYLE_BASIS_NAME;
     }
 
+    
     protected String getHighlightingQuery() {
         return null;//Queries.getBuildingPartHighlightingQuery(currentLod);
     }
 
+    
     public void read(KmlSplittingResult work) {
 
         List<PlacemarkType> placemarks = new ArrayList<PlacemarkType>();
@@ -258,6 +282,7 @@ public class Building extends KmlGenericObject{
 
     }
 
+    
     @SuppressWarnings("unchecked")
     private List<PlacemarkType> readBuildingPart(KmlSplittingResult work) throws Exception {
 
@@ -357,6 +382,7 @@ public class Building extends KmlGenericObject{
         // nothing found
     }
 
+    
     public PlacemarkType createPlacemarkForColladaModel(KmlSplittingResult work) throws Exception {
 
         List<Double> originInWGS84 = ProjConvertor.transformPoint(
@@ -1173,6 +1199,269 @@ public class Building extends KmlGenericObject{
 
         return _SurfaceList;
 
+    }
+    
+    
+    public static HashMap<String,Object> getBuildingAddressProperties(Address address){
+		
+		HashMap<String, Object> addressMap = new HashMap<String,Object>();
+		if (!address.isSetXalAddress() || !address.getXalAddress().isSetAddressDetails())
+			return addressMap;
+
+		XalAddressProperty xalAddressProperty = address.getXalAddress();
+		AddressDetails addressDetails = xalAddressProperty.getAddressDetails();
+		
+		String streetAttr, houseNoAttr, poBoxAttr, zipCodeAttr, cityAttr, countryAttr, xalSource;
+		streetAttr = houseNoAttr = poBoxAttr = zipCodeAttr = cityAttr = countryAttr = xalSource = null;
+		GeometryObject multiPoint = null;		
+
+		// try and interpret <country> child element
+		if (addressDetails.isSetCountry()) {
+			Country country = addressDetails.getCountry();
+
+			// country name
+			if (country.isSetCountryName()) {
+				List<String> countryName = new ArrayList<String>();				
+				for (CountryName name : country.getCountryName())
+					countryName.add(name.getContent());
+
+				countryAttr = Util.collection2string(countryName, ",");
+				addressMap.put("COUNTRY", countryAttr);
+			} 
+
+			// locality
+			if (country.isSetLocality()) {
+				Locality locality = country.getLocality();
+
+				// check whether we deal with a city or a town
+				if (locality.isSetType() && 
+						(locality.getType().toUpperCase().equals("CITY") ||
+								locality.getType().toUpperCase().equals("TOWN"))) {
+
+					// city name
+					if (locality.isSetLocalityName()) {
+						List<String> localityName = new ArrayList<String>();						
+						for (LocalityName name : locality.getLocalityName())
+							localityName.add(name.getContent());
+
+						cityAttr = Util.collection2string(localityName, ",");
+						addressMap.put("CITY", cityAttr);
+					} 
+
+					// thoroughfare - just streets are supported
+					if (locality.isSetThoroughfare()) {
+						Thoroughfare thoroughfare = locality.getThoroughfare();
+
+						// check whether we deal with a street
+						if (thoroughfare.isSetType() && 
+								(thoroughfare.getType().toUpperCase().equals("STREET") ||
+										thoroughfare.getType().toUpperCase().equals("ROAD"))) {
+
+							// street name
+							if (thoroughfare.isSetThoroughfareName()) {
+								List<String> fareName = new ArrayList<String>();								
+								for (ThoroughfareName name : thoroughfare.getThoroughfareName())
+									fareName.add(name.getContent());
+
+								streetAttr = Util.collection2string(fareName, ",");
+								addressMap.put("STREET", streetAttr);
+							}
+
+							// house number - we do not support number ranges so far...						
+							if (thoroughfare.isSetThoroughfareNumberOrThoroughfareNumberRange()) {
+								List<String> houseNumber = new ArrayList<String>();								
+								for (ThoroughfareNumberOrRange number : thoroughfare.getThoroughfareNumberOrThoroughfareNumberRange()) {
+									if (number.isSetThoroughfareNumber())
+										houseNumber.add(number.getThoroughfareNumber().getContent());
+								}
+
+								houseNoAttr = Util.collection2string(houseNumber, ",");
+								addressMap.put("HOUSE_NUMBER", streetAttr);
+							}
+						}
+					}
+
+					// dependent locality
+					if (streetAttr == null && houseNoAttr == null && locality.isSetDependentLocality()) {
+						DependentLocality dependentLocality = locality.getDependentLocality();
+
+						if (dependentLocality.isSetType() && 
+								dependentLocality.getType().toUpperCase().equals("DISTRICT")) {
+
+							if (dependentLocality.isSetThoroughfare()) {
+								Thoroughfare thoroughfare = dependentLocality.getThoroughfare();
+
+								// street name
+								if (streetAttr == null && thoroughfare.isSetThoroughfareName()) {
+									List<String> fareName = new ArrayList<String>();								
+									for (ThoroughfareName name : thoroughfare.getThoroughfareName())
+										fareName.add(name.getContent());
+
+									streetAttr = Util.collection2string(fareName, ",");
+									addressMap.put("STREET", streetAttr);
+								}
+
+								// house number - we do not support number ranges so far...						
+								if (houseNoAttr == null && thoroughfare.isSetThoroughfareNumberOrThoroughfareNumberRange()) {
+									List<String> houseNumber = new ArrayList<String>();								
+									for (ThoroughfareNumberOrRange number : thoroughfare.getThoroughfareNumberOrThoroughfareNumberRange()) {
+										if (number.isSetThoroughfareNumber())
+											houseNumber.add(number.getThoroughfareNumber().getContent());
+									}
+
+									houseNoAttr = Util.collection2string(houseNumber, ",");
+									addressMap.put("HOUSE_NUMBER", houseNoAttr);
+								}
+							}
+						}
+					}
+
+					// postal code
+					if (locality.isSetPostalCode()) {
+						PostalCode postalCode = locality.getPostalCode();
+
+						// get postal code number
+						if (postalCode.isSetPostalCodeNumber()) {
+							List<String> zipCode = new ArrayList<String>();							
+							for (PostalCodeNumber number : postalCode.getPostalCodeNumber())
+								zipCode.add(number.getContent());
+
+							zipCodeAttr = Util.collection2string(zipCode, ",");
+							addressMap.put("ZIP_CODE", zipCodeAttr);
+						}
+					}
+
+					// post box
+					if (locality.isSetPostBox()) {
+						PostBox postBox = locality.getPostBox();
+
+						// get post box nummber
+						if (postBox.isSetPostBoxNumber()){
+							poBoxAttr = postBox.getPostBoxNumber().getContent();
+							addressMap.put("PO_BOX", poBoxAttr);
+						}
+							
+					}
+				}
+			}
+						
+		}
+		return addressMap;
+	}		
+
+
+    
+    public static HashMap<String,Object> getBuildingProperties(AbstractBuilding building){
+    	
+    	 HashMap<String, Object> buildingMap = new HashMap<String,Object>();
+
+		 //Building GmlID
+		 if (building.isSetId()) {
+			 buildingMap.put("GMLID",building.getId());
+		 }   	
+		 
+		 //Building name and codespace
+		 if (building.isSetName()) {
+			 buildingMap.put("NAME",building.getName());
+			 if(building.getName().get(0).isSetCodeSpace())
+				 buildingMap.put("NAME_CODESPACE", building.getName().get(0).getCodeSpace());
+		 }    	
+		 
+		 // bldg:class
+    	if (building.isSetClazz() && building.getClazz().isSetValue()) {
+    		buildingMap.put("CLASS",building.getClazz().getValue());
+    	}
+    	
+    	//Building Description
+    	if(building.isSetDescription())
+    	{
+    		buildingMap.put("DESCRIPTION",building.getDescription());
+    	}
+    	
+    	// bldg:function
+    	if (building.isSetFunction()) {
+    		String[] function = Util.codeList2string(building.getFunction());
+    		 buildingMap.put("FUNCTION",function[0]);    		 
+    	} 
+    	
+    	// bldg:usage
+    	if (building.isSetUsage()) {
+    		String[] usage = Util.codeList2string(building.getUsage());
+   		 	buildingMap.put("USAGE",usage[0]);
+    	}
+    	
+    	// bldg:yearOfConstruction
+    	if (building.isSetYearOfConstruction()) {
+    		 buildingMap.put("YEAR_OF_CONSTRUCTION",new Date(building.getYearOfConstruction().getTime().getTime()).toString());
+    	}
+    	
+    	// bldg:yearOfDemolition
+    	if (building.isSetYearOfDemolition()) {
+    		buildingMap.put("YEAR_OF_DEMOLITION",new Date(building.getYearOfDemolition().getTime().getTime()).toString());
+    	}
+    	
+    	// bldg:roofType
+    	if (building.isSetRoofType() && building.getRoofType().isSetValue()) {
+    		buildingMap.put("ROOF_TYPE",building.getRoofType().getValue());
+    	}
+    	
+    	// bldg:measuredHeight
+    	if (building.isSetMeasuredHeight() && building.getMeasuredHeight().isSetValue()) {
+    		 buildingMap.put("MEASURED_HEIGHT",building.getMeasuredHeight().getValue());
+    	}
+
+    	
+    	// bldg:storeysAboveGround
+    	if (building.isSetStoreysAboveGround()) {
+    		buildingMap.put("STOREYS_ABOVE_GROUND", building.getStoreysAboveGround());
+    	}
+    	
+    	// bldg:storeysBelowGround
+    	if (building.isSetStoreysBelowGround()) {
+    		buildingMap.put("STOREYS_BELOW_GROUND", building.getStoreysBelowGround());
+    	}
+    	
+    	
+    	// bldg:storeyHeightsAboveGround
+    	String heights = null;
+    	if (building.isSetStoreyHeightsAboveGround()) {
+    		MeasureOrNullList measureOrNullList = building.getStoreyHeightsAboveGround();
+    		if (measureOrNullList.isSetDoubleOrNull()) {
+    			List<String> values = new ArrayList<String>();
+    			for (DoubleOrNull doubleOrNull : measureOrNullList.getDoubleOrNull()) {
+    				if (doubleOrNull.isSetDouble())
+    					values.add(String.valueOf(doubleOrNull.getDouble()));
+    				else
+    					doubleOrNull.getNull().getValue();
+    			}
+    			heights = Util.collection2string(values, " ");
+    		}
+    	}    	
+    	if (heights != null) {
+    		buildingMap.put("STOREY_HEIGHTS_ABOVE_GROUND", heights);
+    	}
+    	
+    	
+    	// bldg:storeyHeightsBelowGround
+    	heights = null;
+    	if (building.isSetStoreyHeightsBelowGround()) {
+    		MeasureOrNullList measureOrNullList = building.getStoreyHeightsBelowGround();
+    		if (measureOrNullList.isSetDoubleOrNull()) {
+    			List<String> values = new ArrayList<String>();
+    			for (DoubleOrNull doubleOrNull : measureOrNullList.getDoubleOrNull()) {
+    				if (doubleOrNull.isSetDouble())
+    					values.add(String.valueOf(doubleOrNull.getDouble()));
+    				else
+    					doubleOrNull.getNull().getValue();
+    			}
+    			heights = Util.collection2string(values, " ");
+    		}
+    	}    	
+    	if (heights != null) {
+    		buildingMap.put("STOREY_HEIGHTS_BELOW_GROUND", heights);
+    	}   
+
+    	return buildingMap;
     }
 
 }

@@ -1420,13 +1420,6 @@ public abstract class KmlGenericObject {
                                                               KmlSplittingResult work,
                                                               boolean includeGroundSurface,
                                                               boolean includeClosureSurface) throws Exception {
-		
-    	if(work.getGmlId().equals("BLDG_0003000b0004b60b")){
-			
-    		for(BuildingSurface surface : result ){
-    			System.out.println(work.getGmlId() + " -> " + surface.getId() + "->" +surface.getPId() + "->" + surface.getType());
-    		}
-    	}
     	
         HashMap<String, MultiGeometryType> multiGeometries = new HashMap<String, MultiGeometryType>();
         MultiGeometryType multiGeometry = null;
