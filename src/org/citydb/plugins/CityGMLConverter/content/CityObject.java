@@ -33,6 +33,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.xml.bind.JAXBException;
@@ -48,14 +51,19 @@ import org.citydb.plugins.CityGMLConverter.content.ElevationServiceHandler;
 import org.citydb.plugins.CityGMLConverter.content.KmlExporterManager;
 import org.citydb.plugins.CityGMLConverter.content.KmlGenericObject;
 import org.citydb.plugins.CityGMLConverter.content.KmlSplittingResult;
+import org.citydb.util.Util;
 import org.citygml4j.factory.GMLGeometryFactory;
+import org.citygml4j.model.citygml.building.AbstractBuilding;
+import org.citygml4j.model.citygml.core.AbstractCityObject;
+import org.citygml4j.model.gml.basicTypes.DoubleOrNull;
+import org.citygml4j.model.gml.basicTypes.MeasureOrNullList;
 
 
-public class CityObjectGroup extends KmlGenericObject{
+public class CityObject extends KmlGenericObject{
 
 	public static final String STYLE_BASIS_NAME = "Group";
 
-	public CityObjectGroup(Connection connection,
+	public CityObject(Connection connection,
 			KmlExporterManager kmlExporterManager,
 			GMLGeometryFactory cityGMLFactory,
 			net.opengis.kml._2.ObjectFactory kmlFactory,
@@ -97,6 +105,36 @@ public class CityObjectGroup extends KmlGenericObject{
 	public void read(KmlSplittingResult work) {
 
 		
+	}
+	
+	public static HashMap<String,Object> getCityObjectProperties(AbstractCityObject cityObject){
+
+		HashMap<String, Object> cityObjectMap = new HashMap<String,Object>();
+
+		//cityObject GmlID
+		if (cityObject.isSetId()) {
+			cityObjectMap.put("GMLID",cityObject.getId());
+		}   	
+
+
+		// gml:name
+		if (cityObject.isSetName()) {
+			String[] dbGmlName = Util.codeList2string(cityObject.getName());
+			cityObjectMap.put("NAME",dbGmlName[0]);
+		}
+
+		// gml:description
+		if (cityObject.isSetDescription()) {
+			String description = cityObject.getDescription().getValue();
+			if (description != null){
+				description = description.trim();
+			cityObjectMap.put("DESCRIPTION",description);
+			}
+		}
+
+			   
+
+		return cityObjectMap;
 	}
 	
 	

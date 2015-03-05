@@ -2051,7 +2051,7 @@ public abstract class KmlGenericObject {
                     String balloonTemplate = getBalloonContentFromGenericAttribute(work);
                     if (balloonTemplate != null) {
                         if (balloonTemplateHandler == null) { // just in case
-                            balloonTemplateHandler = new BalloonTemplateHandlerImpl((File) null, connection);
+                            balloonTemplateHandler = new BalloonTemplateHandlerImpl((File) null);
                         }
                         placemark.setDescription(balloonTemplateHandler.getBalloonContent(balloonTemplate, work, config.getLodToExportFrom()));
                     }

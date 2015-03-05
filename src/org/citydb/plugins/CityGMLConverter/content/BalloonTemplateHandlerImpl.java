@@ -51,6 +51,7 @@ import org.citydb.log.Logger;
 import org.citydb.util.Util;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.building.AbstractBuilding;
+import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.citygml.core.AddressProperty;
 import org.citygml4j.model.citygml.core.XalAddressProperty;
@@ -219,7 +220,10 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 
 	private static final String CITYOBJECT_TABLE = "CITYOBJECT";
 	private static final LinkedHashSet<String> CITYOBJECT_COLUMNS = new LinkedHashSet<String>() {{
-		add("ID");
+		add("GMLID");
+		add("NAME");
+		add("DESCRIPTION");
+	/*	add("ID");
 		add("CLASS_ID");
 		add("GMLID");
 		add("GMLID_CODESPACE");
@@ -230,7 +234,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		add("UPDATING_PERSON");
 		add("REASON_FOR_UPDATE");
 		add("LINEAGE");
-		add("XML_SOURCE");
+		add("XML_SOURCE");*/
 	}};
 
 	private static final String CITYOBJECT_GENERICATTRIB_TABLE = "CITYOBJECT_GENERICATTRIB";
@@ -747,25 +751,20 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		"  </body>\n" +
 		"</html>";
 
-	private Connection connection;
+
 	private CityGMLClass cityGMLClassForBalloonHandler = null;
 
 	List<BalloonStatement> statementList = null;
 	List<String> htmlChunkList = null;
 
-	public BalloonTemplateHandlerImpl(File templateFile, Connection connection) {
-		setConnection(connection);
+	public BalloonTemplateHandlerImpl(File templateFile) {
 		setTemplate(templateFile);
 	}
 
-	public BalloonTemplateHandlerImpl(String templateString, Connection connection) {
-		setConnection(connection);
+	public BalloonTemplateHandlerImpl(String templateString) {
 		setTemplate(templateString);
 	}
 
-	private void setConnection(Connection connection) {
-		this.connection = connection;
-	}
 
 	private void setTemplate(File templateFile) {
 		statementList = new ArrayList<BalloonStatement>();
@@ -843,7 +842,6 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 		if (statementList != null) {
 
 			CityGMLClass cityObjectTypeForGmlId = null;
-			long id = -1;
 
 			try {
 				cityObjectTypeForGmlId =  work.getCityObjectType();
@@ -883,9 +881,8 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 
 		String result = "";
 		if (statement != null) {
-			//PreparedStatement preparedStatement = null;
+
 			List<HashMap<String, Object>> Result = new ArrayList<HashMap<String, Object>>();			
-			//ResultSet rs = null;
 			try {
 				if (statement.isForeach()) {
 					//	return executeForeachStatement(statement, id, lod);
@@ -945,16 +942,14 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 					}
 
 					BalloonStatement dummy = new BalloonStatement(notNestedAnymore.toString());
-					Result.addAll(dummy.getProperSQLStatement(lod, work));
-					//		preparedStatement = connection.prepareStatement(dummy.getProperSQLStatement(lod));
+					Result.addAll(dummy.getDataListFromStatement(lod, work));
 				}
 				else { // not nested
-					if (statement.getProperSQLStatement(lod, work) == null) {
+					if (statement.getDataListFromStatement(lod, work) == null) {
 						// malformed expression between proper START_TAG and END_TAG
 						return result; // skip db call, rs and preparedStatement are currently null
 					}
-					Result.addAll(statement.getProperSQLStatement(lod, work));
-					//	preparedStatement = connection.prepareStatement(statement.getProperSQLStatement(lod));
+					Result.addAll(statement.getDataListFromStatement(lod, work));
 				}
 
 
@@ -1179,13 +1174,10 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			return nested;
 		}
 
-		private void setProperSQLStatement(List<HashMap<String, Object>> properSQLStatement) {
-			this.properSQLStatement = properSQLStatement;
-		}
 
-		private List<HashMap<String, Object>> getProperSQLStatement(int lod,KmlSplittingResult work) throws Exception {
+		private List<HashMap<String, Object>> getDataListFromStatement(int lod,KmlSplittingResult work) throws Exception {
 			if (!conversionTried && properSQLStatement == null) {
-				properSQLStatement = this.convertStatementToProperSQL(lod, work);
+				properSQLStatement = this.convertStatementToDataList(lod, work);
 				conversionTried = true;
 			}
 			return properSQLStatement;
@@ -1219,9 +1211,9 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			this.columnAmount = columnAmount;
 		}
 		
-		private List<HashMap<String, Object>> convertStatementToProperSQL(int lod , KmlSplittingResult work) throws Exception {
+		private List<HashMap<String, Object>> convertStatementToDataList(int lod , KmlSplittingResult work) throws Exception {
 
-			List<HashMap<String, Object>> sqlStatement = null;
+			List<HashMap<String, Object>> resultSet = null;
 			String table = null;
 			String aggregateFunction = null;
 			List<String> columns = null;
@@ -1380,10 +1372,10 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 
 					break;
 				case BUILDING:
-					sqlStatement = sqlStatementForBuilding(table, columns, aggregateString, aggregateClosingString, lod , work);
+					resultSet = getDataListForBuilding(table, columns, aggregateString, aggregateClosingString, lod , work);
 					break;
 				default:
-				//	sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod , work);
+					resultSet = getDataListForAnyObject(table, columns, aggregateString, aggregateClosingString, lod , work);
 					break;
 			}
 
@@ -1429,12 +1421,11 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 					// no ORDER by for MAX, MIN, AVG, COUNT, SUM
 				}
 			}*/
-			return sqlStatement;
-			//setProperSQLStatement(sqlStatement);
+			return resultSet;
 		}
 		
 
-		private List<HashMap<String, Object>> sqlStatementForBuilding(String table,
+		private List<HashMap<String, Object>> getDataListForBuilding(String table,
 											   List<String> columns,
 											   String aggregateString,
 											   String aggregateClosingString,
@@ -1456,7 +1447,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 					 Result.add(tmpMap);
 				}				
 			}
-			else if (BUILDING_TABLE.equalsIgnoreCase(table) || CITYOBJECT_TABLE.equalsIgnoreCase(table)) {
+			else if (BUILDING_TABLE.equalsIgnoreCase(table)) {
 				
 				 HashMap<String, Object> buildingMap = Building.getBuildingProperties(building);
 				 HashMap<String, Object> tmpMap = new HashMap<String, Object>();
@@ -1553,23 +1544,37 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 							   " FROM BUILDING b, THEMATIC_SURFACE ts" +
 							   " WHERE b.building_root_id = ?" +
 							   " AND ts.building_id = b.id";
-			}
-			else {
-				sqlStatement = sqlStatementForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, work);
 			}*/
+			else {
+				Result = getDataListForAnyObject(table, columns, aggregateString, aggregateClosingString, lod, work);
+			}
 
 			return Result; 
 		}
 		
-		private String sqlStatementForAnyObject(String table,
+		
+		private List<HashMap<String, Object>> getDataListForAnyObject(String table,
 												List<String> columns,
 												String aggregateString,
 												String aggregateClosingString,
 												int lod,
 												KmlSplittingResult work) throws Exception {
-			String sqlStatement = null; 
 
-			if (APPEAR_TO_SURFACE_DATA_TABLE.equalsIgnoreCase(table)) {
+			List<HashMap<String, Object>> Result = new ArrayList<HashMap<String, Object>>();
+			
+			if (CITYOBJECT_TABLE.equalsIgnoreCase(table)) {
+				
+				HashMap<String, Object> cityObjectMap = CityObject.getCityObjectProperties((AbstractCityObject) work.getCityGmlClass());
+				 HashMap<String, Object> tmpMap = new HashMap<String, Object>();
+				 for(String columnName : columns){
+					 if(cityObjectMap.containsKey(columnName))
+						 tmpMap.put(columnName, cityObjectMap.get(columnName));
+				 }
+				 Result.add(tmpMap);	
+			}
+			
+
+			/*if (APPEAR_TO_SURFACE_DATA_TABLE.equalsIgnoreCase(table)) {
 				sqlStatement = "SELECT " + aggregateString + getColumnsClause(table, columns) + aggregateClosingString +
 							   " FROM APPEARANCE a, APPEAR_TO_SURFACE_DATA a2sd" +
 							   " WHERE a.cityobject_id = ?" +
@@ -1645,9 +1650,9 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			}
 			else {
 				throw new Exception("Unsupported table \"" + table + "\" for CityGML type " + cityGMLClassForBalloonHandler.toString());
-			}
+			}*/
 
-			return sqlStatement; 
+			return Result; 
 		}
 
 		private void setTableShortIdAndOrderByColumnAllowed(String tablename, List<String> columns) throws Exception {

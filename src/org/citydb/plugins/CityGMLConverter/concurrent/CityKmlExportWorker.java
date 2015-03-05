@@ -514,7 +514,7 @@ public class CityKmlExportWorker implements Worker<KmlSplittingResult> {
 					balloonSettings.getBalloonContentMode() != BalloonContentMode.GEN_ATTRIB) {
 				String balloonTemplateFilename = balloonSettings.getBalloonContentTemplateFile();
 				if (balloonTemplateFilename != null && balloonTemplateFilename.length() > 0) {
-					currentBalloonTemplateHandler = new BalloonTemplateHandlerImpl(new File(balloonTemplateFilename), connection);
+					currentBalloonTemplateHandler = new BalloonTemplateHandlerImpl(new File(balloonTemplateFilename));
 					balloonTemplateHandler.put(cityObjectType, currentBalloonTemplateHandler);
 				}
 			}

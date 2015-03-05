@@ -49,13 +49,13 @@ public class BalloonTemplateFactoryImpl implements BalloonTemplateFactory {
 	}
 	
 	@Override
-	public BalloonTemplateHandler createNewBalloonTemplateHandler(File templateFile, Connection connection) {
-		return new BalloonTemplateHandlerImpl(templateFile, connection);
+	public BalloonTemplateHandler createNewBalloonTemplateHandler(File templateFile) {
+		return new BalloonTemplateHandlerImpl(templateFile);
 	}
 
 	@Override
-	public BalloonTemplateHandler createNewBalloonTemplateHandler(String templateString, Connection connection) {
-		return new BalloonTemplateHandlerImpl(templateString, connection);
+	public BalloonTemplateHandler createNewBalloonTemplateHandler(String templateString) {
+		return new BalloonTemplateHandlerImpl(templateString);
 	}
 
 }
