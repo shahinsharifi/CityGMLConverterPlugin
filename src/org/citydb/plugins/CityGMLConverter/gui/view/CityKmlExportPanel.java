@@ -1252,7 +1252,7 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 			if (filter.isSetComplexFilter() &&
 					filter.getComplexFilter().getTiledBoundingBox().isSet()) {
 				try {
-					tileAmount = CityKmlExporter.calculateRowsColumnsAndDelta();
+					tileAmount = CityKmlExporter.calculateRowsColumns();
 				}
 				catch (SQLException sqle) {
 					String srsDescription = filter.getComplexFilter().getBoundingBox().getSrs().getDescription();

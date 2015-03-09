@@ -87,6 +87,7 @@ import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.event.EventHandler;
 import org.citydb.api.geometry.BoundingBox;
 import org.citydb.api.geometry.BoundingBoxCorner;
+import org.citydb.api.geometry.GeometryObject;
 import org.citydb.api.registry.ObjectRegistry;
 import org.citydb.config.project.filter.FeatureClass;
 import org.citydb.config.project.filter.TiledBoundingBox;
@@ -155,12 +156,7 @@ public class CityKmlExporter implements EventHandler {
 	private static final Charset CHARSET = Charset.forName(ENCODING);
 	private static final String TEMP_FOLDER = "__temp";
 	private final Logger LOG = Logger.getInstance();
-	private BoundingBox tileMatrix;
-	private BoundingBox wgs84TileMatrix;
-	private double wgs84DeltaLongitude;
-	private double wgs84DeltaLatitude;
-	private static int rows;
-	private static int columns;
+	
 	private String path;
 	private String filename;
 	private EnumMap<CityGMLClass, Long>featureCounterMap = new EnumMap<CityGMLClass, Long>(CityGMLClass.class);
@@ -168,6 +164,15 @@ public class CityKmlExporter implements EventHandler {
 	private String TargetSrs = "";
 	private File lastTempFolder;
 	private static HashMap<String, CityObject4JSON> alreadyExported;
+	
+	private BoundingBox extent;
+	private BoundingBox wgs84TileMatrix;
+	
+	private double wgs84DeltaLongitude;
+	private double wgs84DeltaLatitude;
+	
+	private int rows = 1;
+	private int columns = 1;
 
 	public CityKmlExporter (JAXBContext jaxbKmlContext,
 						JAXBContext jaxbColladaContext,
@@ -681,14 +686,15 @@ public class CityKmlExporter implements EventHandler {
 			document.setOpen(true);
 			document.setName(filename);
 			LookAtType lookAtType = kmlFactory.createLookAtType();
-			lookAtType.setLongitude((wgs84TileMatrix.getUpperRightCorner().getX() + wgs84TileMatrix.getLowerLeftCorner().getX())/2);
-			lookAtType.setLatitude((wgs84TileMatrix.getLowerLeftCorner().getY() + (wgs84TileMatrix.getUpperRightCorner().getY() - wgs84TileMatrix.getLowerLeftCorner().getY())/3));
+			lookAtType.setLongitude(wgs84TileMatrix.getLowerLeftCorner().getX() + Math.abs((wgs84TileMatrix.getUpperRightCorner().getX() - wgs84TileMatrix.getLowerLeftCorner().getX())/2));
+			lookAtType.setLatitude(wgs84TileMatrix.getLowerLeftCorner().getY() + Math.abs((wgs84TileMatrix.getUpperRightCorner().getY() - wgs84TileMatrix.getLowerLeftCorner().getY())/2));
 			lookAtType.setAltitude(0.0);
 			lookAtType.setHeading(0.0);
 			lookAtType.setTilt(60.0);
 			lookAtType.setRange(970.0);
 			document.setAbstractViewGroup(kmlFactory.createLookAt(lookAtType));
 			kmlType.setAbstractFeatureGroup(kmlFactory.createDocument(document));
+
 
 			try {
 				
@@ -779,11 +785,6 @@ public class CityKmlExporter implements EventHandler {
 			for (int i = 0; i < rows; i++) {
 				for (int j = 0; j < columns; j++) {
 
-					// must be done like this to avoid non-matching tile limits
-					double wgs84TileSouthLimit = wgs84TileMatrix.getLowerLeftCorner().getY() + (i * wgs84DeltaLatitude); 
-					double wgs84TileNorthLimit = wgs84TileMatrix.getLowerLeftCorner().getY() + ((i+1) * wgs84DeltaLatitude); 
-					double wgs84TileWestLimit = wgs84TileMatrix.getLowerLeftCorner().getX() + (j * wgs84DeltaLongitude); 
-					double wgs84TileEastLimit = wgs84TileMatrix.getLowerLeftCorner().getX() + ((j+1) * wgs84DeltaLongitude); 
 
 					// tileName should not contain special characters,
 					// since it will be used as filename for all displayForm files
@@ -807,10 +808,10 @@ public class CityKmlExporter implements EventHandler {
 						RegionType regionType = kmlFactory.createRegionType();
 
 						LatLonAltBoxType latLonAltBoxType = kmlFactory.createLatLonAltBoxType();
-						latLonAltBoxType.setNorth(wgs84TileNorthLimit);
-						latLonAltBoxType.setSouth(wgs84TileSouthLimit);
-						latLonAltBoxType.setEast(wgs84TileEastLimit);
-						latLonAltBoxType.setWest(wgs84TileWestLimit);
+						latLonAltBoxType.setNorth(wgs84TileMatrix.getUpperRightCorner().getY());
+						latLonAltBoxType.setSouth(wgs84TileMatrix.getLowerLeftCorner().getY());
+						latLonAltBoxType.setEast(wgs84TileMatrix.getUpperRightCorner().getX());
+						latLonAltBoxType.setWest(wgs84TileMatrix.getLowerLeftCorner().getX());
 
 						LodType lodType = kmlFactory.createLodType();
 						lodType.setMinLodPixels((double)displayForm.getVisibleFrom());
@@ -1321,43 +1322,53 @@ public class CityKmlExporter implements EventHandler {
 			}
 		}
 		return true;
-	}
+	}	
 	
-	public int calculateRowsColumnsAndDelta() throws SQLException {
+	
+	public int calculateRowsColumns() throws SQLException {
 		
 		TiledBoundingBox bbox = config.getFilter().getComplexFilter().getTiledBoundingBox();
-		TilingMode tilingMode = bbox.getTiling().getMode();
 		double autoTileSideLength = config.getAutoTileSideLength();
-		tileMatrix = new BoundingBox(new BoundingBoxCorner(bbox.getLowerLeftCorner().getX(), bbox.getLowerLeftCorner().getY()),
-				new BoundingBoxCorner(bbox.getUpperRightCorner().getX(), bbox.getUpperRightCorner().getY()));
+		extent = bbox;
+
 		DatabaseSrs bboxSrs = bbox.getSrs();
 		if (bboxSrs.getSrid() != 0 && bboxSrs.getSrid() != Integer.parseInt(TargetSrs)) {
-			wgs84TileMatrix = ProjConvertor.transformBBox(tileMatrix, String.valueOf(bbox.getSrs().getSrid()), "4326");
-			tileMatrix = ProjConvertor.transformBBox(tileMatrix, String.valueOf(bbox.getSrs().getSrid()), TargetSrs);
+			wgs84TileMatrix = ProjConvertor.transformBBox(extent, String.valueOf(bbox.getSrs().getSrid()), "4326");
+			extent = ProjConvertor.transformBBox(extent, String.valueOf(bbox.getSrs().getSrid()), TargetSrs);
 		}
 		else {
-			wgs84TileMatrix = ProjConvertor.transformBBox(tileMatrix, TargetSrs, "4326");
+			wgs84TileMatrix = ProjConvertor.transformBBox(extent, TargetSrs, "4326");
 		}
-		if (tilingMode == TilingMode.NO_TILING) {
-			rows = 1;
-			columns = 1;
-		}
-		else if (tilingMode == TilingMode.AUTOMATIC) {
+
+		// retrieve WGS84 extent of bbox
+//		wgs84Extent = convertTileToWGS84(extent);
+
+		// determine tile sizes and derive number of rows and columns
+		switch (bbox.getTiling().getMode()) {
+		case AUTOMATIC:
 			// approximate
-			rows = (int)((tileMatrix.getUpperRightCorner().getY() - tileMatrix.getLowerLeftCorner().getY()) / autoTileSideLength) + 1;
-			columns = (int)((tileMatrix.getUpperRightCorner().getX() - tileMatrix.getLowerLeftCorner().getX()) / autoTileSideLength) + 1;
+			rows = (int)((extent.getUpperRightCorner().getY() - extent.getLowerLeftCorner().getY()) / autoTileSideLength) + 1;
+			columns = (int)((extent.getUpperRightCorner().getX() - extent.getLowerLeftCorner().getX()) / autoTileSideLength) + 1;
 			bbox.getTiling().setRows(rows);
 			bbox.getTiling().setColumns(columns);
-		}
-		else {
+			break;
+		case NO_TILING:
+			// no_tiling is internally mapped to manual tiling with one tile
+			bbox.getTiling().setMode(TilingMode.MANUAL);
+			bbox.getTiling().setRows(1);
+			bbox.getTiling().setColumns(1);
+		default:
 			rows = bbox.getTiling().getRows();
 			columns = bbox.getTiling().getColumns();
 		}
-		// must be done like this to avoid non-matching tile limits
+		
 		wgs84DeltaLatitude = (wgs84TileMatrix.getUpperRightCorner().getY() - wgs84TileMatrix.getLowerLeftCorner().getY()) / rows;
 		wgs84DeltaLongitude = (wgs84TileMatrix.getUpperRightCorner().getX() - wgs84TileMatrix.getLowerLeftCorner().getX()) / columns;
-		return rows*columns;
+	
+
+		return rows * columns;
 	}
+	
 
 	private static void getAllFiles(File startFolder, List<File> fileList) {
 		File[] files = startFolder.listFiles();
