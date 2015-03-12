@@ -291,7 +291,7 @@ public class KmlSplitter {
 				};
 
 				CityGMLReader reader = null;
-				tmpAppearanceList = new CopyOnWriteArrayList<Appearance>();
+				tmpAppearanceList = new ArrayList<Appearance>();
 
 				//only for reading global appearance
 				if(displayForm.getForm() == DisplayForm.COLLADA)
@@ -309,7 +309,7 @@ public class KmlSplitter {
 					}
 					reader.close();
 				}
-				
+
 				
 				//for reading buildings
 				reader = in.createFilteredCityGMLReader(in.createCityGMLReader(file), inputFilter);
@@ -365,8 +365,10 @@ public class KmlSplitter {
 
 								if(_bounds.ContainCentroid(_refEnvelope,TargetSrs))						
 								{
+									
+									System.out.println(tmpAppearanceList.get(0).getTheme());
 									ElevationHelper elevation = new ElevationHelper(connection);								
-									KmlSplittingResult splitter = new KmlSplittingResult(cityObject.getId() , cityGML , cityObjectType , displayForm, TargetSrs , tmpAppearanceList , elevation);		
+									KmlSplittingResult splitter = new KmlSplittingResult(cityObject.getId() , cityGML , cityObjectType , displayForm, TargetSrs , new CopyOnWriteArrayList<Appearance>(tmpAppearanceList) , elevation);		
 									
 									CityObject4JSON cityObject4Json = new CityObject4JSON(cityObject.getId());
 									cityObject4Json.setTileRow(exportFilter.getBoundingBoxFilter().getTileRow());
@@ -376,10 +378,10 @@ public class KmlSplitter {
 									cityObject4Json.setEnvelopeXmax(_refEnvelope.getUpperCorner().getCoordinate()[0]);
 									cityObject4Json.setEnvelopeYmin(_refEnvelope.getLowerCorner().getCoordinate()[1]);
 									cityObject4Json.setEnvelopeYmax(_refEnvelope.getUpperCorner().getCoordinate()[1]);					
-									
+
 									kmlWorkerPool.addWork(splitter);									
 									CityKmlExporter.getAlreadyExported().put(cityObject.getId(), cityObject4Json);
-									
+									tmpAppearanceList.clear();									
 								}
 							}
 						}
@@ -387,6 +389,7 @@ public class KmlSplitter {
 					}catch (Exception e) {
 						Logger.getInstance().error(e.toString());
 					}
+					
 				}
 				reader.close();
 

@@ -35,10 +35,17 @@ import java.util.List;
 
 import javax.xml.namespace.QName;
 
+import org.citydb.api.concurrent.PoolSizeAdaptationStrategy;
+import org.citydb.api.concurrent.WorkerPool;
+import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.geometry.BoundingBoxCorner;
 import org.citydb.config.Config;
 import org.citydb.log.Logger;
 import org.citydb.modules.common.filter.ImportFilter;
+import org.citydb.plugins.CityGMLConverter.concurrent.BBoxCalculatorWorkerFactory;
+import org.citydb.plugins.CityGMLConverter.concurrent.CityKmlExportWorkerFactory;
+import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
+import org.citydb.plugins.CityGMLConverter.content.KmlSplittingResult;
 import org.citygml4j.CityGMLContext;
 import org.citygml4j.builder.CityGMLBuilder;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
@@ -73,8 +80,11 @@ public class BoundingBox {
 
 	private org.opengis.geometry.BoundingBox nativeBounds;
 	private String SourceSRS;
+	private WorkerPool<CityGML> bboxWorkerPool;
 
 
+	public BoundingBox(){}
+	
 	public BoundingBox(double MinX, double MinY, double MaxX, double MaxY, String EPSG) throws Exception {
 
 		SourceSRS = EPSG;
@@ -148,72 +158,37 @@ public class BoundingBox {
 	}
 
 
-	public static org.citydb.api.geometry.BoundingBox BboxCalculator(JAXBBuilder jaxbBuilder, File sourceFile,String sourceSrs,String targetSrs) throws Exception
+	public  org.citydb.api.geometry.BoundingBox BboxCalculator(
+			JAXBBuilder jaxbBuilder,
+			ConfigImpl config,
+			EventDispatcher eventDispatcher,
+			File sourceFile,
+			String sourceSrs,
+			String targetSrs) throws Exception
 	{	
-
+		
 		double Xmin = 0,
 				Xmax = 0,
 				Ymin = 0,
 				Ymax = 0;
 
 		org.citydb.api.geometry.BoundingBox bounds = new org.citydb.api.geometry.BoundingBox();
+		bboxWorkerPool = new WorkerPool<CityGML>(
+				"bboxWorkerPool",
+				2,
+				8,
+				PoolSizeAdaptationStrategy.AGGRESSIVE,
+				new BBoxCalculatorWorkerFactory(
+						jaxbBuilder,
+						config,
+						eventDispatcher),
+						300,
+						false);
+		
 
 		try {
 
 			boolean IsFirstTime = true;
-			/*
-			CityGMLContext ctx = new CityGMLContext();
-			CityGMLBuilder builder = ctx.createCityGMLBuilder();
-			CityGMLInputFactory in = builder.createCityGMLInputFactory();
-			CityGMLReader reader = in.createCityGMLReader(sourceFile);
-			CityModel cityModel = (CityModel)reader.nextFeature();
-
-
-			if(cityModel.getBoundedBy() != null)
-			{
-				org.citygml4j.model.gml.geometry.primitives.Envelope envelope = cityModel.getBoundedBy().getEnvelope().convert3d();
-				Xmin =  envelope.getLowerCorner().toList3d().get(0);
-				Xmax =  envelope.getUpperCorner().toList3d().get(0);
-				Ymin =  envelope.getLowerCorner().toList3d().get(1);
-				Ymax =  envelope.getUpperCorner().toList3d().get(1);									
-			}				
-			else
-			{
-				boolean IsFirstTime = true;
-
-				CityGMLReader _ChunkReader = in.createCityGMLReader(sourceFile);
-				CityModel _cityModel = (CityModel)_ChunkReader.nextFeature();
-
-				if(_cityModel.isSetCityObjectMember()){
-
-					for (CityObjectMember member : _cityModel.getCityObjectMember()) {
-
-						if (member.isSetCityObject()) {
-
-							AbstractCityObject cityObject = member.getCityObject();
-
-							org.citygml4j.model.gml.geometry.primitives.Envelope envelope = cityObject.getBoundedBy().getEnvelope().convert3d();
-							if(IsFirstTime)
-							{
-								Xmin =  envelope.getLowerCorner().toList3d().get(0);
-								Xmax =  envelope.getUpperCorner().toList3d().get(0);
-								Ymin =  envelope.getLowerCorner().toList3d().get(1);
-								Ymax =  envelope.getUpperCorner().toList3d().get(1);
-								IsFirstTime = false;					
-							}
-							else {
-
-								Xmin = (Xmin < envelope.getLowerCorner().toList3d().get(0)) ? Xmin : envelope.getLowerCorner().toList3d().get(0);
-								Xmax = (Xmax > envelope.getUpperCorner().toList3d().get(0)) ? Xmax : envelope.getUpperCorner().toList3d().get(0);
-								Ymin = (Ymin < envelope.getLowerCorner().toList3d().get(1)) ? Ymin : envelope.getLowerCorner().toList3d().get(1);
-								Ymax = (Ymax > envelope.getUpperCorner().toList3d().get(1)) ? Ymax : envelope.getUpperCorner().toList3d().get(1);					
-							}
-						}
-					}
-				}
-
-
-			}*/
 
 			CityGMLInputFactory in = null;
 			try {
@@ -237,6 +212,7 @@ public class BoundingBox {
 
 			CityGMLReader reader = null;
 			try {
+
 				reader = in.createFilteredCityGMLReader(in.createCityGMLReader(sourceFile), inputFilter);
 				while (reader.hasNext()) {
 					XMLChunk chunk = reader.nextChunk();
@@ -245,16 +221,14 @@ public class BoundingBox {
 						break;
 					AbstractCityObject cityObject = (AbstractCityObject)cityGML;
 					org.citygml4j.model.gml.geometry.primitives.Envelope envelope = null;
-
+			//		bboxWorkerPool.addWork(cityObject);		
 					if(cityObject.isSetBoundedBy())
 					{
-						
-					//	envelope = cityObject.getBoundedBy().getEnvelope().convert3d();
 						AbstractFeature feature = (AbstractFeature)cityObject;
 						try{
-						BoundingShape bShape = feature.calcBoundedBy(false);
-						if(bShape.isSetEnvelope())
-							envelope = bShape.getEnvelope();
+							BoundingShape bShape = feature.calcBoundedBy(false);
+							if(bShape.isSetEnvelope())
+								envelope = bShape.getEnvelope();
 						}catch(Exception ex){
 						
 						}
@@ -289,6 +263,8 @@ public class BoundingBox {
 						}
 					}
 				}
+				
+			//	bboxWorkerPool.join();
 			} catch (CityGMLReadException e) {
 				//throw new CityGMLImportException("Failed to parse CityGML file. Aborting.", e);
 			}
@@ -296,7 +272,7 @@ public class BoundingBox {
 				reader.close();
 			}
 
-
+			Logger.getInstance().error("BBOX Calculation is finished");
 
 			List<Double> LowerCorner =  ProjConvertor.transformPoint(Xmin, Ymin, 8.19, sourceSrs, targetSrs);
 			List<Double> UpperCorner =  ProjConvertor.transformPoint(Xmax, Ymax, 8.19, sourceSrs, targetSrs);

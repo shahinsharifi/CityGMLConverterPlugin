@@ -1136,13 +1136,15 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 			setSettings();
 			ExportFilterConfig filter = config.getFilter();
 			File _mfile = getImportedFile();
+			BoundingBox bbox = new BoundingBox();
+			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
 
 			if(_mfile != null)
 			{
 				int boundingBoxSrs = filter.getComplexFilter().getTiledBoundingBox().getSrs().getSrid();
 				String TargetSrs = (boundingBoxSrs != 4326 && !srsField.getText().equals("")) ? srsField.getText() : "4326";
 				LOG.info("Calculating the bounding box (EPSG:"+TargetSrs+") ...");
-				bboxComponent.setBoundingBox(BoundingBox.BboxCalculator(jaxbBuilder, _mfile, srsField.getText(), TargetSrs));
+				bboxComponent.setBoundingBox(bbox.BboxCalculator(jaxbBuilder, config,eventDispatcher,_mfile,srsField.getText(), TargetSrs));
 
 			}
 		}

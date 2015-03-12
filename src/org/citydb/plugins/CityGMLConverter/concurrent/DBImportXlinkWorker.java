@@ -182,14 +182,14 @@ public class DBImportXlinkWorker implements Worker<DBXlink> {
 
 				switch (work.getXlinkType()) {
 				
-				case SURFACE_GEOMETRY:
+			/*	case SURFACE_GEOMETRY:
 					DBXlinkSurfaceGeometry xlinkSurfaceGeometry = (DBXlinkSurfaceGeometry)work;
 
 					DBXlinkImporterSurfaceGeometry dbSurfaceGeometry = (DBXlinkImporterSurfaceGeometry)dbXlinkManager.getDBImporterXlink(DBXlinkImporterEnum.SURFACE_GEOMETRY);
 					if (dbSurfaceGeometry != null)
 						success = dbSurfaceGeometry.insert(xlinkSurfaceGeometry);
 
-					break;
+					break;*/
 				/*case LINEAR_RING:
 					DBXlinkLinearRing xlinkLinearRing = (DBXlinkLinearRing)work;
 
@@ -259,7 +259,7 @@ public class DBImportXlinkWorker implements Worker<DBXlink> {
 				if (success)
 					updateCounter++;
 
-			} catch (SQLException sqlEx) {
+			} catch (Exception sqlEx) {
 				LOG.error("SQL error: " + sqlEx.getMessage());
 				return;
 			}

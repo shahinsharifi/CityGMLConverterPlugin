@@ -297,11 +297,11 @@ public class Building extends KmlGenericObject{
             List<BuildingSurface> _surfaceList = GetBuildingGeometries(_building);
 
             //Restarting Xlink worker.
-            sqlliteImporterManager.getTmpXlinkPool().join();
-            DBXlinkSplitter xlinkSplitter = config.getXlinkSplitter();
-            List<BuildingSurface> tmpList = xlinkSplitter.startQuery(_surfaceList);
-            if(tmpList != null && tmpList.size() > 0) //We should join xlinks with Main geometries
-                _surfaceList.addAll(tmpList);
+         //   sqlliteImporterManager.getTmpXlinkPool().join();
+          //  DBXlinkSplitter xlinkSplitter = config.getXlinkSplitter();
+         //   List<BuildingSurface> tmpList = xlinkSplitter.startQuery(_surfaceList);
+         //   if(tmpList != null && tmpList.size() > 0) //We should join xlinks with Main geometries
+          //      _surfaceList.addAll(tmpList);
 
             if (_surfaceList.size()!=0) { // result not empty
 

@@ -464,7 +464,7 @@ public class CityKmlExporter implements EventHandler {
 							
 							if (shouldRun)
 							{
-								kmlWorkerPool.shutdownAndWait();								
+								tmpXlinkPool.shutdown();
 								tmpXlinkPool.join();
 							}
 							if (!featureCounterMap.isEmpty() &&
