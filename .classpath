@@ -61,5 +61,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/third_party/jai_imageio.jar"/>
 	<classpathentry kind="lib" path="lib/third_party/jai_codec-1.1.3.jar"/>
 	<classpathentry kind="lib" path="lib/third_party/jai_core-1.1.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/third_party/gt2-shapefile-2.4.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/third_party/commons-codec-1.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -32,6 +32,7 @@ package org.citydb.plugins.CityGMLConverter.util;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.namespace.QName;
 
@@ -65,6 +66,14 @@ import org.citygml4j.xml.io.reader.FeatureReadMode;
 import org.citygml4j.xml.io.reader.XMLChunk;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.index.Data;
+import org.geotools.index.DataDefinition;
+import org.geotools.index.TreeException;
+import org.geotools.index.rtree.Entry;
+import org.geotools.index.rtree.Node;
+import org.geotools.index.rtree.PageStore;
+import org.geotools.index.rtree.RTree;
+import org.geotools.index.rtree.memory.MemoryPageStore;
 import org.geotools.referencing.CRS;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -81,16 +90,28 @@ public class BoundingBox {
 	private org.opengis.geometry.BoundingBox nativeBounds;
 	private String SourceSRS;
 	private WorkerPool<CityGML> bboxWorkerPool;
+	private  DataDefinition definition = null;
+	private static RTree tree = null;
+	private static ConcurrentHashMap<String, CityGML> cityMap= null;
+	
 
 
-	public BoundingBox(){}
+	public BoundingBox() throws Exception{
+		definition = new DataDefinition("UTF-8");
+		definition.addField(1);
+		tree = new RTree(new MemoryPageStore(definition));		
+		
+	}
 	
 	public BoundingBox(double MinX, double MinY, double MaxX, double MaxY, String EPSG) throws Exception {
 
 		SourceSRS = EPSG;
 		CoordinateReferenceSystem nativeCrs = CRS.decode("EPSG:" + EPSG, true);
 		nativeBounds = new ReferencedEnvelope(MinX, MaxX, MinY, MaxY, nativeCrs);
-
+		
+		definition = new DataDefinition("UTF-8");
+		definition.addField(CityGML.class);
+		tree = new RTree(new MemoryPageStore(definition));		
 	}
 
 
@@ -129,11 +150,16 @@ public class BoundingBox {
 	public boolean ContainCentroid(Envelope bounds, String targetSRS) throws Exception
 	{					
 		Geometry _buildingPolygon = JTS.toGeometry((org.opengis.geometry.BoundingBox)bounds);		
-		return ContainPoint(_buildingPolygon.getCentroid(),targetSRS);		
+		return ContainPoint(_buildingPolygon.getCentroid(),targetSRS);
 	}
 
 
-
+	
+	private com.vividsolutions.jts.geom.Point getCentroid(Envelope bounds) throws Exception
+	{
+		Geometry _buildingPolygon = JTS.toGeometry((org.opengis.geometry.BoundingBox)bounds);		
+		return _buildingPolygon.getCentroid();
+	}
 
 	private boolean ContainPoint(com.vividsolutions.jts.geom.Point _point, String targetSRS) throws Exception
 	{	
@@ -171,6 +197,8 @@ public class BoundingBox {
 				Xmax = 0,
 				Ymin = 0,
 				Ymax = 0;
+		
+		cityMap = new  ConcurrentHashMap<String, CityGML>();
 
 		org.citydb.api.geometry.BoundingBox bounds = new org.citydb.api.geometry.BoundingBox();
 		bboxWorkerPool = new WorkerPool<CityGML>(
@@ -212,7 +240,7 @@ public class BoundingBox {
 
 			CityGMLReader reader = null;
 			try {
-
+				ReferencedEnvelope _tmpEnvelope = null;
 				reader = in.createFilteredCityGMLReader(in.createCityGMLReader(sourceFile), inputFilter);
 				while (reader.hasNext()) {
 					XMLChunk chunk = reader.nextChunk();
@@ -237,15 +265,30 @@ public class BoundingBox {
 						
 						AbstractFeature feature = (AbstractFeature)cityObject;
 						try{
-						BoundingShape bShape = feature.calcBoundedBy(false);
-						if(bShape.isSetEnvelope())
-							envelope = bShape.getEnvelope();
+							BoundingShape bShape = feature.calcBoundedBy(false);
+							if(bShape.isSetEnvelope())
+								envelope = bShape.getEnvelope();
 						}catch(Exception ex){
 						
 						}
 					}
 					
 					if(envelope!=null){
+						
+
+												
+						ReferencedEnvelope _refEnvelope = new ReferencedEnvelope(
+								envelope.getLowerCorner().toList3d().get(0),
+								envelope.getUpperCorner().toList3d().get(0),	
+								envelope.getLowerCorner().toList3d().get(1),							
+								envelope.getUpperCorner().toList3d().get(1),
+								CRS.decode("EPSG:" + targetSrs, true));
+						
+						
+						setRtree(cityGML, _refEnvelope, targetSrs);
+						
+					//	cityMap.put(cityObject.getId(), cityObject);
+						
 						if(IsFirstTime)
 						{
 							Xmin =  envelope.getLowerCorner().toList3d().get(0);
@@ -263,7 +306,31 @@ public class BoundingBox {
 						}
 					}
 				}
+
+				String inputs = "13.3910251,52.5409649,13.3995438,52.5453692";
+				String[] coor = inputs.split(",");
+				org.citydb.api.geometry.BoundingBox tmpEnvelope=ProjConvertor.transformBBox(new org.citydb.api.geometry.BoundingBox(
+						new BoundingBoxCorner(Double.parseDouble(coor[0]),Double.parseDouble(coor[1])),
+						new BoundingBoxCorner(Double.parseDouble(coor[2]),Double.parseDouble(coor[3]))
+						),
+						"4326",
+						"25833");
 				
+				
+				_tmpEnvelope = new ReferencedEnvelope(
+						tmpEnvelope.getLowerLeftCorner().getX(),
+						tmpEnvelope.getUpperRightCorner().getX(),	
+						tmpEnvelope.getLowerLeftCorner().getY(),							
+						tmpEnvelope.getUpperRightCorner().getY(),
+						CRS.decode("EPSG:" + targetSrs, true));
+
+				double st = System.currentTimeMillis();				
+				List<Data> result = tree.search(_tmpEnvelope);
+				double en=System.currentTimeMillis();
+				System.out.println(en-st);				
+				System.out.println(result.size());
+				for(Data dt:result)
+					System.out.println(((CityGML)dt.getValue(0)).getCityGMLClass().name());
 			//	bboxWorkerPool.join();
 			} catch (CityGMLReadException e) {
 				//throw new CityGMLImportException("Failed to parse CityGML file. Aborting.", e);
@@ -271,9 +338,8 @@ public class BoundingBox {
 			finally{
 				reader.close();
 			}
-
-			Logger.getInstance().error("BBOX Calculation is finished");
-
+			
+		
 			List<Double> LowerCorner =  ProjConvertor.transformPoint(Xmin, Ymin, 8.19, sourceSrs, targetSrs);
 			List<Double> UpperCorner =  ProjConvertor.transformPoint(Xmax, Ymax, 8.19, sourceSrs, targetSrs);
 
@@ -288,5 +354,25 @@ public class BoundingBox {
 		return bounds;
 
 	}
+	
+	
+	public void setRtree(CityGML cityobject , Envelope bbox ,String targetSrs)throws Exception{
+		
+		Data _data = new Data(definition);
+		_data.addValue(String.valueOf(cityobject));
+		
+		com.vividsolutions.jts.geom.Point centerPoint = getCentroid(bbox);
+		
+		ReferencedEnvelope tmpEnvelope=new ReferencedEnvelope(
+				centerPoint.getX(),
+				centerPoint.getX(),	
+				centerPoint.getY(),							
+				centerPoint.getY(),
+				CRS.decode("EPSG:" + targetSrs, true));
+
+		
+		tree.insert(tmpEnvelope , _data);		
+	}
+	
 
 }

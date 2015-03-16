@@ -389,7 +389,7 @@ public class CityKmlExporter implements EventHandler {
 						ioWriterPool.prestartCoreWorkers();
 						kmlWorkerPool.prestartCoreWorkers();
 
-
+					
 						// create file header writer
 						SAXFragmentWriter fragmentWriter = new SAXFragmentWriter(kmlFactory.createDocument(null).getName(), saxWriter);
 						
@@ -1471,5 +1471,6 @@ public class CityKmlExporter implements EventHandler {
 	public static HashMap<String, CityObject4JSON> getAlreadyExported() {
 		return alreadyExported;
 	}
+	
 
 }

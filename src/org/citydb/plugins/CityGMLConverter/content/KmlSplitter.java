@@ -365,8 +365,7 @@ public class KmlSplitter {
 
 								if(_bounds.ContainCentroid(_refEnvelope,TargetSrs))						
 								{
-									
-									System.out.println(tmpAppearanceList.get(0).getTheme());
+
 									ElevationHelper elevation = new ElevationHelper(connection);								
 									KmlSplittingResult splitter = new KmlSplittingResult(cityObject.getId() , cityGML , cityObjectType , displayForm, TargetSrs , new CopyOnWriteArrayList<Appearance>(tmpAppearanceList) , elevation);		
 									
