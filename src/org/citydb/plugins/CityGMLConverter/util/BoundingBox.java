@@ -47,6 +47,9 @@ import org.citydb.plugins.CityGMLConverter.concurrent.BBoxCalculatorWorkerFactor
 import org.citydb.plugins.CityGMLConverter.concurrent.CityKmlExportWorkerFactory;
 import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
 import org.citydb.plugins.CityGMLConverter.content.KmlSplittingResult;
+import org.citydb.plugins.CityGMLConverter.util.rtree.CityObjectData;
+import org.citydb.plugins.CityGMLConverter.util.rtree.RTree;
+import org.citydb.plugins.CityGMLConverter.util.rtree.memory.MemoryPageStore;
 import org.citygml4j.CityGMLContext;
 import org.citygml4j.builder.CityGMLBuilder;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
@@ -68,12 +71,6 @@ import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.index.Data;
 import org.geotools.index.DataDefinition;
-import org.geotools.index.TreeException;
-import org.geotools.index.rtree.Entry;
-import org.geotools.index.rtree.Node;
-import org.geotools.index.rtree.PageStore;
-import org.geotools.index.rtree.RTree;
-import org.geotools.index.rtree.memory.MemoryPageStore;
 import org.geotools.referencing.CRS;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -307,6 +304,7 @@ public class BoundingBox {
 					}
 				}
 
+				/*Just for test
 				String inputs = "13.3910251,52.5409649,13.3995438,52.5453692";
 				String[] coor = inputs.split(",");
 				org.citydb.api.geometry.BoundingBox tmpEnvelope=ProjConvertor.transformBBox(new org.citydb.api.geometry.BoundingBox(
@@ -325,12 +323,13 @@ public class BoundingBox {
 						CRS.decode("EPSG:" + targetSrs, true));
 
 				double st = System.currentTimeMillis();				
-				List<Data> result = tree.search(_tmpEnvelope);
+				List<CityObjectData> result = tree.search(_tmpEnvelope);
 				double en=System.currentTimeMillis();
 				System.out.println(en-st);				
 				System.out.println(result.size());
-				for(Data dt:result)
+				for(CityObjectData dt:result)
 					System.out.println(((CityGML)dt.getValue(0)).getCityGMLClass().name());
+					*/
 			//	bboxWorkerPool.join();
 			} catch (CityGMLReadException e) {
 				//throw new CityGMLImportException("Failed to parse CityGML file. Aborting.", e);
@@ -358,8 +357,8 @@ public class BoundingBox {
 	
 	public void setRtree(CityGML cityobject , Envelope bbox ,String targetSrs)throws Exception{
 		
-		Data _data = new Data(definition);
-		_data.addValue(String.valueOf(cityobject));
+		CityObjectData _data = new CityObjectData(definition);
+		_data.addValue(cityobject);
 		
 		com.vividsolutions.jts.geom.Point centerPoint = getCentroid(bbox);
 		
