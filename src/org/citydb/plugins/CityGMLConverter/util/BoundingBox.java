@@ -31,21 +31,32 @@ package org.citydb.plugins.CityGMLConverter.util;
 
 
 import java.io.File;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.xml.namespace.QName;
 
 import org.citydb.api.concurrent.PoolSizeAdaptationStrategy;
 import org.citydb.api.concurrent.WorkerPool;
+import org.citydb.api.event.Event;
 import org.citydb.api.event.EventDispatcher;
+import org.citydb.api.event.EventHandler;
 import org.citydb.api.geometry.BoundingBoxCorner;
+import org.citydb.api.registry.ObjectRegistry;
 import org.citydb.config.Config;
 import org.citydb.log.Logger;
+import org.citydb.modules.common.event.CounterEvent;
+import org.citydb.modules.common.event.CounterType;
+import org.citydb.modules.common.event.EventType;
+import org.citydb.modules.common.event.InterruptEvent;
+import org.citydb.modules.common.event.StatusDialogMessage;
 import org.citydb.modules.common.filter.ImportFilter;
 import org.citydb.plugins.CityGMLConverter.concurrent.BBoxCalculatorWorkerFactory;
 import org.citydb.plugins.CityGMLConverter.concurrent.CityKmlExportWorkerFactory;
 import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
+import org.citydb.plugins.CityGMLConverter.content.Building;
 import org.citydb.plugins.CityGMLConverter.content.KmlSplittingResult;
 import org.citydb.plugins.CityGMLConverter.util.rtree.CityObjectData;
 import org.citydb.plugins.CityGMLConverter.util.rtree.RTree;
@@ -82,22 +93,21 @@ import com.vividsolutions.jts.geom.Polygon;
 
 
 
-public class BoundingBox {
+public class BoundingBox implements EventHandler{
 
 	private org.opengis.geometry.BoundingBox nativeBounds;
 	private String SourceSRS;
 	private WorkerPool<CityGML> bboxWorkerPool;
-	private  DataDefinition definition = null;
+	private static DataDefinition definition = null;
 	private static RTree tree = null;
-	private static ConcurrentHashMap<String, CityGML> cityMap= null;
+	private EnumMap<CityGMLClass, Long>featureCounterMap = new EnumMap<CityGMLClass, Long>(CityGMLClass.class);
+	private volatile boolean shouldRun = true;
+	private AtomicBoolean isInterrupted = new AtomicBoolean(false);
 	
 
 
 	public BoundingBox() throws Exception{
-		definition = new DataDefinition("UTF-8");
-		definition.addField(1);
-		tree = new RTree(new MemoryPageStore(definition));		
-		
+				
 	}
 	
 	public BoundingBox(double MinX, double MinY, double MaxX, double MaxY, String EPSG) throws Exception {
@@ -106,9 +116,6 @@ public class BoundingBox {
 		CoordinateReferenceSystem nativeCrs = CRS.decode("EPSG:" + EPSG, true);
 		nativeBounds = new ReferencedEnvelope(MinX, MaxX, MinY, MaxY, nativeCrs);
 		
-		definition = new DataDefinition("UTF-8");
-		definition.addField(CityGML.class);
-		tree = new RTree(new MemoryPageStore(definition));		
 	}
 
 
@@ -152,12 +159,13 @@ public class BoundingBox {
 
 
 	
-	private com.vividsolutions.jts.geom.Point getCentroid(Envelope bounds) throws Exception
+	private static com.vividsolutions.jts.geom.Point getCentroid(Envelope bounds) throws Exception
 	{
 		Geometry _buildingPolygon = JTS.toGeometry((org.opengis.geometry.BoundingBox)bounds);		
 		return _buildingPolygon.getCentroid();
 	}
 
+	
 	private boolean ContainPoint(com.vividsolutions.jts.geom.Point _point, String targetSRS) throws Exception
 	{	
 		double pointX = 0.0, pointY = 0.0;
@@ -187,33 +195,44 @@ public class BoundingBox {
 			EventDispatcher eventDispatcher,
 			File sourceFile,
 			String sourceSrs,
-			String targetSrs) throws Exception
-	{	
+			String targetSrs) throws Exception{	
 		
-		double Xmin = 0,
-				Xmax = 0,
-				Ymin = 0,
-				Ymax = 0;
 		
-		cityMap = new  ConcurrentHashMap<String, CityGML>();
+		Logger.getInstance().info("Indexing the dataset ...");
+		
+		eventDispatcher.addEventHandler(EventType.COUNTER, this);
+		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
+		shouldRun = true;
+
+		int availableCores = Runtime.getRuntime().availableProcessors();
+		int minThreads = availableCores;//resources.getThreadPool().getDefaultPool().getMinThreads();
+		int maxThreads = availableCores;//resources.getThreadPool().getDefaultPool().getMaxThreads();
+		int queueSize = maxThreads * 2;
+		
+		
+		definition = new DataDefinition("UTF-8");
+		definition.addField(1);
+		tree = new RTree(new MemoryPageStore(definition));
+		
 
 		org.citydb.api.geometry.BoundingBox bounds = new org.citydb.api.geometry.BoundingBox();
 		bboxWorkerPool = new WorkerPool<CityGML>(
 				"bboxWorkerPool",
-				2,
-				8,
+				minThreads,
+				maxThreads,
 				PoolSizeAdaptationStrategy.AGGRESSIVE,
 				new BBoxCalculatorWorkerFactory(
 						jaxbBuilder,
 						config,
+						targetSrs,
 						eventDispatcher),
-						300,
+						queueSize,
 						false);
+		
+		bboxWorkerPool.prestartCoreWorkers();
 		
 
 		try {
-
-			boolean IsFirstTime = true;
 
 			CityGMLInputFactory in = null;
 			try {
@@ -237,114 +256,45 @@ public class BoundingBox {
 
 			CityGMLReader reader = null;
 			try {
-				ReferencedEnvelope _tmpEnvelope = null;
 				reader = in.createFilteredCityGMLReader(in.createCityGMLReader(sourceFile), inputFilter);
-				while (reader.hasNext()) {
+				while (reader.hasNext() && shouldRun) {
 					XMLChunk chunk = reader.nextChunk();
 					CityGML cityGML = chunk.unmarshal();
+					eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1 , this));
 					if(cityGML.getCityGMLClass() == CityGMLClass.APPEARANCE)
 						break;
-					AbstractCityObject cityObject = (AbstractCityObject)cityGML;
-					org.citygml4j.model.gml.geometry.primitives.Envelope envelope = null;
-			//		bboxWorkerPool.addWork(cityObject);		
-					if(cityObject.isSetBoundedBy())
-					{
-						AbstractFeature feature = (AbstractFeature)cityObject;
-						try{
-							BoundingShape bShape = feature.calcBoundedBy(false);
-							if(bShape.isSetEnvelope())
-								envelope = bShape.getEnvelope();
-						}catch(Exception ex){
-						
-						}
-					}else 
-					{
-						
-						AbstractFeature feature = (AbstractFeature)cityObject;
-						try{
-							BoundingShape bShape = feature.calcBoundedBy(false);
-							if(bShape.isSetEnvelope())
-								envelope = bShape.getEnvelope();
-						}catch(Exception ex){
-						
-						}
-					}
-					
-					if(envelope!=null){
-						
-
-												
-						ReferencedEnvelope _refEnvelope = new ReferencedEnvelope(
-								envelope.getLowerCorner().toList3d().get(0),
-								envelope.getUpperCorner().toList3d().get(0),	
-								envelope.getLowerCorner().toList3d().get(1),							
-								envelope.getUpperCorner().toList3d().get(1),
-								CRS.decode("EPSG:" + targetSrs, true));
-						
-						
-						setRtree(cityGML, _refEnvelope, targetSrs);
-						
-					//	cityMap.put(cityObject.getId(), cityObject);
-						
-						if(IsFirstTime)
-						{
-							Xmin =  envelope.getLowerCorner().toList3d().get(0);
-							Xmax =  envelope.getUpperCorner().toList3d().get(0);
-							Ymin =  envelope.getLowerCorner().toList3d().get(1);
-							Ymax =  envelope.getUpperCorner().toList3d().get(1);
-							IsFirstTime = false;					
-						}
-						else {
-
-							Xmin = (Xmin < envelope.getLowerCorner().toList3d().get(0)) ? Xmin : envelope.getLowerCorner().toList3d().get(0);
-							Xmax = (Xmax > envelope.getUpperCorner().toList3d().get(0)) ? Xmax : envelope.getUpperCorner().toList3d().get(0);
-							Ymin = (Ymin < envelope.getLowerCorner().toList3d().get(1)) ? Ymin : envelope.getLowerCorner().toList3d().get(1);
-							Ymax = (Ymax > envelope.getUpperCorner().toList3d().get(1)) ? Ymax : envelope.getUpperCorner().toList3d().get(1);					
-						}
-					}
-				}
-
-				/*Just for test
-				String inputs = "13.3910251,52.5409649,13.3995438,52.5453692";
-				String[] coor = inputs.split(",");
-				org.citydb.api.geometry.BoundingBox tmpEnvelope=ProjConvertor.transformBBox(new org.citydb.api.geometry.BoundingBox(
-						new BoundingBoxCorner(Double.parseDouble(coor[0]),Double.parseDouble(coor[1])),
-						new BoundingBoxCorner(Double.parseDouble(coor[2]),Double.parseDouble(coor[3]))
-						),
-						"4326",
-						"25833");
-				
-				
-				_tmpEnvelope = new ReferencedEnvelope(
-						tmpEnvelope.getLowerLeftCorner().getX(),
-						tmpEnvelope.getUpperRightCorner().getX(),	
-						tmpEnvelope.getLowerLeftCorner().getY(),							
-						tmpEnvelope.getUpperRightCorner().getY(),
-						CRS.decode("EPSG:" + targetSrs, true));
-
-				double st = System.currentTimeMillis();				
-				List<CityObjectData> result = tree.search(_tmpEnvelope);
-				double en=System.currentTimeMillis();
-				System.out.println(en-st);				
-				System.out.println(result.size());
-				for(CityObjectData dt:result)
-					System.out.println(((CityGML)dt.getValue(0)).getCityGMLClass().name());
-					*/
-			//	bboxWorkerPool.join();
+					bboxWorkerPool.addWork(cityGML);		
+				}				
+			//	bboxWorkerPool.join();												
 			} catch (CityGMLReadException e) {
 				//throw new CityGMLImportException("Failed to parse CityGML file. Aborting.", e);
 			}
 			finally{
+				eventDispatcher.flushEvents();
 				reader.close();
+				bboxWorkerPool.shutdownAndWait();
 			}
 			
+			
+			try{
+				
+				com.vividsolutions.jts.geom.Envelope envelope = null;
+				if(isTreeAvailable())
+					envelope = tree.getBounds();
+					
+				if(envelope!=null){
+					List<Double> LowerCorner =  ProjConvertor.transformPoint(envelope.getMinX(), envelope.getMinY(), 8.19, sourceSrs, targetSrs);
+					List<Double> UpperCorner =  ProjConvertor.transformPoint(envelope.getMaxX(), envelope.getMaxY(), 8.19, sourceSrs, targetSrs);
+	
+					bounds.setLowerLeftCorner(new BoundingBoxCorner(LowerCorner.get(1), LowerCorner.get(0)));
+					bounds.setUpperRightCorner(new BoundingBoxCorner(UpperCorner.get(1),UpperCorner.get(0)));
+				}
+			}
+			catch(Exception ex){
+				
+			}
 		
-			List<Double> LowerCorner =  ProjConvertor.transformPoint(Xmin, Ymin, 8.19, sourceSrs, targetSrs);
-			List<Double> UpperCorner =  ProjConvertor.transformPoint(Xmax, Ymax, 8.19, sourceSrs, targetSrs);
-
-			bounds.setLowerLeftCorner(new BoundingBoxCorner(LowerCorner.get(1), LowerCorner.get(0)));
-			bounds.setUpperRightCorner(new BoundingBoxCorner(UpperCorner.get(1),UpperCorner.get(0)));
-
+			
 
 		} catch (CityGMLReadException e) {
 			Logger.getInstance().error("Failed to calculate CityGML parser. Aborting.");
@@ -355,23 +305,123 @@ public class BoundingBox {
 	}
 	
 	
-	public void setRtree(CityGML cityobject , Envelope bbox ,String targetSrs)throws Exception{
+	public static void setRtree(CityGML cityobject , Envelope bbox , String targetSrs)throws Exception{
 		
-		CityObjectData _data = new CityObjectData(definition);
-		_data.addValue(cityobject);
-		
+		CityObjectData data = new CityObjectData(definition);
+		data.addValue(cityobject);
 		com.vividsolutions.jts.geom.Point centerPoint = getCentroid(bbox);
-		
 		ReferencedEnvelope tmpEnvelope=new ReferencedEnvelope(
 				centerPoint.getX(),
 				centerPoint.getX(),	
 				centerPoint.getY(),							
 				centerPoint.getY(),
 				CRS.decode("EPSG:" + targetSrs, true));
-
-		
-		tree.insert(tmpEnvelope , _data);		
+				
+		tree.insert(tmpEnvelope , data);		
 	}
 	
+	
+	
+	public List<CityObjectData> SelectCityObject(org.citydb.api.geometry.BoundingBox bbox, String sourceSrs) throws Exception{
+				
+		org.citydb.api.geometry.BoundingBox tmpEnvelope = null;
+		if(SourceSRS.equals("4326"))
+		{
+			tmpEnvelope = ProjConvertor.transformBBox(new org.citydb.api.geometry.BoundingBox(
+					new BoundingBoxCorner(bbox.getLowerLeftCorner().getX(),bbox.getLowerLeftCorner().getY()),
+					new BoundingBoxCorner(bbox.getUpperRightCorner().getX(),bbox.getUpperRightCorner().getY())),
+					"4326",
+					sourceSrs);
+		}else{
+			tmpEnvelope = bbox;
+		}
+		
+		ReferencedEnvelope envelope = new ReferencedEnvelope(
+				tmpEnvelope.getLowerLeftCorner().getX(),
+				tmpEnvelope.getUpperRightCorner().getX(),	
+				tmpEnvelope.getLowerLeftCorner().getY(),							
+				tmpEnvelope.getUpperRightCorner().getY(),
+				CRS.decode("EPSG:" + sourceSrs, true));
+
+		List<CityObjectData> result = tree.search(envelope);
+		return result;
+	}
+	
+	
+	
+	public List<CityObjectData> SelectCityObject(String sourceSrs) throws Exception{
+
+		org.citydb.api.geometry.BoundingBox tmpEnvelope  = new org.citydb.api.geometry.BoundingBox(
+				new BoundingBoxCorner(this.nativeBounds.getMinX(),this.nativeBounds.getMinY()),
+				new BoundingBoxCorner(this.nativeBounds.getMaxX(),this.nativeBounds.getMaxY()));
+		
+		return SelectCityObject(tmpEnvelope,sourceSrs);
+	}
+	
+	
+	public static boolean isTreeAvailable(){
+		if(tree != null)
+			return true;
+		else {
+			return false;
+		}
+	}
+	
+	
+	@Override
+	public void handleEvent(Event e) throws Exception {
+
+		if (e.getEventType() == EventType.COUNTER && ((CounterEvent)e).getType() == CounterType.TOPLEVEL_FEATURE) {
+
+			CityGMLClass type = null;
+			Object cityObject = e.getSource();
+
+			if (cityObject instanceof Building) {
+				type = CityGMLClass.BUILDING;
+			}
+			/*else if (kmlExportObject instanceof WaterBody) {
+				type = CityGMLClass.WATER_BODY;
+			}
+			else if (kmlExportObject instanceof LandUse) {
+				type = CityGMLClass.LAND_USE;
+			}
+			else if (kmlExportObject instanceof CityObjectGroup) {
+				type = CityGMLClass.CITY_OBJECT_GROUP;
+			}
+			else if (kmlExportObject instanceof Transportation) {
+				type = CityGMLClass.TRANSPORTATION_COMPLEX;
+			}
+			else if (kmlExportObject instanceof Relief) {
+				type = CityGMLClass.RELIEF_FEATURE;
+			}
+			else if (kmlExportObject instanceof SolitaryVegetationObject) {
+				type = CityGMLClass.SOLITARY_VEGETATION_OBJECT;
+			}
+			else if (kmlExportObject instanceof PlantCover) {
+				type = CityGMLClass.PLANT_COVER;
+			}
+			else if (kmlExportObject instanceof GenericCityObject) {
+				type = CityGMLClass.GENERIC_CITY_OBJECT;
+			}
+			else if (kmlExportObject instanceof CityFurniture) {
+				type = CityGMLClass.CITY_FURNITURE;
+			}*/
+			else
+				return;
+
+			Long counter = featureCounterMap.get(type);
+			Long update = ((CounterEvent)e).getCounter();
+
+			if (counter == null)
+				featureCounterMap.put(type, update);
+			else
+				featureCounterMap.put(type, counter + update);
+		}
+		else if (e.getEventType() == EventType.INTERRUPT) {
+			if (isInterrupted.compareAndSet(false, true)) {
+				shouldRun = false;
+			}
+		}
+	}
 
 }

@@ -53,14 +53,17 @@ import org.citygml4j.util.xml.SAXEventBuffer;
 public class BBoxCalculatorWorkerFactory implements WorkerFactory<CityGML> {
 	private final JAXBBuilder jaxbBuilder;
 	private final ConfigImpl config;
+	private final String SourceSRS;
 	private final EventDispatcher eventDispatcher;
 
 	public BBoxCalculatorWorkerFactory(
 			JAXBBuilder jaxbBuilder,
 			ConfigImpl config,
+			String SourceSRS,
 			EventDispatcher eventDispatcher) {
 		this.jaxbBuilder = jaxbBuilder;
 		this.config = config;
+		this.SourceSRS = SourceSRS;
 		this.eventDispatcher = eventDispatcher;
 	}
 
@@ -72,6 +75,7 @@ public class BBoxCalculatorWorkerFactory implements WorkerFactory<CityGML> {
 			bboxWorker = new BBoxCalculatorWorker(
 					jaxbBuilder,
 					config,
+					SourceSRS,
 					eventDispatcher);
 		} catch (Exception Ex) {
 			// could not instantiate DBWorker

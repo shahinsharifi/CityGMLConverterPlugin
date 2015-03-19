@@ -106,6 +106,7 @@ import org.citydb.api.event.Event;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.event.EventHandler;
 import org.citydb.api.event.global.DatabaseConnectionStateEvent;
+import org.citydb.api.geometry.BoundingBoxCorner;
 import org.citydb.api.gui.BoundingBoxPanel;
 import org.citydb.api.gui.DatabaseSrsComboBox;
 import org.citydb.api.log.LogLevel;
@@ -132,19 +133,24 @@ import org.citydb.plugins.CityGMLConverter.controller.CityKmlExporter;
 //import org.citydb.plugins.CityGMLConverter.gui.components.bbox.BoundingBoxPanelImpl;
 import org.citydb.plugins.CityGMLConverter.gui.components.bbox.BoundingBoxPanelImpl;
 import org.citydb.plugins.CityGMLConverter.util.BoundingBox;
+import org.citydb.plugins.CityGMLConverter.util.ProjConvertor;
 import org.citydb.plugins.CityGMLConverter.util.ThemeUtil;
 import org.citydb.plugins.CityGMLConverter.util.Util;
+import org.citydb.plugins.CityGMLConverter.util.rtree.CityObjectData;
 import org.citydb.util.gui.GuiUtil;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.citygml4j.builder.jaxb.xml.io.reader.JAXBChunkReader;
 import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.CityGMLClass;
+import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.CityModel;
 import org.citygml4j.xml.io.CityGMLInputFactory;
 import org.citygml4j.xml.io.reader.CityGMLInputFilter;
 import org.citygml4j.xml.io.reader.CityGMLReadException;
 import org.citygml4j.xml.io.reader.FeatureReadMode;
 import org.citygml4j.xml.io.reader.MissingADESchemaException;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.referencing.CRS;
 import org.xml.sax.SAXException;
 
 @SuppressWarnings("serial")
@@ -265,8 +271,6 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 
 
 
-
-
 	public CityKmlExportPanel(CityKMLExportPlugin plugin) throws Exception {
 		
 		this.plugin = plugin;
@@ -376,8 +380,9 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 
         JPanel BboxCalcButtonPanel = new JPanel();
 		BboxCalcButtonPanel.add(BboxCalcButton);
-		boundingBoxPanel.add(BboxCalcButtonPanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.HORIZONTAL,2,lmargin,0,BORDER_THICKNESS));
+		boundingBoxPanel.add(BboxCalcButtonPanel, GuiUtil.setConstraints(0,1,1.0,0.0,GridBagConstraints.BOTH,2,lmargin,0,BORDER_THICKNESS));
 
+		
 		tilingButtonGroup.add(noTilingRadioButton);
 		noTilingRadioButton.setIconTextGap(10);
 		tilingButtonGroup.add(automaticTilingRadioButton);
@@ -1030,7 +1035,7 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 				thread.start();
 			}
 		});
-
+		
 
 
 		browseButton.addActionListener(new ActionListener() {
@@ -1093,7 +1098,7 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 		});
 
 	}
-
+	
 
 
 	private File getImportedFile() throws Exception {
@@ -1135,18 +1140,55 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 
 			setSettings();
 			ExportFilterConfig filter = config.getFilter();
-			File _mfile = getImportedFile();
-			BoundingBox bbox = new BoundingBox();
+			File _mfile = getImportedFile();			
 			final EventDispatcher eventDispatcher = ObjectRegistry.getInstance().getEventDispatcher();
+			BoundingBox bbox = new BoundingBox();
+			
+			viewController.setStatusText(Util.I18N.getString("main.status.CityKmlExport.label"));
 
+			final ExportStatusDialog exportDialog = new ExportStatusDialog(viewController.getTopFrame(), 
+					Util.I18N.getString("CityKmlExport.dialog.window"),
+					Util.I18N.getString("CityKmlExport.dialog.msg.indexing"),
+					0);
+
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					exportDialog.setLocationRelativeTo(viewController.getTopFrame());
+					exportDialog.setVisible(true);
+				}
+			});
+
+			exportDialog.getCancelButton().addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					SwingUtilities.invokeLater(new Runnable() {
+						public void run() {
+							eventDispatcher.triggerEvent(new InterruptEvent(
+									InterruptEnum.USER_ABORT, 
+									"User abort of kml export.", 
+									LogLevel.INFO, 
+									this));
+						}
+					});
+				}
+			});
+			
+		
+			
 			if(_mfile != null)
 			{
 				int boundingBoxSrs = filter.getComplexFilter().getTiledBoundingBox().getSrs().getSrid();
 				String TargetSrs = (boundingBoxSrs != 4326 && !srsField.getText().equals("")) ? srsField.getText() : "4326";
 				LOG.info("Calculating the bounding box (EPSG:"+TargetSrs+") ...");
-				bboxComponent.setBoundingBox(bbox.BboxCalculator(jaxbBuilder, config,eventDispatcher,_mfile,srsField.getText(), TargetSrs));
+				bboxComponent.setBoundingBox(bbox.BboxCalculator(jaxbBuilder, config , eventDispatcher , _mfile , srsField.getText() , TargetSrs));
 
 			}
+			
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					exportDialog.dispose();
+				}
+			});
+			
 		}
 		catch(Exception ex)
 		{
@@ -1154,6 +1196,7 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 		}
 		finally
 		{
+			
 			LOG.info("Calculating the bounding box is finished.");
 		}
 	}
@@ -1203,6 +1246,13 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 			if (activeDisplayFormsAmount == 0) {
 				errorMessage(Util.I18N.getString("export.dialog.error.incorrectData"), 
 						Util.I18N.getString("kmlExport.dialog.error.incorrectData.displayForms"));
+				return;
+			}
+			
+			
+			if (!BoundingBox.isTreeAvailable()) {
+				errorMessage(Util.I18N.getString("export.dialog.error.incorrectData"),
+						Util.I18N.getString("CityKmlExport.dialog.error.incorrectData.boundingBox"));
 				return;
 			}
 
@@ -1264,11 +1314,11 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 			}
 			tileAmount = tileAmount * activeDisplayFormsAmount;
 
-			viewController.setStatusText(Util.I18N.getString("main.status.kmlExport.label"));
+			viewController.setStatusText(Util.I18N.getString("main.status.CityKmlExport.label"));
 
 			final ExportStatusDialog exportDialog = new ExportStatusDialog(viewController.getTopFrame(), 
-					Util.I18N.getString("kmlExport.dialog.window"),
-					Util.I18N.getString("export.dialog.msg"),
+					Util.I18N.getString("CityKmlExport.dialog.window"),
+					Util.I18N.getString("CityKmlExport.dialog.msg"),
 					tileAmount);
 
 			SwingUtilities.invokeLater(new Runnable() {

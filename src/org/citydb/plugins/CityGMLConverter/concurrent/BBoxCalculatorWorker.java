@@ -43,6 +43,9 @@ import org.citygml4j.builder.jaxb.JAXBBuilder;
 import org.citygml4j.factory.GMLGeometryFactory;
 import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.CityGMLClass;
+import org.citygml4j.model.citygml.core.AbstractCityObject;
+import org.citygml4j.model.gml.feature.AbstractFeature;
+import org.citygml4j.model.gml.feature.BoundingShape;
 import org.citygml4j.util.xml.SAXEventBuffer;
 import org.citydb.api.concurrent.Worker;
 import org.citydb.api.concurrent.WorkerPool;
@@ -72,6 +75,8 @@ import org.citydb.plugins.CityGMLConverter.content.KmlGenericObject;
 import org.citydb.plugins.CityGMLConverter.util.BoundingBox;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.SqliteImporterManager;
 import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlink;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.referencing.CRS;
 
 
 public class BBoxCalculatorWorker implements Worker<CityGML>{
@@ -87,18 +92,20 @@ public class BBoxCalculatorWorker implements Worker<CityGML>{
 	// instance members needed to do work
 	private final JAXBBuilder jaxbBuilder;
 	private final ConfigImpl config;
+	private final String SourceSRS;
 	private final EventDispatcher eventDispatcher;
 
 	
 
 	public BBoxCalculatorWorker(JAXBBuilder jaxbBuilder,
 			ConfigImpl config,
+			String SourceSRS,
 			EventDispatcher eventDispatcher) throws Exception {
 		
 		this.jaxbBuilder = jaxbBuilder;
 		this.config = config;
+		this.SourceSRS = SourceSRS;
 		this.eventDispatcher = eventDispatcher;
-
 	}
 
 
@@ -172,13 +179,52 @@ public class BBoxCalculatorWorker implements Worker<CityGML>{
 		runLock.lock();
 		
 		try {
+			AbstractCityObject cityObject = (AbstractCityObject)work;
+			org.citygml4j.model.gml.geometry.primitives.Envelope envelope = null;
+			
+			if(cityObject.isSetBoundedBy())
+			{
+				AbstractFeature feature = (AbstractFeature)cityObject;
+				try{
+					BoundingShape bShape = feature.calcBoundedBy(false);
+					if(bShape.isSetEnvelope())
+						envelope = bShape.getEnvelope();
+				}catch(Exception ex){
+				
+				}
+			}else 
+			{
+				
+				AbstractFeature feature = (AbstractFeature)cityObject;
+				try{
+					BoundingShape bShape = feature.calcBoundedBy(false);
+					if(bShape.isSetEnvelope())
+						envelope = bShape.getEnvelope();
+				}catch(Exception ex){
+				
+				}
+			}
+			
+			if(envelope!=null){			
+										
+				ReferencedEnvelope _refEnvelope = new ReferencedEnvelope(
+						envelope.getLowerCorner().toList3d().get(0),
+						envelope.getUpperCorner().toList3d().get(0),	
+						envelope.getLowerCorner().toList3d().get(1),							
+						envelope.getUpperCorner().toList3d().get(1),
+						CRS.decode("EPSG:" + SourceSRS, true));
+				
+				
+				BoundingBox.setRtree(work, _refEnvelope, SourceSRS);
+			}
 
-			Logger.getInstance().error("BoundingBox for thread: ");
+		}
+		catch(Exception ex){
+			Logger.getInstance().error(ex.toString());
 		}
 		finally {
 			runLock.unlock();
 		}
 	}
-
 
 }

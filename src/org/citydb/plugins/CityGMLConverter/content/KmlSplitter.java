@@ -87,6 +87,7 @@ import org.citydb.plugins.CityGMLConverter.util.CityObject4JSON;
 import org.citydb.plugins.CityGMLConverter.util.ElevationHelper;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.SQLiteFactory;
 import org.citydb.plugins.CityGMLConverter.util.filter.ExportFilter;
+import org.citydb.plugins.CityGMLConverter.util.rtree.CityObjectData;
 
 
 public class KmlSplitter {
@@ -176,12 +177,6 @@ public class KmlSplitter {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.CITY_OBJECT_GROUP);
 		}
 
-
-
-		// try and change workspace for connection if needed
-		/*Database database = config.getProject().getDatabase();
-		dbConnectionPool.gotoWorkspace(connection, 
-										 database.getWorkspaces().getKmlExportWorkspace());*/
 
 	}
 
@@ -312,15 +307,21 @@ public class KmlSplitter {
 
 				
 				//for reading buildings
-				reader = in.createFilteredCityGMLReader(in.createCityGMLReader(file), inputFilter);
+			//	reader = in.createFilteredCityGMLReader(in.createCityGMLReader(file), inputFilter);
 				LOG.info("Reading city objects ...");
-				while (reader.hasNext()) {
+			//	while (reader.hasNext()) {
 
+				List<CityObjectData> result = _bounds.SelectCityObject(this.TargetSrs);
+
+				for(CityObjectData dt:result){
+					
+				
 					try{
 
 						Envelope envelope = null;
-						XMLChunk chunk = reader.nextChunk();
-						CityGML cityGML = chunk.unmarshal();
+						//XMLChunk chunk = reader.nextChunk();
+						//CityGML cityGML = chunk.unmarshal();
+						CityGML cityGML = (CityGML)dt.getValue(0);
 						
 						if(cityGML.getCityGMLClass() != CityGMLClass.APPEARANCE && cityGML.getModelType() == ModelType.CITYGML ){
 
@@ -363,8 +364,8 @@ public class KmlSplitter {
 										envelope.getUpperCorner().toList3d().get(1),
 										CRS.decode("EPSG:" + this.TargetSrs, true));
 
-								if(_bounds.ContainCentroid(_refEnvelope,TargetSrs))						
-								{
+							//	if(_bounds.ContainCentroid(_refEnvelope,TargetSrs))						
+							//	{
 
 									ElevationHelper elevation = new ElevationHelper(connection);								
 									KmlSplittingResult splitter = new KmlSplittingResult(cityObject.getId() , cityGML , cityObjectType , displayForm, TargetSrs , new CopyOnWriteArrayList<Appearance>(tmpAppearanceList) , elevation);		
@@ -381,7 +382,7 @@ public class KmlSplitter {
 									kmlWorkerPool.addWork(splitter);									
 									CityKmlExporter.getAlreadyExported().put(cityObject.getId(), cityObject4Json);
 									tmpAppearanceList.clear();									
-								}
+							//	}
 							}
 						}
 
@@ -390,7 +391,8 @@ public class KmlSplitter {
 					}
 					
 				}
-				reader.close();
+				//reader.close();
+			
 
 			} catch (Exception e) {
 

@@ -659,7 +659,6 @@ public class CityKmlExporter implements EventHandler {
 		props.put(Marshaller.JAXB_FRAGMENT, new Boolean(true));
 //		props.put(Marshaller.JAXB_FORMATTED_OUTPUT, new Boolean(true));
 //		props.put(Marshaller.JAXB_ENCODING, ENCODING);
-
 		TilingMode tilingMode = config.getFilter().getComplexFilter().getTiledBoundingBox().getTiling().getMode();
 
 		try {
@@ -785,11 +784,17 @@ public class CityKmlExporter implements EventHandler {
 			for (int i = 0; i < rows; i++) {
 				for (int j = 0; j < columns; j++) {
 
+					// must be done like this to avoid non-matching tile limits
+					double wgs84TileSouthLimit = wgs84TileMatrix.getLowerLeftCorner().getY() + (i * wgs84DeltaLatitude);
+					double wgs84TileNorthLimit = wgs84TileMatrix.getLowerLeftCorner().getY() + ((i+1) * wgs84DeltaLatitude);
+					double wgs84TileWestLimit = wgs84TileMatrix.getLowerLeftCorner().getX() + (j * wgs84DeltaLongitude);
+					double wgs84TileEastLimit = wgs84TileMatrix.getLowerLeftCorner().getX() + ((j+1) * wgs84DeltaLongitude);
 
 					// tileName should not contain special characters,
 					// since it will be used as filename for all displayForm files
 					String tileName = filename;
-					if (tilingMode != TilingMode.NO_TILING) {
+
+					if (tilingMode != TilingMode.NO_TILING) {		
 						tileName = tileName + "_Tile_" + i + "_" + j;
 					}
 					FolderType folderType = kmlFactory.createFolderType();
@@ -808,10 +813,10 @@ public class CityKmlExporter implements EventHandler {
 						RegionType regionType = kmlFactory.createRegionType();
 
 						LatLonAltBoxType latLonAltBoxType = kmlFactory.createLatLonAltBoxType();
-						latLonAltBoxType.setNorth(wgs84TileMatrix.getUpperRightCorner().getY());
-						latLonAltBoxType.setSouth(wgs84TileMatrix.getLowerLeftCorner().getY());
-						latLonAltBoxType.setEast(wgs84TileMatrix.getUpperRightCorner().getX());
-						latLonAltBoxType.setWest(wgs84TileMatrix.getLowerLeftCorner().getX());
+						latLonAltBoxType.setNorth(wgs84TileNorthLimit);
+						latLonAltBoxType.setSouth(wgs84TileSouthLimit);
+						latLonAltBoxType.setEast(wgs84TileEastLimit);
+						latLonAltBoxType.setWest(wgs84TileWestLimit);
 
 						LodType lodType = kmlFactory.createLodType();
 						lodType.setMinLodPixels((double)displayForm.getVisibleFrom());
