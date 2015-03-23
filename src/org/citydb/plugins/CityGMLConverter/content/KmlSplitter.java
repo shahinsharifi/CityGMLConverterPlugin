@@ -289,7 +289,7 @@ public class KmlSplitter {
 				tmpAppearanceList = new ArrayList<Appearance>();
 
 				//only for reading global appearance
-				if(displayForm.getForm() == DisplayForm.COLLADA)
+			/*	if(displayForm.getForm() == DisplayForm.COLLADA)
 				{
 					reader = in.createFilteredCityGMLReader(in.createCityGMLReader(file), inputFilter);
 					LOG.info("Searching for global appearance ...");
@@ -304,7 +304,7 @@ public class KmlSplitter {
 					}
 					reader.close();
 				}
-
+*/
 				
 				//for reading buildings
 			//	reader = in.createFilteredCityGMLReader(in.createCityGMLReader(file), inputFilter);

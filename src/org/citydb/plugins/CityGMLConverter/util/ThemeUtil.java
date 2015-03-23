@@ -31,10 +31,27 @@ package org.citydb.plugins.CityGMLConverter.util;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.xml.namespace.QName;
 
+import org.citydb.api.concurrent.PoolSizeAdaptationStrategy;
+import org.citydb.api.concurrent.WorkerPool;
+import org.citydb.api.event.Event;
+import org.citydb.api.event.EventDispatcher;
+import org.citydb.api.event.EventHandler;
+import org.citydb.log.Logger;
+import org.citydb.modules.common.event.CounterEvent;
+import org.citydb.modules.common.event.CounterType;
+import org.citydb.modules.common.event.EventType;
+import org.citydb.plugins.CityGMLConverter.concurrent.AppearanceWorkerFactory;
+import org.citydb.plugins.CityGMLConverter.concurrent.BBoxCalculatorWorkerFactory;
+import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
+import org.citydb.plugins.CityGMLConverter.content.Building;
+import org.citydb.plugins.CityGMLConverter.util.rtree.RTree;
+import org.citydb.plugins.CityGMLConverter.util.rtree.memory.MemoryPageStore;
 import org.citygml4j.CityGMLContext;
 import org.citygml4j.builder.CityGMLBuilder;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
@@ -55,93 +72,25 @@ import org.citygml4j.xml.io.reader.CityGMLReadException;
 import org.citygml4j.xml.io.reader.CityGMLReader;
 import org.citygml4j.xml.io.reader.FeatureReadMode;
 import org.citygml4j.xml.io.reader.XMLChunk;
+import org.geotools.index.DataDefinition;
 
 
-public class ThemeUtil {
+public class ThemeUtil implements EventHandler{
 
+	private static List<Object> tmpAppearanceList = new ArrayList<Object>();
+	private WorkerPool<CityGML> appearanceWorkerPool;
+	private EnumMap<CityGMLClass, Long>featureCounterMap = new EnumMap<CityGMLClass, Long>(CityGMLClass.class);
+	private volatile boolean shouldRun = true;
+	private AtomicBoolean isInterrupted = new AtomicBoolean(false);
 
-	public static List<String> getAppearanceThemeList(JAXBBuilder jaxbBuilder , File file) throws Exception {
-
-
-		CityGMLReader reader = null;
-		CityGMLInputFactory in = null;		
+	public  List<String> getAppearanceThemeList(JAXBBuilder jaxbBuilder, File file) throws Exception {
 
 		ArrayList<String> appearanceThemes = new ArrayList<String>();
-		List<Object> tmpAppearanceList = new ArrayList<Object>();
 		final String THEME_UNKNOWN = "<unknown>";
-
-
 		try {
 
-			CityGMLInputFilter inputFilter = new CityGMLInputFilter() {
-				public boolean accept(CityGMLClass type) {
-					return true;
-				}
-			};
-
-			in = jaxbBuilder.createCityGMLInputFactory();
-			in.setProperty(CityGMLInputFactory.FEATURE_READ_MODE, FeatureReadMode.SPLIT_PER_COLLECTION_MEMBER);
-			in.setProperty(CityGMLInputFactory.FAIL_ON_MISSING_ADE_SCHEMA, false);
-			in.setProperty(CityGMLInputFactory.PARSE_SCHEMA, false);
-			in.setProperty(CityGMLInputFactory.SPLIT_AT_FEATURE_PROPERTY, new QName("generalizesTo"));
-			in.setProperty(CityGMLInputFactory.EXCLUDE_FROM_SPLITTING, CityModel.class);
-			reader = in.createCityGMLReader(file);
-
-			while (reader.hasNext()) {
-				XMLChunk chunk = reader.nextChunk();
-				CityGML cityGML = chunk.unmarshal();
-
-				if(cityGML.getCityGMLClass() == CityGMLClass.APPEARANCE)
-				{
-					Appearance _appreance = (Appearance)cityGML;
-					tmpAppearanceList.add(_appreance);
-
-				}
-				else if(cityGML.getCityGMLClass() == CityGMLClass.BUILDING){
-
-					AbstractCityObject cityObject = (AbstractCityObject)cityGML;
-
-					if (cityObject!=null) {					
-						if(cityObject.isSetAppearance())
-							tmpAppearanceList.addAll(cityObject.getAppearance());
-						else {
-
-							AbstractBuilding building = (AbstractBuilding)cityObject;
-							if(building.isSetConsistsOfBuildingPart())
-							{
-								for(BuildingPartProperty buidingPart : building.getConsistsOfBuildingPart())
-								{
-									BuildingPart tmpBuildingPart = buidingPart.getBuildingPart();
-									if(tmpBuildingPart.isSetAppearance())
-									{	
-										tmpAppearanceList.addAll(tmpBuildingPart.getAppearance());
-										break;
-									}
-								}
-								break;
-							}
-						}
-					}
-				}
-				else
-				{
-					//this part will be added in the future.
-				}
-			}
-
-			if(tmpAppearanceList.size() == 0){
-				CityModel cityModel = (CityModel)reader.nextFeature();			
-
-				if(cityModel.isSetCityObjectMember()){				
-					for (CityObjectMember member : cityModel.getCityObjectMember()) {
-						if (member.isSetCityObject()) 
-							tmpAppearanceList.addAll(cityModel.getAppearanceMember());
-					}
-				}
-			}
-
-			if(tmpAppearanceList.size() > 0){
-				for(Object app : tmpAppearanceList){
+			if(ThemeUtil.tmpAppearanceList.size() > 0){
+				for(Object app : ThemeUtil.tmpAppearanceList){
 					
 					String THEME_VALID = "";
 					if(app.getClass() == AppearanceProperty.class)
@@ -161,13 +110,80 @@ public class ThemeUtil {
 
 
 		} catch (Exception Ex) {
-			throw Ex;
+			Logger.getInstance().error(Ex.toString());
 		} finally {
-			reader.close();
+			
 		}
 
 		return appearanceThemes;
 	}
 
+	
 
+	public static List<Object> getTmpAppearanceList() {
+		return tmpAppearanceList;
+	}
+
+
+	@Override
+	public void handleEvent(Event e) throws Exception {
+
+		if (e.getEventType() == EventType.COUNTER && ((CounterEvent)e).getType() == CounterType.TOPLEVEL_FEATURE) {
+
+			CityGMLClass type = null;
+			Object cityObject = e.getSource();
+
+			if (cityObject instanceof Building) {
+				type = CityGMLClass.BUILDING;
+			}
+			/*else if (kmlExportObject instanceof WaterBody) {
+				type = CityGMLClass.WATER_BODY;
+			}
+			else if (kmlExportObject instanceof LandUse) {
+				type = CityGMLClass.LAND_USE;
+			}
+			else if (kmlExportObject instanceof CityObjectGroup) {
+				type = CityGMLClass.CITY_OBJECT_GROUP;
+			}
+			else if (kmlExportObject instanceof Transportation) {
+				type = CityGMLClass.TRANSPORTATION_COMPLEX;
+			}
+			else if (kmlExportObject instanceof Relief) {
+				type = CityGMLClass.RELIEF_FEATURE;
+			}
+			else if (kmlExportObject instanceof SolitaryVegetationObject) {
+				type = CityGMLClass.SOLITARY_VEGETATION_OBJECT;
+			}
+			else if (kmlExportObject instanceof PlantCover) {
+				type = CityGMLClass.PLANT_COVER;
+			}
+			else if (kmlExportObject instanceof GenericCityObject) {
+				type = CityGMLClass.GENERIC_CITY_OBJECT;
+			}
+			else if (kmlExportObject instanceof CityFurniture) {
+				type = CityGMLClass.CITY_FURNITURE;
+			}*/
+			else
+				return;
+
+			Long counter = featureCounterMap.get(type);
+			Long update = ((CounterEvent)e).getCounter();
+
+			if (counter == null)
+				featureCounterMap.put(type, update);
+			else
+				featureCounterMap.put(type, counter + update);
+		}
+		else if (e.getEventType() == EventType.INTERRUPT) {
+			if (isInterrupted.compareAndSet(false, true)) {
+				shouldRun = false;
+			}
+			
+			if (appearanceWorkerPool != null) {
+				appearanceWorkerPool.shutdownNow();
+			}
+		}
+	}
+	
+	
 }

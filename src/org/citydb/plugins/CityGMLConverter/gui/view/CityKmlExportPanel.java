@@ -269,6 +269,8 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 	private JButton exportButton = new JButton("");
 	private JButton BboxCalcButton = new JButton("");
 
+	
+	private ThemeUtil themeUtil = new ThemeUtil();
 
 
 	public CityKmlExportPanel(CityKMLExportPlugin plugin) throws Exception {
@@ -1196,7 +1198,6 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 		}
 		finally
 		{
-			
 			LOG.info("Calculating the bounding box is finished.");
 		}
 	}
@@ -1568,7 +1569,7 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 	private class ThemeUpdater extends Thread {
 		
 		public void run() {
-			
+
 			setSettings();
 			if (config.getInternal().getImportFiles().length == 0) {
 				errorMessage(Util.I18N.getString("CityKmlExport.dialog.error.incompleteData"), 
@@ -1578,7 +1579,7 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 			
 			Thread.currentThread().setName(this.getClass().getSimpleName());
 			fetchThemesButton.setEnabled(false);
-						
+				
 			try {
 				
 				if (true) {
@@ -1586,7 +1587,7 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 					themeComboBox.addItem(config.THEME_NONE);
 					themeComboBox.setSelectedItem(config.THEME_NONE);
 					LOG.info("Start fetching themes ...");
-					for (String theme: ThemeUtil.getAppearanceThemeList(jaxbBuilder, config.getInternal().getImportFiles()[0])) {
+					for (String theme: themeUtil.getAppearanceThemeList(jaxbBuilder, config.getInternal().getImportFiles()[0])) {
 						if (theme == null) continue;
 						themeComboBox.addItem(theme);
 						if (theme.equals(config.getAppearanceTheme())) {

@@ -53,6 +53,7 @@ import org.citydb.modules.common.event.EventType;
 import org.citydb.modules.common.event.InterruptEvent;
 import org.citydb.modules.common.event.StatusDialogMessage;
 import org.citydb.modules.common.filter.ImportFilter;
+import org.citydb.plugins.CityGMLConverter.concurrent.AppearanceWorkerFactory;
 import org.citydb.plugins.CityGMLConverter.concurrent.BBoxCalculatorWorkerFactory;
 import org.citydb.plugins.CityGMLConverter.concurrent.CityKmlExportWorkerFactory;
 import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
@@ -98,6 +99,7 @@ public class BoundingBox implements EventHandler{
 	private org.opengis.geometry.BoundingBox nativeBounds;
 	private String SourceSRS;
 	private WorkerPool<CityGML> bboxWorkerPool;
+	private WorkerPool<CityGML> appearanceWorkerPool;
 	private static DataDefinition definition = null;
 	private static RTree tree = null;
 	private EnumMap<CityGMLClass, Long>featureCounterMap = new EnumMap<CityGMLClass, Long>(CityGMLClass.class);
@@ -216,6 +218,7 @@ public class BoundingBox implements EventHandler{
 		
 
 		org.citydb.api.geometry.BoundingBox bounds = new org.citydb.api.geometry.BoundingBox();
+		
 		bboxWorkerPool = new WorkerPool<CityGML>(
 				"bboxWorkerPool",
 				minThreads,
@@ -229,6 +232,20 @@ public class BoundingBox implements EventHandler{
 						queueSize,
 						false);
 		
+		
+		appearanceWorkerPool = new WorkerPool<CityGML>(
+				"appearanceWorkerPool",
+				minThreads,
+				maxThreads,
+				PoolSizeAdaptationStrategy.AGGRESSIVE,
+				new AppearanceWorkerFactory(
+						jaxbBuilder,
+						config,
+						eventDispatcher),
+						queueSize,
+						false);
+		
+		appearanceWorkerPool.prestartCoreWorkers();		
 		bboxWorkerPool.prestartCoreWorkers();
 		
 
@@ -261,11 +278,12 @@ public class BoundingBox implements EventHandler{
 					XMLChunk chunk = reader.nextChunk();
 					CityGML cityGML = chunk.unmarshal();
 					eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1 , this));
-					if(cityGML.getCityGMLClass() == CityGMLClass.APPEARANCE)
-						break;
-					bboxWorkerPool.addWork(cityGML);		
+					if(cityGML.getCityGMLClass() != CityGMLClass.APPEARANCE)						
+						bboxWorkerPool.addWork(cityGML);
+					appearanceWorkerPool.addWork(cityGML);
 				}				
-			//	bboxWorkerPool.join();												
+				bboxWorkerPool.join();
+				appearanceWorkerPool.join();
 			} catch (CityGMLReadException e) {
 				//throw new CityGMLImportException("Failed to parse CityGML file. Aborting.", e);
 			}
@@ -273,6 +291,7 @@ public class BoundingBox implements EventHandler{
 				eventDispatcher.flushEvents();
 				reader.close();
 				bboxWorkerPool.shutdownAndWait();
+				appearanceWorkerPool.shutdownAndWait();
 			}
 			
 			
@@ -420,6 +439,11 @@ public class BoundingBox implements EventHandler{
 		else if (e.getEventType() == EventType.INTERRUPT) {
 			if (isInterrupted.compareAndSet(false, true)) {
 				shouldRun = false;
+			}
+			
+			
+			if (bboxWorkerPool != null) {
+				bboxWorkerPool.shutdownNow();
 			}
 		}
 	}
