@@ -63,6 +63,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
 
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -1132,6 +1133,13 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 
 	private void doCalculation() throws Exception{
 
+		
+		if (config.getInternal().getImportFiles().length==0) {
+			errorMessage(Util.I18N.getString("CityKmlExport.dialog.error.incompleteData"), 
+					Util.I18N.getString("CityKmlExport.dialog.error.incompleteData.import"));
+			return;
+		}
+
 		if (srsField.getText().equals("")) {
 			errorMessage(Util.I18N.getString("CityKmlExport.dialog.error.incompleteData"), 
 					Util.I18N.getString("CityKmlExport.dialog.error.incompleteData.epsg"));
@@ -1202,6 +1210,7 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 		}
 	}
 
+	
 
 	private void doExport() throws Exception {
 		
@@ -1560,11 +1569,14 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 
 		fileListModel.clear();
 		for (File file : chooser.getSelectedFiles())
-			fileListModel.addElement(file.toString());
+			fileListModel.addElement(file.toString());	
 
+		
 		config.getSourcePath().setLastUsedPath(chooser.getCurrentDirectory().getAbsolutePath());
 	}
 
+	
+	
 	//fetch theme from selected dataset by preprocessing
 	private class ThemeUpdater extends Thread {
 		

@@ -1002,6 +1002,8 @@ public abstract class KmlGenericObject {
     }
 
     private void useExternalTAGenerator(int packingAlgorithm, double scaleFactor, boolean pots) throws SQLException, IOException {
+    	
+    	try{
         org.citygml.textureAtlasAPI.TextureAtlasGenerator taGenerator = new org.citygml.textureAtlasAPI.TextureAtlasGenerator();
         TexImageInfo tiInfo = new TexImageInfo();
         tiInfo.setTexImageURIs(texImageUris);
@@ -1097,6 +1099,9 @@ public abstract class KmlGenericObject {
                 vertexInfoIterator = vertexInfoIterator.getNextVertexInfo();
             }
         }
+    	}catch (Exception ex){
+    		Logger.getInstance().error(ex.toString());
+    	}
     }
 
     public void resizeAllImagesByFactor (double factor) throws SQLException, IOException {
