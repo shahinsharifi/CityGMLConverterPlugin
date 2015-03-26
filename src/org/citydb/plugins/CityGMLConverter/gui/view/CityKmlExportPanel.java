@@ -63,7 +63,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
 
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -1569,14 +1568,12 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 
 		fileListModel.clear();
 		for (File file : chooser.getSelectedFiles())
-			fileListModel.addElement(file.toString());	
-
+				fileListModel.addElement(file.toString());	
 		
 		config.getSourcePath().setLastUsedPath(chooser.getCurrentDirectory().getAbsolutePath());
 	}
 
-	
-	
+
 	//fetch theme from selected dataset by preprocessing
 	private class ThemeUpdater extends Thread {
 		
