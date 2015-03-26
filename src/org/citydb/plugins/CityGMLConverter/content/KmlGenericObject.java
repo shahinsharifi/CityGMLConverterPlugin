@@ -1004,101 +1004,101 @@ public abstract class KmlGenericObject {
     private void useExternalTAGenerator(int packingAlgorithm, double scaleFactor, boolean pots) throws SQLException, IOException {
     	
     	try{
-        org.citygml.textureAtlasAPI.TextureAtlasGenerator taGenerator = new org.citygml.textureAtlasAPI.TextureAtlasGenerator();
-        TexImageInfo tiInfo = new TexImageInfo();
-        tiInfo.setTexImageURIs(texImageUris);
+    		org.citygml.textureAtlasAPI.TextureAtlasGenerator taGenerator = new org.citygml.textureAtlasAPI.TextureAtlasGenerator();
+    		TexImageInfo tiInfo = new TexImageInfo();
+    		tiInfo.setTexImageURIs(texImageUris);
 
-        HashMap<String, TexImage> tiInfoImages = new HashMap<String, TexImage>();
+    		HashMap<String, TexImage> tiInfoImages = new HashMap<String, TexImage>();
 
-        Set<String> texImagesSet = texImages.keySet();
-        Iterator<String> texImagesIterator = texImagesSet.iterator();
-        while (texImagesIterator.hasNext()) {
-            String imageName = texImagesIterator.next();
-            TexImage image = new TexImage(texImages.get(imageName));
-            tiInfoImages.put(imageName, image);
-        }
+    		Set<String> texImagesSet = texImages.keySet();
+    		Iterator<String> texImagesIterator = texImagesSet.iterator();
+    		while (texImagesIterator.hasNext()) {
+    			String imageName = texImagesIterator.next();
+    			TexImage image = new TexImage(texImages.get(imageName));
+    			tiInfoImages.put(imageName, image);
+    		}
 
-        //		if (texOrdImages != null) {
-        //			texImagesSet = texOrdImages.keySet();
-        //			texImagesIterator = texImagesSet.iterator();
-        //			while (texImagesIterator.hasNext()) {
-        //				String imageName = texImagesIterator.next();
-        //				TexImage image = new TexImage(texOrdImages.get(imageName));
-        //				tiInfoImages.put(imageName, image);
-        //			}
-        //		}
+    		//		if (texOrdImages != null) {
+    		//			texImagesSet = texOrdImages.keySet();
+    		//			texImagesIterator = texImagesSet.iterator();
+    		//			while (texImagesIterator.hasNext()) {
+    		//				String imageName = texImagesIterator.next();
+    		//				TexImage image = new TexImage(texOrdImages.get(imageName));
+    		//				tiInfoImages.put(imageName, image);
+    		//			}
+    		//		}
 
-        tiInfo.setTexImages(tiInfoImages);
+    		tiInfo.setTexImages(tiInfoImages);
 
-        // texture coordinates
-        HashMap<Object, String> tiInfoCoords = new HashMap<Object, String>();
+    		// texture coordinates
+    		HashMap<Object, String> tiInfoCoords = new HashMap<Object, String>();
 
-        Set<Object> sgIdSet = texImageUris.keySet();
-        Iterator<Object> sgIdIterator = sgIdSet.iterator();
-        while (sgIdIterator.hasNext()) {
-            String sgId = (String) sgIdIterator.next();
-            VertexInfo vertexInfoIterator = firstVertexInfo;
-            while (vertexInfoIterator != null) {
-                if (vertexInfoIterator.getAllTexCoords() != null &&
-                        vertexInfoIterator.getAllTexCoords().containsKey(sgId)) {
-                    double s = vertexInfoIterator.getTexCoords(sgId).getS();
-                    double t = vertexInfoIterator.getTexCoords(sgId).getT();
-                    String tiInfoCoordsForSgId = tiInfoCoords.get(sgId);
-                    tiInfoCoordsForSgId = (tiInfoCoordsForSgId == null) ?
-                            "" :
-                            tiInfoCoordsForSgId + " ";
-                    tiInfoCoords.put(sgId, tiInfoCoordsForSgId + String.valueOf(s) + " " + String.valueOf(t));
-                }
-                vertexInfoIterator = vertexInfoIterator.getNextVertexInfo();
-            }
-        }
+    		Set<Object> sgIdSet = texImageUris.keySet();
+    		Iterator<Object> sgIdIterator = sgIdSet.iterator();
+    		while (sgIdIterator.hasNext()) {
+    			String sgId = (String) sgIdIterator.next();
+    			VertexInfo vertexInfoIterator = firstVertexInfo;
+    			while (vertexInfoIterator != null) {
+    				if (vertexInfoIterator.getAllTexCoords() != null &&
+    						vertexInfoIterator.getAllTexCoords().containsKey(sgId)) {
+    					double s = vertexInfoIterator.getTexCoords(sgId).getS();
+    					double t = vertexInfoIterator.getTexCoords(sgId).getT();
+    					String tiInfoCoordsForSgId = tiInfoCoords.get(sgId);
+    					tiInfoCoordsForSgId = (tiInfoCoordsForSgId == null) ?
+    							"" :
+    								tiInfoCoordsForSgId + " ";
+    					tiInfoCoords.put(sgId, tiInfoCoordsForSgId + String.valueOf(s) + " " + String.valueOf(t));
+    				}
+    				vertexInfoIterator = vertexInfoIterator.getNextVertexInfo();
+    			}
+    		}
 
-        tiInfo.setTexCoordinates(tiInfoCoords);
+    		tiInfo.setTexCoordinates(tiInfoCoords);
 
-        taGenerator.setUsePOTS(pots);
-        taGenerator.setScaleFactor(scaleFactor);
-        tiInfo = taGenerator.convert(tiInfo, packingAlgorithm);
+    		taGenerator.setUsePOTS(pots);
+    		taGenerator.setScaleFactor(scaleFactor);
+    		tiInfo = taGenerator.convert(tiInfo, packingAlgorithm);
 
-        texImageUris = tiInfo.getTexImageURIs();
-        tiInfoImages = tiInfo.getTexImages();
-        tiInfoCoords = tiInfo.getTexCoordinates();
+    		texImageUris = tiInfo.getTexImageURIs();
+    		tiInfoImages = tiInfo.getTexImages();
+    		tiInfoCoords = tiInfo.getTexCoordinates();
 
-        texImages.clear();
-        //		if (texOrdImages != null) {
-        //			texOrdImages.clear();
-        //		}
+    		texImages.clear();
+    		//		if (texOrdImages != null) {
+    		//			texOrdImages.clear();
+    		//		}
 
-        texImagesSet = tiInfoImages.keySet();
-        texImagesIterator = texImagesSet.iterator();
-        while (texImagesIterator.hasNext()) {
-            String texImageName = texImagesIterator.next();
-            TexImage texImage = tiInfoImages.get(texImageName);
-            if (texImage.getBufferedImage() != null) {
-                texImages.put(texImageName, texImage.getBufferedImage());
-            }
-            //			else if (texImage.getOrdImage() != null) {
-            //				if (texOrdImages == null) {
-            //					texOrdImages = new HashMap<String, OrdImage>();
-            //				}
-            //				texOrdImages.put(texImageName, texImage.getOrdImage());
-            //			}
-        }
+    		texImagesSet = tiInfoImages.keySet();
+    		texImagesIterator = texImagesSet.iterator();
+    		while (texImagesIterator.hasNext()) {
+    			String texImageName = texImagesIterator.next();
+    			TexImage texImage = tiInfoImages.get(texImageName);
+    			if (texImage.getBufferedImage() != null) {
+    				texImages.put(texImageName, texImage.getBufferedImage());
+    			}
+    			//			else if (texImage.getOrdImage() != null) {
+    			//				if (texOrdImages == null) {
+    			//					texOrdImages = new HashMap<String, OrdImage>();
+    			//				}
+    			//				texOrdImages.put(texImageName, texImage.getOrdImage());
+    			//			}
+    		}
 
-        sgIdIterator = sgIdSet.iterator();
-        while (sgIdIterator.hasNext()) {
-            String sgId = (String) sgIdIterator.next();
-            StringTokenizer texCoordsTokenized = new StringTokenizer(tiInfoCoords.get(sgId), " ");
-            VertexInfo vertexInfoIterator = firstVertexInfo;
-            while (texCoordsTokenized.hasMoreElements() &&
-                    vertexInfoIterator != null) {
-                if (vertexInfoIterator.getAllTexCoords() != null &&
-                        vertexInfoIterator.getAllTexCoords().containsKey(sgId)) {
-                    vertexInfoIterator.getTexCoords(sgId).setS(Double.parseDouble(texCoordsTokenized.nextToken()));
-                    vertexInfoIterator.getTexCoords(sgId).setT(Double.parseDouble(texCoordsTokenized.nextToken()));
-                }
-                vertexInfoIterator = vertexInfoIterator.getNextVertexInfo();
-            }
-        }
+    		sgIdIterator = sgIdSet.iterator();
+    		while (sgIdIterator.hasNext()) {
+    			String sgId = (String) sgIdIterator.next();
+    			StringTokenizer texCoordsTokenized = new StringTokenizer(tiInfoCoords.get(sgId), " ");
+    			VertexInfo vertexInfoIterator = firstVertexInfo;
+    			while (texCoordsTokenized.hasMoreElements() &&
+    					vertexInfoIterator != null) {
+    				if (vertexInfoIterator.getAllTexCoords() != null &&
+    						vertexInfoIterator.getAllTexCoords().containsKey(sgId)) {
+    					vertexInfoIterator.getTexCoords(sgId).setS(Double.parseDouble(texCoordsTokenized.nextToken()));
+    					vertexInfoIterator.getTexCoords(sgId).setT(Double.parseDouble(texCoordsTokenized.nextToken()));
+    				}
+    				vertexInfoIterator = vertexInfoIterator.getNextVertexInfo();
+    			}
+    		}
     	}catch (Exception ex){
     		Logger.getInstance().error(ex.toString());
     	}
