@@ -215,7 +215,7 @@ public class BBoxCalculatorWorker implements Worker<CityGML>{
 						CRS.decode("EPSG:" + SourceSRS, true));
 				
 				
-				BoundingBox.setRtree(work, _refEnvelope, SourceSRS);
+				BoundingBox.addNodeToRtree(work, _refEnvelope, SourceSRS);
 			}
 
 		}

@@ -46,17 +46,16 @@ import org.citydb.api.event.EventHandler;
 import org.citydb.api.geometry.BoundingBoxCorner;
 import org.citydb.api.registry.ObjectRegistry;
 import org.citydb.config.Config;
+import org.citydb.config.language.Language;
+import org.citydb.io.DirectoryScanner;
 import org.citydb.log.Logger;
-import org.citydb.modules.common.event.CounterEvent;
-import org.citydb.modules.common.event.CounterType;
-import org.citydb.modules.common.event.EventType;
-import org.citydb.modules.common.event.InterruptEvent;
-import org.citydb.modules.common.event.StatusDialogMessage;
+import org.citydb.modules.common.event.*;
 import org.citydb.modules.common.filter.ImportFilter;
 import org.citydb.plugins.CityGMLConverter.concurrent.AppearanceWorkerFactory;
 import org.citydb.plugins.CityGMLConverter.concurrent.BBoxCalculatorWorkerFactory;
 import org.citydb.plugins.CityGMLConverter.concurrent.CityKmlExportWorkerFactory;
 import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
+import org.citydb.plugins.CityGMLConverter.config.Internal;
 import org.citydb.plugins.CityGMLConverter.content.Building;
 import org.citydb.plugins.CityGMLConverter.content.KmlSplittingResult;
 import org.citydb.plugins.CityGMLConverter.util.rtree.CityObjectData;
@@ -84,6 +83,7 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.index.Data;
 import org.geotools.index.DataDefinition;
 import org.geotools.referencing.CRS;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -197,134 +197,152 @@ public class BoundingBox implements EventHandler{
 			EventDispatcher eventDispatcher,
 			File sourceFile,
 			String sourceSrs,
-			String targetSrs) throws Exception{	
-		
-		
-		Logger.getInstance().info("Indexing the dataset ...");
-		
-		eventDispatcher.addEventHandler(EventType.COUNTER, this);
-		eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
-		shouldRun = true;
-
-		int availableCores = Runtime.getRuntime().availableProcessors();
-		int minThreads = availableCores;//resources.getThreadPool().getDefaultPool().getMinThreads();
-		int maxThreads = availableCores;//resources.getThreadPool().getDefaultPool().getMaxThreads();
-		int queueSize = maxThreads * 2;
-		
-		
-		definition = new DataDefinition("UTF-8");
-		definition.addField(1);
-		tree = new RTree(new MemoryPageStore(definition));
-		
-
-		org.citydb.api.geometry.BoundingBox bounds = new org.citydb.api.geometry.BoundingBox();
-		
-		bboxWorkerPool = new WorkerPool<CityGML>(
-				"bboxWorkerPool",
-				minThreads,
-				maxThreads,
-				PoolSizeAdaptationStrategy.AGGRESSIVE,
-				new BBoxCalculatorWorkerFactory(
-						jaxbBuilder,
-						config,
-						targetSrs,
-						eventDispatcher),
-						queueSize,
-						false);
-		
-		
-		appearanceWorkerPool = new WorkerPool<CityGML>(
-				"appearanceWorkerPool",
-				minThreads,
-				maxThreads,
-				PoolSizeAdaptationStrategy.AGGRESSIVE,
-				new AppearanceWorkerFactory(
-						jaxbBuilder,
-						config,
-						eventDispatcher),
-						queueSize,
-						false);
-		
-		appearanceWorkerPool.prestartCoreWorkers();		
-		bboxWorkerPool.prestartCoreWorkers();
-		
-
-		try {
-
-			CityGMLInputFactory in = null;
-			try {
-				in = jaxbBuilder.createCityGMLInputFactory();
-				in.setProperty(CityGMLInputFactory.FEATURE_READ_MODE, FeatureReadMode.SPLIT_PER_COLLECTION_MEMBER);
-				in.setProperty(CityGMLInputFactory.FAIL_ON_MISSING_ADE_SCHEMA, false);
-				in.setProperty(CityGMLInputFactory.PARSE_SCHEMA, false);
-				in.setProperty(CityGMLInputFactory.SPLIT_AT_FEATURE_PROPERTY, new QName("generalizesTo"));
-				in.setProperty(CityGMLInputFactory.EXCLUDE_FROM_SPLITTING, CityModel.class);
-			} catch (CityGMLReadException e) {
-				//throw new CityGMLImportException("Failed to initialize CityGML parser. Aborting.", e);
-			}
+			String targetSrs) throws Exception {
 
 
+        Logger.getInstance().info("Indexing the dataset ...");
 
-			CityGMLInputFilter inputFilter = new CityGMLInputFilter() {
-				public boolean accept(CityGMLClass type) {
-					return true;
-				}
-			};
+        eventDispatcher.addEventHandler(EventType.COUNTER, this);
+        eventDispatcher.addEventHandler(EventType.INTERRUPT, this);
+        shouldRun = true;
 
-			CityGMLReader reader = null;
-			try {
-				reader = in.createFilteredCityGMLReader(in.createCityGMLReader(sourceFile), inputFilter);
-				while (reader.hasNext() && shouldRun) {
-					XMLChunk chunk = reader.nextChunk();
-					CityGML cityGML = chunk.unmarshal();
-					eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1 , this));
-					if(cityGML.getCityGMLClass() != CityGMLClass.APPEARANCE)						
-						bboxWorkerPool.addWork(cityGML);
-					appearanceWorkerPool.addWork(cityGML);
-				}				
-				bboxWorkerPool.join();
-				appearanceWorkerPool.join();
-			} catch (CityGMLReadException e) {
-				//throw new CityGMLImportException("Failed to parse CityGML file. Aborting.", e);
-			}
-			finally{
-				eventDispatcher.flushEvents();
-				reader.close();
-				bboxWorkerPool.shutdownAndWait();
-				appearanceWorkerPool.shutdownAndWait();
-			}
-			
-			
-			try{
-				
-				com.vividsolutions.jts.geom.Envelope envelope = null;
-				if(isTreeAvailable())
-					envelope = tree.getBounds();
-					
-				if(envelope!=null){
-					List<Double> LowerCorner =  ProjConvertor.transformPoint(envelope.getMinX(), envelope.getMinY(), 8.19, sourceSrs, targetSrs);
-					List<Double> UpperCorner =  ProjConvertor.transformPoint(envelope.getMaxX(), envelope.getMaxY(), 8.19, sourceSrs, targetSrs);
+        int availableCores = Runtime.getRuntime().availableProcessors();
+        int minThreads = availableCores;//resources.getThreadPool().getDefaultPool().getMinThreads();
+        int maxThreads = availableCores;//resources.getThreadPool().getDefaultPool().getMaxThreads();
+        int queueSize = maxThreads * 2;
+
+
+        definition = new DataDefinition("UTF-8");
+        definition.addField(1);
+        tree = new RTree(new MemoryPageStore(definition));
+
+
+        org.citydb.api.geometry.BoundingBox bounds = new org.citydb.api.geometry.BoundingBox();
+
+        bboxWorkerPool = new WorkerPool<CityGML>(
+                "bboxWorkerPool",
+                minThreads,
+                maxThreads,
+                PoolSizeAdaptationStrategy.AGGRESSIVE,
+                new BBoxCalculatorWorkerFactory(
+                        jaxbBuilder,
+                        config,
+                        targetSrs,
+                        eventDispatcher),
+                queueSize,
+                false);
+
+
+        appearanceWorkerPool = new WorkerPool<CityGML>(
+                "appearanceWorkerPool",
+                minThreads,
+                maxThreads,
+                PoolSizeAdaptationStrategy.AGGRESSIVE,
+                new AppearanceWorkerFactory(
+                        jaxbBuilder,
+                        config,
+                        eventDispatcher),
+                queueSize,
+                false);
+
+        appearanceWorkerPool.prestartCoreWorkers();
+        bboxWorkerPool.prestartCoreWorkers();
+
+        // build list of files to be imported
+        Internal intConfig = config.getInternal();
+        DirectoryScanner directoryScanner = new DirectoryScanner(true);
+        directoryScanner.addFilenameFilter(new DirectoryScanner.CityGMLFilenameFilter());
+        List<File> importFiles = directoryScanner.getFiles(intConfig.getImportFiles());
+        int fileCounter = 0;
+        int remainingFiles = importFiles.size();
+        Logger.getInstance().info("List of import files successfully created.");
+        Logger.getInstance().info(remainingFiles + " file(s) will be indexed.");
+
+        try {
+
+            CityGMLInputFactory in = null;
+            try {
+                in = jaxbBuilder.createCityGMLInputFactory();
+                in.setProperty(CityGMLInputFactory.FEATURE_READ_MODE, FeatureReadMode.SPLIT_PER_COLLECTION_MEMBER);
+                in.setProperty(CityGMLInputFactory.FAIL_ON_MISSING_ADE_SCHEMA, false);
+                in.setProperty(CityGMLInputFactory.PARSE_SCHEMA, false);
+                in.setProperty(CityGMLInputFactory.SPLIT_AT_FEATURE_PROPERTY, new QName("generalizesTo"));
+                in.setProperty(CityGMLInputFactory.EXCLUDE_FROM_SPLITTING, CityModel.class);
+            } catch (CityGMLReadException e) {
+                //throw new CityGMLImportException("Failed to initialize CityGML parser. Aborting.", e);
+            }
+
+
+            CityGMLInputFilter inputFilter = new CityGMLInputFilter() {
+                public boolean accept(CityGMLClass type) {
+                    return true;
+                }
+            };
+
+            CityGMLReader reader = null;
+
+            try {
+
+                while (shouldRun && fileCounter < importFiles.size()) {
+
+                    File file = importFiles.get(fileCounter++);
+                    intConfig.setImportPath(file.getParent());
+                    reader = in.createFilteredCityGMLReader(in.createCityGMLReader(file), inputFilter);
+                    while (reader.hasNext() && shouldRun) {
+                        XMLChunk chunk = reader.nextChunk();
+                        CityGML cityGML = chunk.unmarshal();
+                        eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE, 1, this));
+
+                        if (cityGML.getCityGMLClass() != CityGMLClass.APPEARANCE)
+                            bboxWorkerPool.addWork(cityGML);
+                        appearanceWorkerPool.addWork(cityGML);
+                    }
+                    if(remainingFiles > 1)
+                        Logger.getInstance().info(--remainingFiles + " file(s) remained.");
+                }
+
+            } catch (CityGMLReadException e) {
+                Logger.getInstance().error("Failed to parse CityGML file. Aborting.");
+            } finally {
+                bboxWorkerPool.join();
+                appearanceWorkerPool.join();
+                reader.close();
+                eventDispatcher.flushEvents();
+                bboxWorkerPool.shutdownAndWait();
+                appearanceWorkerPool.shutdownAndWait();
+            }
+
+            //Calculating BoundingBox
+            try {
+
+                com.vividsolutions.jts.geom.Envelope envelope = null;
+                if (isTreeAvailable())
+                    envelope = tree.getBounds();
+
+                if (envelope != null) {
+                    List<Double> LowerCorner = ProjConvertor.transformPoint(envelope.getMinX(), envelope.getMinY(), 8.19, sourceSrs, targetSrs);
+                    List<Double> UpperCorner = ProjConvertor.transformPoint(envelope.getMaxX(), envelope.getMaxY(), 8.19, sourceSrs, targetSrs);
+
+                    bounds.setLowerLeftCorner(new BoundingBoxCorner(LowerCorner.get(1), LowerCorner.get(0)));
+                    bounds.setUpperRightCorner(new BoundingBoxCorner(UpperCorner.get(1), UpperCorner.get(0)));
+                }
+
+            } catch (Exception ex) {
+                Logger.getInstance().error(ex.toString());
+            }
+
+
+        } catch (CityGMLReadException e) {
+            Logger.getInstance().error("Failed to calculate CityGML parser. Aborting.");
+
+        }
+
+        return bounds;
+
+    }
 	
-					bounds.setLowerLeftCorner(new BoundingBoxCorner(LowerCorner.get(1), LowerCorner.get(0)));
-					bounds.setUpperRightCorner(new BoundingBoxCorner(UpperCorner.get(1),UpperCorner.get(0)));
-				}
-			}
-			catch(Exception ex){
-				
-			}
-		
-			
-
-		} catch (CityGMLReadException e) {
-			Logger.getInstance().error("Failed to calculate CityGML parser. Aborting.");
-
-		}		
-		return bounds;
-
-	}
 	
-	
-	public static void setRtree(CityGML cityobject , Envelope bbox , String targetSrs)throws Exception{
+	public static void addNodeToRtree(CityGML cityobject , Envelope bbox , String targetSrs)throws Exception{
 		
 		CityObjectData data = new CityObjectData(definition);
 		data.addValue(cityobject);

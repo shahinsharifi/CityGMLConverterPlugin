@@ -1024,6 +1024,7 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 
 						try {
 
+                            getImportedFile();
 							BboxCalcButton.setEnabled(false);
 							doCalculation();
 							BboxCalcButton.setEnabled(true);
@@ -1132,8 +1133,9 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 
 	private void doCalculation() throws Exception{
 
-		
-		if (config.getInternal().getImportFiles().length==0) {
+        String TargetSrs = "";
+
+        if (config.getInternal().getImportFiles().length==0) {
 			errorMessage(Util.I18N.getString("CityKmlExport.dialog.error.incompleteData"), 
 					Util.I18N.getString("CityKmlExport.dialog.error.incompleteData.import"));
 			return;
@@ -1181,15 +1183,11 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 				}
 			});
 			
-		
-			
 			if(_mfile != null)
 			{
 				int boundingBoxSrs = filter.getComplexFilter().getTiledBoundingBox().getSrs().getSrid();
-				String TargetSrs = (boundingBoxSrs != 4326 && !srsField.getText().equals("")) ? srsField.getText() : "4326";
-				LOG.info("Calculating the bounding box (EPSG:"+TargetSrs+") ...");
+				TargetSrs = (boundingBoxSrs != 4326 && !srsField.getText().equals("")) ? srsField.getText() : "4326";
 				bboxComponent.setBoundingBox(bbox.BboxCalculator(jaxbBuilder, config , eventDispatcher , _mfile , srsField.getText() , TargetSrs));
-
 			}
 			
 			SwingUtilities.invokeLater(new Runnable() {
@@ -1205,7 +1203,7 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 		}
 		finally
 		{
-			LOG.info("Calculating the bounding box is finished.");
+            LOG.info("Calculating the bounding box (EPSG:"+TargetSrs+") is finished.");
 		}
 	}
 
