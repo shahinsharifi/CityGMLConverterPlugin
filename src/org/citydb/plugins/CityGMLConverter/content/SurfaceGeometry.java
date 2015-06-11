@@ -12,10 +12,7 @@ import org.citydb.plugins.CityGMLConverter.util.Sqlite.SqliteImporterManager;
 import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkLinearRing;
 import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkSurfaceGeometry;
 import org.citydb.util.Util;
-import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.building.AbstractBoundarySurface;
-import org.citygml4j.model.citygml.building.AbstractBuilding;
-import org.citygml4j.model.citygml.building.BoundarySurfaceProperty;
+
 import org.citygml4j.model.citygml.texturedsurface._TexturedSurface;
 import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
@@ -71,8 +68,6 @@ import org.citygml4j.model.gml.geometry.primitives.TrianglePatchArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 import org.citygml4j.util.gmlid.DefaultGMLIdManager;
 
-
-
 public class SurfaceGeometry {
 	
 	private List<List<Double>> _pointList = new ArrayList<List<Double>>();
@@ -101,7 +96,7 @@ public class SurfaceGeometry {
 	}
 
 	
-	public List<List<Double>> GetSurfaceGeometry(String buildingGmlId , AbstractGeometry surfaceGeometry , boolean reverse) throws Exception {
+	public List<List<Double>> GetSurfaceGeometry(String GmlId , AbstractGeometry surfaceGeometry , boolean reverse) throws Exception {
 
 		
 	
@@ -363,13 +358,13 @@ public class SurfaceGeometry {
 					case POLYGON:
 					case _TEXTURED_SURFACE:
 					case ORIENTABLE_SURFACE:
-						GetSurfaceGeometry(buildingGmlId ,abstractSurface,reverse);
+						GetSurfaceGeometry(GmlId ,abstractSurface,reverse);
 						break;
 					case COMPOSITE_SURFACE:
 					case SURFACE:
 					case TRIANGULATED_SURFACE:
 					case TIN:
-						GetSurfaceGeometry(buildingGmlId ,abstractSurface,reverse);
+						GetSurfaceGeometry(GmlId ,abstractSurface,reverse);
 						break;
 					}
 
@@ -380,7 +375,7 @@ public class SurfaceGeometry {
 					if (href != null && href.length() != 0) {
 						
 						DBXlinkSurfaceGeometry xlink = new DBXlinkSurfaceGeometry(
-								buildingGmlId,
+								GmlId,
 								"0",
 								"0",
 								reverse,
@@ -448,13 +443,13 @@ public class SurfaceGeometry {
 						}
 					case _TEXTURED_SURFACE:
 					case ORIENTABLE_SURFACE:
-						GetSurfaceGeometry(buildingGmlId ,abstractSurface,reverse);
+						GetSurfaceGeometry(GmlId ,abstractSurface,reverse);
 						break;
 					case COMPOSITE_SURFACE:
 					case SURFACE:
 					case TRIANGULATED_SURFACE:
 					case TIN:
-						GetSurfaceGeometry(buildingGmlId ,abstractSurface,reverse);
+						GetSurfaceGeometry(GmlId ,abstractSurface,reverse);
 						break;
 					}
 
@@ -464,7 +459,7 @@ public class SurfaceGeometry {
 
 					if (href != null && href.length() != 0) {
 						DBXlinkSurfaceGeometry xlink = new DBXlinkSurfaceGeometry(
-								buildingGmlId,
+								GmlId,
 								"0",
 								"0",
 								reverse,
@@ -549,13 +544,13 @@ public class SurfaceGeometry {
 						case POLYGON:
 						case _TEXTURED_SURFACE:
 						case ORIENTABLE_SURFACE:
-							GetSurfaceGeometry(buildingGmlId ,abstractSurface,reverse);
+							GetSurfaceGeometry(GmlId ,abstractSurface,reverse);
 							break;
 						case COMPOSITE_SURFACE:
 						case SURFACE:
 						case TRIANGULATED_SURFACE:
 						case TIN:
-							GetSurfaceGeometry(buildingGmlId ,abstractSurface,reverse);
+							GetSurfaceGeometry(GmlId ,abstractSurface,reverse);
 							break;
 						}
 
@@ -565,7 +560,7 @@ public class SurfaceGeometry {
 
 						if (href != null && href.length() != 0) {
 							DBXlinkSurfaceGeometry xlink = new DBXlinkSurfaceGeometry(
-									buildingGmlId,
+									GmlId,
 									"0",
 									"0",
 									reverse,
@@ -602,7 +597,7 @@ public class SurfaceGeometry {
 							if (rectangle.isSetExterior()) {
 								LinearRing exteriorLinearRing = (LinearRing)rectangle.getExterior().getRing();
 								if (exteriorLinearRing != null)
-									GetSurfaceGeometry(buildingGmlId ,exteriorLinearRing, reverse);
+									GetSurfaceGeometry(GmlId ,exteriorLinearRing, reverse);
 							}
 						}
 
@@ -611,7 +606,7 @@ public class SurfaceGeometry {
 							if (triangle.isSetExterior()) {
 								LinearRing exteriorLinearRing = (LinearRing)triangle.getExterior().getRing();
 								if (exteriorLinearRing != null)
-									GetSurfaceGeometry(buildingGmlId ,exteriorLinearRing, reverse);
+									GetSurfaceGeometry(GmlId ,exteriorLinearRing, reverse);
 							}
 						}
 					}
@@ -638,7 +633,7 @@ public class SurfaceGeometry {
 						if (trianglePatch.isSetExterior()) {
 							LinearRing exteriorLinearRing = (LinearRing)trianglePatch.getExterior().getRing();
 							if (exteriorLinearRing != null)
-								GetSurfaceGeometry(buildingGmlId ,exteriorLinearRing, reverse);
+								GetSurfaceGeometry(GmlId ,exteriorLinearRing, reverse);
 						}	
 					}
 				}
@@ -665,7 +660,7 @@ public class SurfaceGeometry {
 
 					// we just allow CompositeSurfaces here!
 					if (abstractSurface.getGMLClass() == GMLClass.COMPOSITE_SURFACE) {
-						GetSurfaceGeometry(buildingGmlId ,abstractSurface,reverse);
+						GetSurfaceGeometry(GmlId ,abstractSurface,reverse);
 					}
 				} else {
 					// xlink
@@ -673,7 +668,7 @@ public class SurfaceGeometry {
 
 					if (href != null && href.length() != 0) {
 						DBXlinkSurfaceGeometry xlink = new DBXlinkSurfaceGeometry(
-								buildingGmlId,
+								GmlId,
 								"0",
 								"0",
 								reverse,
@@ -708,14 +703,14 @@ public class SurfaceGeometry {
 			if (compositeSolid.isSetSolidMember()) {
 				for (SolidProperty solidProperty : compositeSolid.getSolidMember()) {
 					if (solidProperty.isSetSolid()) {
-						GetSurfaceGeometry(buildingGmlId ,solidProperty.getSolid(),reverse);
+						GetSurfaceGeometry(GmlId ,solidProperty.getSolid(),reverse);
 					} else {
 						// xlink
 						String href = solidProperty.getHref();
 
 						if (href != null && href.length() != 0) {
 							DBXlinkSurfaceGeometry xlink = new DBXlinkSurfaceGeometry(
-									buildingGmlId,
+									GmlId,
 									"0",
 									"0",
 									reverse,
@@ -741,14 +736,14 @@ public class SurfaceGeometry {
 			if (multiPolygon.isSetPolygonMember()) {
 				for (PolygonProperty polygonProperty : multiPolygon.getPolygonMember()) {
 					if (polygonProperty.isSetPolygon())
-						GetSurfaceGeometry(buildingGmlId ,polygonProperty.getPolygon(), reverse);
+						GetSurfaceGeometry(GmlId ,polygonProperty.getPolygon(), reverse);
 					else {
 						// xlink
 						String href = polygonProperty.getHref();
 
 						if (href != null && href.length() != 0) {
 							DBXlinkSurfaceGeometry xlink = new DBXlinkSurfaceGeometry(
-									buildingGmlId,
+									GmlId,
 									"0",
 									"0",
 									reverse,
@@ -780,13 +775,13 @@ public class SurfaceGeometry {
 						case POLYGON:
 						case _TEXTURED_SURFACE:
 						case ORIENTABLE_SURFACE:
-							GetSurfaceGeometry(buildingGmlId ,abstractSurface, reverse);
+							GetSurfaceGeometry(GmlId ,abstractSurface, reverse);
 							break;
 						case COMPOSITE_SURFACE:
 						case SURFACE:
 						case TRIANGULATED_SURFACE:
 						case TIN:
-							GetSurfaceGeometry(buildingGmlId ,abstractSurface, reverse);
+							GetSurfaceGeometry(GmlId ,abstractSurface, reverse);
 							break;
 						}
 
@@ -796,7 +791,7 @@ public class SurfaceGeometry {
 
 						if (href != null && href.length() != 0) {
 							DBXlinkSurfaceGeometry xlink = new DBXlinkSurfaceGeometry(
-									buildingGmlId,
+									GmlId,
 									"0",
 									"0",
 									reverse,
@@ -818,13 +813,13 @@ public class SurfaceGeometry {
 						case POLYGON:
 						case _TEXTURED_SURFACE:
 						case ORIENTABLE_SURFACE:
-							GetSurfaceGeometry(buildingGmlId ,abstractSurface,reverse);
+							GetSurfaceGeometry(GmlId ,abstractSurface,reverse);
 							break;
 						case COMPOSITE_SURFACE:
 						case SURFACE:
 						case TRIANGULATED_SURFACE:
 						case TIN:
-							GetSurfaceGeometry(buildingGmlId ,abstractSurface,reverse);
+							GetSurfaceGeometry(GmlId ,abstractSurface,reverse);
 							break;
 						}
 					}
@@ -847,14 +842,14 @@ public class SurfaceGeometry {
 				for (SolidProperty solidProperty : multiSolid.getSolidMember()) {
 					if (solidProperty.isSetSolid()) {
 						//surfaceGeometryId = dbImporterManager.getDBId(DBSequencerEnum.SURFACE_GEOMETRY_ID_SEQ);
-						GetSurfaceGeometry(buildingGmlId ,solidProperty.getSolid(), reverse);
+						GetSurfaceGeometry(GmlId ,solidProperty.getSolid(), reverse);
 					} else {
 						// xlink
 						String href = solidProperty.getHref();
 
 						if (href != null && href.length() != 0) {
 							DBXlinkSurfaceGeometry xlink = new DBXlinkSurfaceGeometry(
-									buildingGmlId,
+									GmlId,
 									"0",
 									"0",
 									reverse,
@@ -872,7 +867,7 @@ public class SurfaceGeometry {
 				if (solidArrayProperty.isSetSolid()) {
 					for (AbstractSolid abstractSolid : solidArrayProperty.getSolid()) {
 
-						GetSurfaceGeometry(buildingGmlId ,abstractSolid, reverse);
+						GetSurfaceGeometry(GmlId ,abstractSolid, reverse);
 					}
 				}
 			}
@@ -886,14 +881,14 @@ public class SurfaceGeometry {
 			if (geometricComplex.isSetElement()) {
 				for (GeometricPrimitiveProperty geometricPrimitiveProperty : geometricComplex.getElement()) {
 					if (geometricPrimitiveProperty.isSetGeometricPrimitive())
-						GetSurfaceGeometry(buildingGmlId ,geometricPrimitiveProperty.getGeometricPrimitive(), reverse);
+						GetSurfaceGeometry(GmlId ,geometricPrimitiveProperty.getGeometricPrimitive(), reverse);
 					else {
 						// xlink
 						String href = geometricPrimitiveProperty.getHref();
 
 						if (href != null && href.length() != 0) {
 							DBXlinkSurfaceGeometry xlink = new DBXlinkSurfaceGeometry(
-									buildingGmlId,
+									GmlId,
 									"0",
 									"0",
 									reverse,

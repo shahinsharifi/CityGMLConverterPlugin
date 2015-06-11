@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="citygml4j1">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/lib/citygml4j/citygml4j-2.1.2.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/lib/citygml4j/xsom.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/lib/citygml4j/relaxngDatatype.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/lib/citygml4j/stax2-api-3.1.1.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/lib/citygml4j/woodstox-core-lgpl-4.2.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

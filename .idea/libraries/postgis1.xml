@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="postgis1">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/lib/postgis/postgis-jdbc-2.1.5.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/lib/postgis/postgresql-9.4-1201.jdbc41.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

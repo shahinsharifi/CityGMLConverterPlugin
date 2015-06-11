@@ -63,7 +63,7 @@ public class CityObject extends KmlGenericObject{
 
 	public static final String STYLE_BASIS_NAME = "Group";
 
-	public CityObject(Connection connection,
+	public CityObject(
 			KmlExporterManager kmlExporterManager,
 			GMLGeometryFactory cityGMLFactory,
 			net.opengis.kml._2.ObjectFactory kmlFactory,
@@ -72,7 +72,7 @@ public class CityObject extends KmlGenericObject{
 			EventDispatcher eventDispatcher,
 			ConfigImpl config) {
 
-		super(connection,
+		super(
 			  kmlExporterManager,
 			  cityGMLFactory,
 			  kmlFactory,

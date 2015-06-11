@@ -32,7 +32,7 @@ package org.citydb.plugins.CityGMLConverter.content;
 import java.util.List;
 
 
-public class BuildingSurface implements Surface{
+public class SurfaceObject implements Surface{
 
 
 	private Object PId;
@@ -41,7 +41,7 @@ public class BuildingSurface implements Surface{
 	private List<Double> Geometry;
 	
 
-	public BuildingSurface() {
+	public SurfaceObject() {
 
 	}
 

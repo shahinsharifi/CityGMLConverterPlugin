@@ -29,57 +29,25 @@
  */
 package org.citydb.plugins.CityGMLConverter.content;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.vecmath.Point3d;
 import javax.xml.bind.JAXBException;
 
-import net.opengis.kml._2.AltitudeModeEnumType;
-import net.opengis.kml._2.BoundaryType;
-import net.opengis.kml._2.LinearRingType;
 import net.opengis.kml._2.MultiGeometryType;
 import net.opengis.kml._2.PlacemarkType;
-import net.opengis.kml._2.PolygonType;
 
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.geometry.GeometryObject;
-import org.citydb.database.adapter.BlobExportAdapter;
 import org.citydb.log.Logger;
 import org.citydb.modules.common.event.CounterEvent;
 import org.citydb.modules.common.event.CounterType;
-import org.citydb.plugins.CityGMLConverter.content.BalloonTemplateHandlerImpl;
-import org.citydb.plugins.CityGMLConverter.content.ElevationServiceHandler;
-import org.citydb.plugins.CityGMLConverter.content.KmlExporterManager;
-import org.citydb.plugins.CityGMLConverter.content.KmlGenericObject;
-import org.citydb.plugins.CityGMLConverter.content.KmlSplittingResult;
-import org.citydb.plugins.CityGMLConverter.content.SurfaceGeometry;
-import org.citydb.plugins.CityGMLConverter.content.TypeAttributeValueEnum;
 import org.citygml4j.factory.GMLGeometryFactory;
-import org.citygml4j.geometry.Matrix;
-import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.appearance.AbstractSurfaceData;
-import org.citygml4j.model.citygml.appearance.AbstractTextureParameterization;
-import org.citygml4j.model.citygml.appearance.Appearance;
-import org.citygml4j.model.citygml.appearance.AppearanceProperty;
-import org.citygml4j.model.citygml.appearance.ParameterizedTexture;
-import org.citygml4j.model.citygml.appearance.SurfaceDataProperty;
-import org.citygml4j.model.citygml.appearance.TexCoordGen;
-import org.citygml4j.model.citygml.appearance.TexCoordList;
-import org.citygml4j.model.citygml.appearance.TextureAssociation;
-import org.citygml4j.model.citygml.appearance.TextureCoordinates;
-import org.citygml4j.model.citygml.appearance.X3DMaterial;
 import org.citygml4j.model.citygml.building.AbstractBoundarySurface;
 import org.citygml4j.model.citygml.building.AbstractBuilding;
 import org.citygml4j.model.citygml.building.AbstractOpening;
@@ -89,7 +57,6 @@ import org.citygml4j.model.citygml.building.BuildingInstallation;
 import org.citygml4j.model.citygml.building.BuildingInstallationProperty;
 import org.citygml4j.model.citygml.building.BuildingPart;
 import org.citygml4j.model.citygml.building.BuildingPartProperty;
-import org.citygml4j.model.citygml.building.Door;
 import org.citygml4j.model.citygml.building.IntBuildingInstallation;
 import org.citygml4j.model.citygml.building.IntBuildingInstallationProperty;
 import org.citygml4j.model.citygml.building.InteriorFurnitureProperty;
@@ -98,42 +65,13 @@ import org.citygml4j.model.citygml.building.OpeningProperty;
 import org.citygml4j.model.citygml.building.Room;
 import org.citygml4j.model.citygml.core.Address;
 import org.citygml4j.model.citygml.core.XalAddressProperty;
-import org.citygml4j.model.citygml.texturedsurface._TexturedSurface;
-import org.citygml4j.model.gml.GMLClass;
-import org.citygml4j.model.gml.base.AssociationAttributeGroup;
 import org.citygml4j.model.gml.basicTypes.DoubleOrNull;
 import org.citygml4j.model.gml.basicTypes.MeasureOrNullList;
-import org.citygml4j.model.gml.feature.BoundingShape;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
-import org.citygml4j.model.gml.geometry.aggregates.MultiPolygon;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSolid;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurface;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
-import org.citygml4j.model.gml.geometry.complexes.CompositeSolid;
-import org.citygml4j.model.gml.geometry.complexes.CompositeSurface;
-import org.citygml4j.model.gml.geometry.complexes.GeometricComplex;
-import org.citygml4j.model.gml.geometry.primitives.AbstractRing;
-import org.citygml4j.model.gml.geometry.primitives.AbstractRingProperty;
-import org.citygml4j.model.gml.geometry.primitives.AbstractSolid;
-import org.citygml4j.model.gml.geometry.primitives.AbstractSurface;
-import org.citygml4j.model.gml.geometry.primitives.AbstractSurfacePatch;
-import org.citygml4j.model.gml.geometry.primitives.GeometricPrimitiveProperty;
-import org.citygml4j.model.gml.geometry.primitives.LinearRing;
-import org.citygml4j.model.gml.geometry.primitives.OrientableSurface;
-import org.citygml4j.model.gml.geometry.primitives.PolygonProperty;
-import org.citygml4j.model.gml.geometry.primitives.Rectangle;
-import org.citygml4j.model.gml.geometry.primitives.Solid;
-import org.citygml4j.model.gml.geometry.primitives.SolidArrayProperty;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
-import org.citygml4j.model.gml.geometry.primitives.Surface;
-import org.citygml4j.model.gml.geometry.primitives.SurfaceArrayProperty;
-import org.citygml4j.model.gml.geometry.primitives.SurfacePatchArrayProperty;
-import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
-import org.citygml4j.model.gml.geometry.primitives.Triangle;
-import org.citygml4j.model.gml.geometry.primitives.TrianglePatchArrayProperty;
-import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 import org.citygml4j.model.xal.AddressDetails;
 import org.citygml4j.model.xal.Country;
 import org.citygml4j.model.xal.CountryName;
@@ -146,38 +84,25 @@ import org.citygml4j.model.xal.PostalCodeNumber;
 import org.citygml4j.model.xal.Thoroughfare;
 import org.citygml4j.model.xal.ThoroughfareName;
 import org.citygml4j.model.xal.ThoroughfareNumberOrRange;
-import org.citygml4j.util.gmlid.DefaultGMLIdManager;
-import org.postgis.PGgeometry;
-import org.postgis.Polygon;
-import org.citydb.plugins.CityGMLConverter.concurrent.DBImportXlinkWorker;
 import org.citydb.plugins.CityGMLConverter.config.Balloon;
 import org.citydb.plugins.CityGMLConverter.config.ColladaOptions;
 import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
 import org.citydb.plugins.CityGMLConverter.config.DisplayForm;
 import org.citydb.plugins.CityGMLConverter.util.ProjConvertor;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.SqliteImporterManager;
-import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.CacheManager;
-import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.CacheTable;
-import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.HeapCacheTable;
-import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.TemporaryCacheTable;
-import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.model.CacheTableModelEnum;
-import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlink;
 import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkBasic;
-import org.citydb.plugins.CityGMLConverter.xlink.importer.DBXlinkImporterManager;
-import org.citydb.plugins.CityGMLConverter.xlink.resolver.DBXlinkSplitter;
 import org.citydb.util.Util;
 
 
 public class Building extends KmlGenericObject{
 
-    public static final String STYLE_BASIS_NAME = ""; // "Building"
+    public static final String STYLE_BASIS_NAME = "";//"Building";
     private SqliteImporterManager sqlliteImporterManager;
-    private List<BuildingSurface> _ParentSurfaceList = new ArrayList<BuildingSurface>();
+    private List<SurfaceObject> _ParentSurfaceList = new ArrayList<SurfaceObject>();
     private final Logger LOG = Logger.getInstance();
 
 
-    public Building(Connection connection,
-                    KmlExporterManager kmlExporterManager,
+    public Building(KmlExporterManager kmlExporterManager,
                     SqliteImporterManager sqlliteImporterManager,
                     GMLGeometryFactory cityGMLFactory,
                     net.opengis.kml._2.ObjectFactory kmlFactory,
@@ -186,8 +111,7 @@ public class Building extends KmlGenericObject{
                     EventDispatcher eventDispatcher,
                     ConfigImpl config) {
 
-        super(connection,
-                kmlExporterManager,
+          super(kmlExporterManager,
                 cityGMLFactory,
                 kmlFactory,
                 elevationServiceHandler,
@@ -294,7 +218,7 @@ public class Building extends KmlGenericObject{
             SurfaceAppearance _SurfaceAppear = new SurfaceAppearance();
 
             //this function reads all geometries and returns a list of surfaces.
-            List<BuildingSurface> _surfaceList = GetBuildingGeometries(_building);
+            List<SurfaceObject> _surfaceList = GetBuildingGeometries(_building);
 
             //Restarting Xlink worker.
          //   sqlliteImporterManager.getTmpXlinkPool().join();
@@ -399,9 +323,9 @@ public class Building extends KmlGenericObject{
     }
 
     
-    public List<BuildingSurface> GetBuildingGeometries(AbstractBuilding _building) throws Exception
+    public List<SurfaceObject> GetBuildingGeometries(AbstractBuilding _building) throws Exception
     {
-        List<BuildingSurface> _SurfaceList = new ArrayList<BuildingSurface>();
+        List<SurfaceObject> _SurfaceList = new ArrayList<SurfaceObject>();
         SurfaceGeometry surfaceGeom = new SurfaceGeometry(config , sqlliteImporterManager);
         String _SurfaceType = "undefined";
         String buildingGmlId = _building.getId();
@@ -438,7 +362,7 @@ public class Building extends KmlGenericObject{
                     int counter = 0;
                     for(List<Double> _Geometry : _pointList){
 
-                        BuildingSurface BSurface = new BuildingSurface();
+                        SurfaceObject BSurface = new SurfaceObject();
                         _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
                         BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                         BSurface.setType(_SurfaceType);
@@ -508,7 +432,7 @@ public class Building extends KmlGenericObject{
                     for(List<Double> _Geometry : _pointList){
 
 
-                        BuildingSurface BSurface = new BuildingSurface();
+                        SurfaceObject BSurface = new SurfaceObject();
                         _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
                         BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                         BSurface.setType(_SurfaceType);
@@ -569,7 +493,7 @@ public class Building extends KmlGenericObject{
                 int counter = 0;
                 for(List<Double> _Geometry : _pointList){
 
-                    BuildingSurface BSurface = new BuildingSurface();
+                    SurfaceObject BSurface = new SurfaceObject();
                     _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
                     BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                     BSurface.setType(_SurfaceType);
@@ -611,7 +535,7 @@ public class Building extends KmlGenericObject{
                 int counter = 0;
                 for(List<Double> _Geometry : _pointList){
 
-                    BuildingSurface BSurface = new BuildingSurface();
+                    SurfaceObject BSurface = new SurfaceObject();
                     _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
                     BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                     BSurface.setType(_SurfaceType);
@@ -658,7 +582,7 @@ public class Building extends KmlGenericObject{
                                 //We should take care about the parent surfaces, because we need them for exporting collada.
                                 if(multiSurfaceProperty.getMultiSurface().isSetId()){
 
-                                    BuildingSurface BPSurface = new BuildingSurface();
+                                    SurfaceObject BPSurface = new SurfaceObject();
                                     BPSurface.setPId(ParentCounter);
                                     BPSurface.setId(multiSurfaceProperty.getMultiSurface().getId());
                                     BPSurface.setType(null);
@@ -675,7 +599,7 @@ public class Building extends KmlGenericObject{
                                 for(List<Double> _Geometry : _pointList){
 
 
-                                    BuildingSurface BSurface = new BuildingSurface();
+                                    SurfaceObject BSurface = new SurfaceObject();
                                     BSurface.setPId(ParentCounter);
                                     BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                                     BSurface.setType(_SurfaceType);
@@ -734,7 +658,7 @@ public class Building extends KmlGenericObject{
                                             int counter = 0;
                                             for(List<Double> _Geometry : _pointList){
 
-                                                BuildingSurface BSurface = new BuildingSurface();
+                                                SurfaceObject BSurface = new SurfaceObject();
                                                 BSurface.setPId(ParentCounter);
                                                 BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                                                 BSurface.setType(_SurfaceType);
@@ -800,7 +724,7 @@ public class Building extends KmlGenericObject{
                                 int counter = 0;
                                 for(List<Double> _Geometry : _pointList){
 
-                                    BuildingSurface BSurface = new BuildingSurface();
+                                    SurfaceObject BSurface = new SurfaceObject();
                                     _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
                                     BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                                     BSurface.setType(_SurfaceType);
@@ -849,7 +773,7 @@ public class Building extends KmlGenericObject{
                             int counter = 0;
                             for(List<Double> _Geometry : _pointList){
 
-                                BuildingSurface BSurface = new BuildingSurface();
+                                SurfaceObject BSurface = new SurfaceObject();
                                 _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
                                 BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                                 BSurface.setType(_SurfaceType);
@@ -909,7 +833,7 @@ public class Building extends KmlGenericObject{
                             int counter = 0;
                             for(List<Double> _Geometry : _pointList){
 
-                                BuildingSurface BSurface = new BuildingSurface();
+                                SurfaceObject BSurface = new SurfaceObject();
                                 _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
                                 BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                                 BSurface.setType(_SurfaceType);
@@ -934,7 +858,7 @@ public class Building extends KmlGenericObject{
                             int counter = 0;
                             for(List<Double> _Geometry : _pointList){
 
-                                BuildingSurface BSurface = new BuildingSurface();
+                                SurfaceObject BSurface = new SurfaceObject();
                                 _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
                                 BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                                 BSurface.setType(_SurfaceType);
@@ -976,7 +900,7 @@ public class Building extends KmlGenericObject{
 
                                             if(multiSurfaceProperty.getMultiSurface().isSetId()){
 
-                                                BuildingSurface BPSurface = new BuildingSurface();
+                                                SurfaceObject BPSurface = new SurfaceObject();
                                                 BPSurface.setPId(ParentCounter);
                                                 BPSurface.setId(multiSurfaceProperty.getMultiSurface().getId());
                                                 BPSurface.setType(null);
@@ -993,7 +917,7 @@ public class Building extends KmlGenericObject{
                                             for(List<Double> _Geometry : _pointList){
 
 
-                                                BuildingSurface BSurface = new BuildingSurface();
+                                                SurfaceObject BSurface = new SurfaceObject();
                                                 BSurface.setPId(ParentCounter);
                                                 BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                                                 BSurface.setType(_SurfaceType);
@@ -1045,7 +969,7 @@ public class Building extends KmlGenericObject{
 
 
 
-                                                            BuildingSurface BSurface = new BuildingSurface();
+                                                            SurfaceObject BSurface = new SurfaceObject();
                                                             BSurface.setPId(null);
                                                             BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                                                             BSurface.setType(_SurfaceType);
@@ -1093,7 +1017,7 @@ public class Building extends KmlGenericObject{
                                             int counter = 0;
                                             for(List<Double> _Geometry : _pointList){
 
-                                                BuildingSurface BSurface = new BuildingSurface();
+                                                SurfaceObject BSurface = new SurfaceObject();
                                                 _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
                                                 BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                                                 BSurface.setType(_SurfaceType);
@@ -1134,7 +1058,7 @@ public class Building extends KmlGenericObject{
                                             int counter = 0;
                                             for(List<Double> _Geometry : _pointList){
 
-                                                BuildingSurface BSurface = new BuildingSurface();
+                                                SurfaceObject BSurface = new SurfaceObject();
                                                 _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
                                                 BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                                                 BSurface.setType(_SurfaceType);
@@ -1389,16 +1313,16 @@ public class Building extends KmlGenericObject{
     		String[] usage = Util.codeList2string(building.getUsage());
    		 	buildingMap.put("USAGE",usage[0]);
     	}
-    	
-    	// bldg:yearOfConstruction
-    	if (building.isSetYearOfConstruction()) {
-    		 buildingMap.put("YEAR_OF_CONSTRUCTION",new Date(building.getYearOfConstruction().getTime().getTime()).toString());
-    	}
-    	
-    	// bldg:yearOfDemolition
-    	if (building.isSetYearOfDemolition()) {
-    		buildingMap.put("YEAR_OF_DEMOLITION",new Date(building.getYearOfDemolition().getTime().getTime()).toString());
-    	}
+        // bldg:yearOfConstruction
+        if (building.isSetYearOfConstruction()) {
+            buildingMap.put("YEAR_OF_CONSTRUCTION",new Date(building.getYearOfConstruction().getTime().getTime()).toString());
+        }
+
+        // bldg:yearOfDemolition
+        if (building.isSetYearOfDemolition()) {
+            buildingMap.put("YEAR_OF_DEMOLITION",new Date(building.getYearOfDemolition().getTime().getTime()).toString());
+        }
+
     	
     	// bldg:roofType
     	if (building.isSetRoofType() && building.getRoofType().isSetValue()) {

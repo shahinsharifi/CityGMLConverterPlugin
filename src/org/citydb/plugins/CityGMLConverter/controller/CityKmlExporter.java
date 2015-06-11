@@ -36,9 +36,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -86,30 +84,29 @@ import org.citydb.api.event.Event;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.event.EventHandler;
 import org.citydb.api.geometry.BoundingBox;
-import org.citydb.api.geometry.BoundingBoxCorner;
-import org.citydb.api.geometry.GeometryObject;
 import org.citydb.api.registry.ObjectRegistry;
 import org.citydb.config.project.filter.FeatureClass;
 import org.citydb.config.project.filter.TiledBoundingBox;
 import org.citydb.config.project.filter.Tiling;
 import org.citydb.config.project.filter.TilingMode;
-import org.citydb.config.project.resources.Resources;
 import org.citydb.log.Logger;
-import org.citydb.modules.citygml.exporter.util.FeatureProcessor;
 import org.citydb.modules.common.concurrent.IOWriterWorkerFactory;
 import org.citydb.modules.common.event.*;
 import org.citydb.plugins.CityGMLConverter.concurrent.CityKmlExportWorkerFactory;
 import org.citydb.plugins.CityGMLConverter.concurrent.DBImportXlinkWorkerFactory;
 import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
+import org.citydb.plugins.CityGMLConverter.content.*;
+import org.citydb.plugins.CityGMLConverter.content.BridgeObject;
 import org.citydb.plugins.CityGMLConverter.content.Building;
 import org.citydb.plugins.CityGMLConverter.content.KmlSplitter;
 import org.citydb.plugins.CityGMLConverter.content.KmlSplittingResult;
-import org.citydb.plugins.CityGMLConverter.content.TypeAttributeValueEnum;
+import org.citydb.plugins.CityGMLConverter.content.SolitaryVegetationObject;
+import org.citydb.plugins.CityGMLConverter.content.TunnelObject;
 import org.citygml4j.builder.jaxb.JAXBBuilder;
-import org.citygml4j.builder.jaxb.xml.io.reader.JAXBChunkReader;
 import org.citygml4j.factory.GMLGeometryFactory;
-import org.citygml4j.model.citygml.CityGML;
 import org.citygml4j.model.citygml.CityGMLClass;
+import org.citygml4j.model.citygml.cityfurniture.CityFurniture;
+import org.citygml4j.model.citygml.tunnel.Tunnel;
 import org.citygml4j.util.xml.SAXEventBuffer;
 import org.citygml4j.util.xml.SAXFragmentWriter;
 import org.citygml4j.util.xml.SAXFragmentWriter.WriteMode;
@@ -118,20 +115,16 @@ import org.xml.sax.SAXException;
 import org.citydb.plugins.CityGMLConverter.config.Balloon;
 import org.citydb.plugins.CityGMLConverter.config.BalloonContentMode;
 import org.citydb.plugins.CityGMLConverter.config.DisplayForm;
-import org.citydb.plugins.CityGMLConverter.config.Internal;
 import org.citydb.plugins.CityGMLConverter.util.ProjConvertor;
 import org.citydb.plugins.CityGMLConverter.util.CityObject4JSON;
 import org.citydb.plugins.CityGMLConverter.util.Util;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.SQLiteFactory;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.CacheManager;
-import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.CacheTable;
-import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.HeapCacheTable;
-import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.TemporaryCacheTable;
-import org.citydb.plugins.CityGMLConverter.util.Sqlite.cache.model.CacheTableModelEnum;
 import org.citydb.plugins.CityGMLConverter.util.filter.ExportFilter;
 import org.citydb.plugins.CityGMLConverter.util.filter.FilterMode;
 import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlink;
 import org.citydb.plugins.CityGMLConverter.xlink.resolver.DBXlinkSplitter;
+import sun.corba.Bridge;
 
 
 public class CityKmlExporter implements EventHandler {
@@ -702,16 +695,32 @@ public class CityKmlExporter implements EventHandler {
 				
 				if (config.isOneFilePerObject()) {
 					FeatureClass featureFilter = config.getFilter().getComplexFilter().getFeatureClass();
-					if (featureFilter.isSetBuilding()) {
+
+                    if (featureFilter.isSetBuilding()) {
 						for (DisplayForm displayForm : config.getBuildingDisplayForms()) {
 							addStyle(displayForm, CityGMLClass.BUILDING);
 						}
 					}
-					/*if (featureFilter.isSetCityFurniture()) {
+
+					if (featureFilter.isSetCityFurniture()) {
 						for (DisplayForm displayForm : config.getCityFurnitureDisplayForms()) {
 							addStyle(displayForm, CityGMLClass.CITY_FURNITURE);
 						}
 					}
+
+                    if (featureFilter.isSetBridge()) {
+                        for (DisplayForm displayForm : config.getTransportationDisplayForms()) {
+                            addStyle(displayForm, CityGMLClass.BRIDGE);
+                        }
+                    }
+
+                    if (featureFilter.isSetTunnel()) {
+                        for (DisplayForm displayForm : config.getTransportationDisplayForms()) {
+                            addStyle(displayForm, CityGMLClass.TUNNEL);
+                        }
+                    }
+
+					/*
 					if (featureFilter.isSetCityObjectGroup()) {
 						for (DisplayForm displayForm : config.getCityObjectGroupDisplayForms()) {
 							addStyle(displayForm, CityGMLClass.CITY_OBJECT_GROUP);
@@ -736,12 +745,12 @@ public class CityKmlExporter implements EventHandler {
 						for (DisplayForm displayForm : config.getTransportationDisplayForms()) {
 							addStyle(displayForm, CityGMLClass.TRANSPORTATION_COMPLEX);
 						}
-					}
+					}*/
 					if (featureFilter.isSetVegetation()) {
 						for (DisplayForm displayForm : config.getVegetationDisplayForms()) {
 							addStyle(displayForm, CityGMLClass.SOLITARY_VEGETATION_OBJECT);
 						}
-					}
+					}/*
 					if (featureFilter.isSetWaterBody()) {
 						for (DisplayForm displayForm : config.getWaterBodyDisplayForms()) {
 							addStyle(displayForm, CityGMLClass.WATER_BODY);
@@ -870,13 +879,26 @@ public class CityKmlExporter implements EventHandler {
 		
 	//	if (!currentDisplayForm.isActive()) return;
 		switch (featureClass) {
-		/*	case SOLITARY_VEGETATION_OBJECT:
+			case SOLITARY_VEGETATION_OBJECT:
 			case PLANT_COVER:
 				addStyle(currentDisplayForm,
 						 config.getVegetationDisplayForms(),
 						 SolitaryVegetationObject.STYLE_BASIS_NAME);
 				break;
 
+            case TUNNEL:
+                addStyle(currentDisplayForm,
+                        config.getTransportationDisplayForms(),
+                        TunnelObject.STYLE_BASIS_NAME);
+                break;
+
+            case BRIDGE:
+                addStyle(currentDisplayForm,
+                        config.getTransportationDisplayForms(),
+                        BridgeObject.STYLE_BASIS_NAME);
+                break;
+
+/*
 			case TRAFFIC_AREA:
 			case AUXILIARY_TRAFFIC_AREA:
 			case TRANSPORTATION_COMPLEX:
@@ -906,13 +928,13 @@ public class CityKmlExporter implements EventHandler {
 						 config.getCityObjectGroupDisplayForms(),
 						 CityObjectGroup.STYLE_BASIS_NAME);
 				break;
-
+*/
 			case CITY_FURNITURE:
-				addStyle(currentDisplayForm,
-						 config.getCityFurnitureDisplayForms(),
-						 CityFurniture.STYLE_BASIS_NAME);
+                addStyle(currentDisplayForm,
+                        config.getBuildingDisplayForms(),
+                        CityFurnitureObject.STYLE_BASIS_NAME);
 				break;
-
+/*
 			case GENERIC_CITY_OBJECT:
 				addStyle(currentDisplayForm,
 						 config.getGenericCityObjectDisplayForms(),
@@ -1024,133 +1046,129 @@ public class CityKmlExporter implements EventHandler {
 			ioWriterPool.addWork(saxBuffer);
 			break;
 
+
 		case DisplayForm.GEOMETRY:
 
-			boolean isBuilding = Building.STYLE_BASIS_NAME.equals(styleBasisName);
-			boolean isBridge = false;//Bridge.STYLE_BASIS_NAME.equals(styleBasisName);
-			boolean isTunnel = false;//Tunnel.STYLE_BASIS_NAME.equals(styleBasisName);
+            boolean isBuilding = org.citydb.modules.kml.database.Building.STYLE_BASIS_NAME.equals(styleBasisName);
+            boolean isBridge = BridgeObject.STYLE_BASIS_NAME.equals(styleBasisName);
+            boolean isTunnel = TunnelObject.STYLE_BASIS_NAME.equals(styleBasisName);
 
-			indexOfDf = displayFormsForObjectType.indexOf(currentDisplayForm);
-			String wallFillColor = Integer.toHexString(DisplayForm.DEFAULT_WALL_FILL_COLOR);
-			String wallLineColor = Integer.toHexString(DisplayForm.DEFAULT_WALL_LINE_COLOR);
-			String roofFillColor = Integer.toHexString(DisplayForm.DEFAULT_ROOF_FILL_COLOR);
-			String roofLineColor = Integer.toHexString(DisplayForm.DEFAULT_ROOF_LINE_COLOR);
-			
-			if (indexOfDf != -1) {
-				currentDisplayForm = displayFormsForObjectType.get(indexOfDf);
-				if (currentDisplayForm.isSetRgba0()) {
-					wallFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba0()));
-				}
-				if (currentDisplayForm.isSetRgba1()) {
-					wallLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba1()));
-				}
-				if (currentDisplayForm.isSetRgba2()) {
-					roofFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba2()));
-				}
-				if (currentDisplayForm.isSetRgba3()) {
-					roofLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba3()));
-				}
-			}
+            indexOfDf = displayFormsForObjectType.indexOf(currentDisplayForm);
+            String wallFillColor = Integer.toHexString(org.citydb.config.project.kmlExporter.DisplayForm.DEFAULT_WALL_FILL_COLOR);
+            String wallLineColor = Integer.toHexString(org.citydb.config.project.kmlExporter.DisplayForm.DEFAULT_WALL_LINE_COLOR);
+            String roofFillColor = Integer.toHexString(org.citydb.config.project.kmlExporter.DisplayForm.DEFAULT_ROOF_FILL_COLOR);
+            String roofLineColor = Integer.toHexString(org.citydb.config.project.kmlExporter.DisplayForm.DEFAULT_ROOF_LINE_COLOR);
+            if (indexOfDf != -1) {
+                currentDisplayForm = displayFormsForObjectType.get(indexOfDf);
+                if (currentDisplayForm.isSetRgba0()) {
+                    wallFillColor = org.citydb.config.project.kmlExporter.DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba0()));
+                }
+                if (currentDisplayForm.isSetRgba1()) {
+                    wallLineColor = org.citydb.config.project.kmlExporter.DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba1()));
+                }
+                if (currentDisplayForm.isSetRgba2()) {
+                    roofFillColor = org.citydb.config.project.kmlExporter.DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba2()));
+                }
+                if (currentDisplayForm.isSetRgba3()) {
+                    roofLineColor = org.citydb.config.project.kmlExporter.DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba3()));
+                }
+            }
 
-			LineStyleType lineStyleWallNormal = kmlFactory.createLineStyleType();
-			lineStyleWallNormal.setColor(hexStringToByteArray(wallLineColor));
-			PolyStyleType polyStyleWallNormal = kmlFactory.createPolyStyleType();
-			polyStyleWallNormal.setColor(hexStringToByteArray(wallFillColor));
-			StyleType styleWallNormal = kmlFactory.createStyleType();
-			styleWallNormal.setLineStyle(lineStyleWallNormal);
-			styleWallNormal.setPolyStyle(polyStyleWallNormal);
-			styleWallNormal.setBalloonStyle(balloonStyle);
-			if (isBuilding)
-				styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString() + "Normal");
-			else if (isBridge)
-				styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BRIDGE_WALL_SURFACE).toString() + "Normal");
-			else if (isTunnel)
-				styleWallNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_WALL_SURFACE).toString() + "Normal");
-			else
-				styleWallNormal.setId(styleBasisName + currentDisplayForm.getName() + "Normal");
-			marshaller.marshal(kmlFactory.createStyle(styleWallNormal), saxBuffer);
+            LineStyleType lineStyleWallNormal = kmlFactory.createLineStyleType();
+            lineStyleWallNormal.setColor(hexStringToByteArray(wallLineColor));
+            PolyStyleType polyStyleWallNormal = kmlFactory.createPolyStyleType();
+            polyStyleWallNormal.setColor(hexStringToByteArray(wallFillColor));
+            StyleType styleWallNormal = kmlFactory.createStyleType();
 
-			
-			LineStyleType lineStyleRoofNormal = kmlFactory.createLineStyleType();
-			lineStyleRoofNormal.setColor(hexStringToByteArray(roofLineColor));
-			PolyStyleType polyStyleRoofNormal = kmlFactory.createPolyStyleType();
-			polyStyleRoofNormal.setColor(hexStringToByteArray(roofFillColor));
-			StyleType styleRoofNormal = kmlFactory.createStyleType();
-			
-			if (isBuilding) {
-				styleRoofNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_ROOF_SURFACE).toString() + "Normal");
-				styleRoofNormal.setLineStyle(lineStyleRoofNormal);
-				styleRoofNormal.setPolyStyle(polyStyleRoofNormal);
-				styleRoofNormal.setBalloonStyle(balloonStyle);
-				marshaller.marshal(kmlFactory.createStyle(styleRoofNormal), saxBuffer);
+            styleWallNormal.setLineStyle(lineStyleWallNormal);
+            styleWallNormal.setPolyStyle(polyStyleWallNormal);
+            styleWallNormal.setBalloonStyle(balloonStyle);
 
-			}
-			else if (isBridge) {
-				styleRoofNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BRIDGE_ROOF_SURFACE).toString() + "Normal");
-				styleRoofNormal.setLineStyle(lineStyleRoofNormal);
-				styleRoofNormal.setPolyStyle(polyStyleRoofNormal);
-				styleRoofNormal.setBalloonStyle(balloonStyle);
-				marshaller.marshal(kmlFactory.createStyle(styleRoofNormal), saxBuffer);
-			}
-			else if (isTunnel) {
-				styleRoofNormal.setId(TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_ROOF_SURFACE).toString() + "Normal");
-				styleRoofNormal.setLineStyle(lineStyleRoofNormal);
-				styleRoofNormal.setPolyStyle(polyStyleRoofNormal);
-				styleRoofNormal.setBalloonStyle(balloonStyle);
-				marshaller.marshal(kmlFactory.createStyle(styleRoofNormal), saxBuffer);
-			}
+            if (isBuilding)
+                styleWallNormal.setId(org.citydb.modules.kml.datatype.TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString() + "Normal");
+            else if (isBridge)
+                styleWallNormal.setId(org.citydb.modules.kml.datatype.TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BRIDGE_WALL_SURFACE).toString() + "Normal");
+            else if (isTunnel)
+                styleWallNormal.setId(org.citydb.modules.kml.datatype.TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_WALL_SURFACE).toString() + "Normal");
+            else
+                styleWallNormal.setId(styleBasisName + currentDisplayForm.getName() + "Normal");
 
-			if (currentDisplayForm.isHighlightingEnabled()) {
-				String highlightFillColor = Integer.toHexString(DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR);
-				String highlightLineColor = Integer.toHexString(DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
-/*
-				if (indexOfDf != -1) {
-					currentDisplayForm = displayFormsForObjectType.get(indexOfDf);
-*/
-					if (currentDisplayForm.isSetRgba4()) {
-						highlightFillColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba4()));
-					}
-					if (currentDisplayForm.isSetRgba5()) {
-						highlightLineColor = DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba5()));
-					}
-/*
-				}
-*/
-				LineStyleType lineStyleGeometryInvisible = kmlFactory.createLineStyleType();
-				lineStyleGeometryInvisible.setColor(hexStringToByteArray("01" + highlightLineColor.substring(2)));
-				PolyStyleType polyStyleGeometryInvisible = kmlFactory.createPolyStyleType();
-				polyStyleGeometryInvisible.setColor(hexStringToByteArray("00" + highlightFillColor.substring(2)));
-				StyleType styleGeometryInvisible = kmlFactory.createStyleType();
-				styleGeometryInvisible.setId(styleBasisName + currentDisplayForm.getName() + "StyleInvisible");
-				styleGeometryInvisible.setLineStyle(lineStyleGeometryInvisible);
-				styleGeometryInvisible.setPolyStyle(polyStyleGeometryInvisible);
-				styleGeometryInvisible.setBalloonStyle(balloonStyle);
+            marshaller.marshal(kmlFactory.createStyle(styleWallNormal), saxBuffer);
 
-				LineStyleType lineStyleGeometryHighlight = kmlFactory.createLineStyleType();
-				lineStyleGeometryHighlight.setColor(hexStringToByteArray(highlightLineColor));
-				PolyStyleType polyStyleGeometryHighlight = kmlFactory.createPolyStyleType();
-				polyStyleGeometryHighlight.setColor(hexStringToByteArray(highlightFillColor));
-				StyleType styleGeometryHighlight = kmlFactory.createStyleType();
-				styleGeometryHighlight.setId(styleBasisName + currentDisplayForm.getName() + "StyleHighlight");
-				styleGeometryHighlight.setLineStyle(lineStyleGeometryHighlight);
-				styleGeometryHighlight.setPolyStyle(polyStyleGeometryHighlight);
-				styleGeometryHighlight.setBalloonStyle(balloonStyle);
-	
-				PairType pairGeometryNormal = kmlFactory.createPairType();
-				pairGeometryNormal.setKey(StyleStateEnumType.NORMAL);
-				pairGeometryNormal.setStyleUrl("#" + styleGeometryInvisible.getId());
-				PairType pairGeometryHighlight = kmlFactory.createPairType();
-				pairGeometryHighlight.setKey(StyleStateEnumType.HIGHLIGHT);
-				pairGeometryHighlight.setStyleUrl("#" + styleGeometryHighlight.getId());
-				StyleMapType styleMapGeometry = kmlFactory.createStyleMapType();
-				styleMapGeometry.setId(styleBasisName + currentDisplayForm.getName() +"Style");
-				styleMapGeometry.getPair().add(pairGeometryNormal);
-				styleMapGeometry.getPair().add(pairGeometryHighlight);
-	
-				marshaller.marshal(kmlFactory.createStyle(styleGeometryInvisible), saxBuffer);
-				marshaller.marshal(kmlFactory.createStyle(styleGeometryHighlight), saxBuffer);
-				marshaller.marshal(kmlFactory.createStyleMap(styleMapGeometry), saxBuffer);
-			}
+            if (isBuilding)
+                styleWallNormal.setId(org.citydb.modules.kml.datatype.TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_GROUND_SURFACE).toString() + "Normal");
+            else if (isBridge)
+                styleWallNormal.setId(org.citydb.modules.kml.datatype.TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BRIDGE_GROUND_SURFACE).toString() + "Normal");
+            else if (isTunnel)
+                styleWallNormal.setId(org.citydb.modules.kml.datatype.TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_GROUND_SURFACE).toString() + "Normal");
+
+            marshaller.marshal(kmlFactory.createStyle(styleWallNormal), saxBuffer);
+
+            LineStyleType lineStyleRoofNormal = kmlFactory.createLineStyleType();
+            lineStyleRoofNormal.setColor(hexStringToByteArray(roofLineColor));
+            PolyStyleType polyStyleRoofNormal = kmlFactory.createPolyStyleType();
+            polyStyleRoofNormal.setColor(hexStringToByteArray(roofFillColor));
+            StyleType styleRoofNormal = kmlFactory.createStyleType();
+
+            styleRoofNormal.setLineStyle(lineStyleRoofNormal);
+            styleRoofNormal.setPolyStyle(polyStyleRoofNormal);
+            styleRoofNormal.setBalloonStyle(balloonStyle);
+
+            if (isBuilding)
+                styleRoofNormal.setId(org.citydb.modules.kml.datatype.TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_ROOF_SURFACE).toString() + "Normal");
+            else if (isBridge)
+                styleRoofNormal.setId(org.citydb.modules.kml.datatype.TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BRIDGE_ROOF_SURFACE).toString() + "Normal");
+            else if (isTunnel)
+                styleRoofNormal.setId(org.citydb.modules.kml.datatype.TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_ROOF_SURFACE).toString() + "Normal");
+
+            marshaller.marshal(kmlFactory.createStyle(styleRoofNormal), saxBuffer);
+
+            if (currentDisplayForm.isHighlightingEnabled()) {
+                String highlightFillColor = Integer.toHexString(org.citydb.config.project.kmlExporter.DisplayForm.DEFAULT_FILL_HIGHLIGHTED_COLOR);
+                String highlightLineColor = Integer.toHexString(org.citydb.config.project.kmlExporter.DisplayForm.DEFAULT_LINE_HIGHLIGHTED_COLOR);
+
+                if (currentDisplayForm.isSetRgba4()) {
+                    highlightFillColor = org.citydb.config.project.kmlExporter.DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba4()));
+                }
+                if (currentDisplayForm.isSetRgba5()) {
+                    highlightLineColor = org.citydb.config.project.kmlExporter.DisplayForm.formatColorStringForKML(Integer.toHexString(currentDisplayForm.getRgba5()));
+                }
+
+                LineStyleType lineStyleGeometryInvisible = kmlFactory.createLineStyleType();
+                lineStyleGeometryInvisible.setColor(hexStringToByteArray("01" + highlightLineColor.substring(2)));
+                PolyStyleType polyStyleGeometryInvisible = kmlFactory.createPolyStyleType();
+                polyStyleGeometryInvisible.setColor(hexStringToByteArray("00" + highlightFillColor.substring(2)));
+                StyleType styleGeometryInvisible = kmlFactory.createStyleType();
+                styleGeometryInvisible.setId(styleBasisName + currentDisplayForm.getName() + "StyleInvisible");
+                styleGeometryInvisible.setLineStyle(lineStyleGeometryInvisible);
+                styleGeometryInvisible.setPolyStyle(polyStyleGeometryInvisible);
+                styleGeometryInvisible.setBalloonStyle(balloonStyle);
+
+                LineStyleType lineStyleGeometryHighlight = kmlFactory.createLineStyleType();
+                lineStyleGeometryHighlight.setColor(hexStringToByteArray(highlightLineColor));
+                PolyStyleType polyStyleGeometryHighlight = kmlFactory.createPolyStyleType();
+                polyStyleGeometryHighlight.setColor(hexStringToByteArray(highlightFillColor));
+                StyleType styleGeometryHighlight = kmlFactory.createStyleType();
+                styleGeometryHighlight.setId(styleBasisName + currentDisplayForm.getName() + "StyleHighlight");
+                styleGeometryHighlight.setLineStyle(lineStyleGeometryHighlight);
+                styleGeometryHighlight.setPolyStyle(polyStyleGeometryHighlight);
+                styleGeometryHighlight.setBalloonStyle(balloonStyle);
+
+                PairType pairGeometryNormal = kmlFactory.createPairType();
+                pairGeometryNormal.setKey(StyleStateEnumType.NORMAL);
+                pairGeometryNormal.setStyleUrl("#" + styleGeometryInvisible.getId());
+                PairType pairGeometryHighlight = kmlFactory.createPairType();
+                pairGeometryHighlight.setKey(StyleStateEnumType.HIGHLIGHT);
+                pairGeometryHighlight.setStyleUrl("#" + styleGeometryHighlight.getId());
+                StyleMapType styleMapGeometry = kmlFactory.createStyleMapType();
+                styleMapGeometry.setId(styleBasisName + currentDisplayForm.getName() + "Style");
+                styleMapGeometry.getPair().add(pairGeometryNormal);
+                styleMapGeometry.getPair().add(pairGeometryHighlight);
+
+                marshaller.marshal(kmlFactory.createStyle(styleGeometryInvisible), saxBuffer);
+                marshaller.marshal(kmlFactory.createStyle(styleGeometryHighlight), saxBuffer);
+                marshaller.marshal(kmlFactory.createStyleMap(styleMapGeometry), saxBuffer);
+            }
 
 			ioWriterPool.addWork(saxBuffer);
 			break;
@@ -1424,19 +1442,25 @@ public class CityKmlExporter implements EventHandler {
 			}
 			else if (kmlExportObject instanceof Relief) {
 				type = CityGMLClass.RELIEF_FEATURE;
-			}
+			}*/
 			else if (kmlExportObject instanceof SolitaryVegetationObject) {
 				type = CityGMLClass.SOLITARY_VEGETATION_OBJECT;
 			}
-			else if (kmlExportObject instanceof PlantCover) {
+			/*else if (kmlExportObject instanceof PlantCover) {
 				type = CityGMLClass.PLANT_COVER;
 			}
 			else if (kmlExportObject instanceof GenericCityObject) {
 				type = CityGMLClass.GENERIC_CITY_OBJECT;
-			}
-			else if (kmlExportObject instanceof CityFurniture) {
-				type = CityGMLClass.CITY_FURNITURE;
 			}*/
+            else if (kmlExportObject instanceof BridgeObject) {
+                type = CityGMLClass.BRIDGE;
+            }
+            else if (kmlExportObject instanceof TunnelObject) {
+                type = CityGMLClass.TUNNEL;
+            }
+			else if (kmlExportObject instanceof CityFurnitureObject) {
+				type = CityGMLClass.CITY_FURNITURE;
+			}
 			else
 				return;
 

@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="jts-1.131">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/lib/jts/jts-1.13.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
