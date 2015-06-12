@@ -1,40 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="52b2aff2-9167-49d8-8e82-781ee16f9ac7" name="Default" comment="Choosing the parent folder has been implemented.">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/BridgeObject.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityFurnitureObject.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Gasometer1.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/KML1.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/OtherGeometry.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Potsdam_LoD11.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Railway_Scene_LoD3.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/SolitaryVegetationObject.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/TUM_Munich.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/TunnelObject.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/args4j_2_0_211.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/citygml4j1.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/h2_1_3_1761.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/java3d1.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/jts_1_131.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/kml_collada1.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/lib.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/oracle1.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/postgis1.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/spreadsheet_generator.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/standalone_compiler1.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/swingx_ws1.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/tomcat_juli1.xml" />
-      <change type="MOVED" beforePath="C:\_projekte\General\CityGMLConverterPlugin\src\org\citydb\plugins\CityGMLConverter\content\BuildingSurface.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/SurfaceObject.java" />
+    <list default="true" id="52b2aff2-9167-49d8-8e82-781ee16f9ac7" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Building.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Building.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/concurrent/CityKmlExportWorker.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/concurrent/CityKmlExportWorker.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/controller/CityKmlExporter.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/controller/CityKmlExporter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityObject.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityObject.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityObjectGroup.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityObjectGroup.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/xlink/resolver/DBXlinkSplitter.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/xlink/resolver/DBXlinkSplitter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/KmlGenericObject.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/KmlGenericObject.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/SurfaceGeometry.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/SurfaceGeometry.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules.xml" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/TunnelObject.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/TunnelObject.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="CityGMLConverterPlugin.iws" />
@@ -58,30 +28,30 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="TunnelObject.java" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="TunnelObject.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/TunnelObject.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="4494" max-vertical-offset="9945">
-              <caret line="273" column="24" selection-start-line="273" selection-start-column="24" selection-end-line="273" selection-end-column="24" />
+            <state vertical-scroll-proportion="0.75829387" vertical-offset="16544" max-vertical-offset="18547">
+              <caret line="992" column="53" selection-start-line="992" selection-start-column="53" selection-end-line="992" selection-end-column="53" />
               <folding>
-                <element signature="e#0#21939#0" expanded="true" />
+                <element signature="e#0#46303#0" expanded="true" />
                 <element signature="imports" expanded="true" />
-                <element signature="e#3279#3294#0" expanded="true" />
-                <element signature="e#4284#4285#0" expanded="true" />
-                <element signature="e#4339#4340#0" expanded="true" />
-                <element signature="e#4393#4394#0" expanded="true" />
-                <element signature="e#4450#4451#0" expanded="true" />
-                <element signature="e#4498#4499#0" expanded="true" />
-                <element signature="e#4548#4549#0" expanded="true" />
-                <element signature="e#4594#4595#0" expanded="true" />
-                <element signature="e#4633#4634#0" expanded="true" />
-                <element signature="e#4685#4686#0" expanded="true" />
-                <element signature="e#4712#4713#0" expanded="true" />
-                <element signature="e#4823#4838#0" expanded="true" />
-                <element signature="e#7478#7508#0" expanded="true" />
-                <element signature="e#11453#11468#0" expanded="true" />
-                <element signature="e#12752#12767#0" expanded="true" />
-                <element signature="e#20365#20380#0" expanded="true" />
+                <element signature="e#3323#3338#0" expanded="true" />
+                <element signature="e#4328#4329#0" expanded="true" />
+                <element signature="e#4383#4384#0" expanded="true" />
+                <element signature="e#4437#4438#0" expanded="true" />
+                <element signature="e#4494#4495#0" expanded="true" />
+                <element signature="e#4542#4543#0" expanded="true" />
+                <element signature="e#4592#4593#0" expanded="true" />
+                <element signature="e#4638#4639#0" expanded="true" />
+                <element signature="e#4677#4678#0" expanded="true" />
+                <element signature="e#4729#4730#0" expanded="true" />
+                <element signature="e#4756#4757#0" expanded="true" />
+                <element signature="e#4867#4882#0" expanded="true" />
+                <element signature="e#7522#7552#0" expanded="true" />
+                <element signature="e#11497#11512#0" expanded="true" />
+                <element signature="e#12791#12806#0" expanded="true" />
+                <element signature="e#44729#44744#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -90,18 +60,28 @@
       <file leaf-file-name="DBTunnel.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/src/org/citydb/modules/citygml/importer/database/content/DBTunnel.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="7038" max-vertical-offset="8143">
-              <caret line="180" column="8" selection-start-line="180" selection-start-column="8" selection-end-line="180" selection-end-column="8" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="6528" max-vertical-offset="8143">
+              <caret line="442" column="52" selection-start-line="442" selection-start-column="52" selection-end-line="442" selection-end-column="52" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="CityKmlExporter.java" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="DBTunnelHollowSpace.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/src/org/citydb/modules/citygml/importer/database/content/DBTunnelHollowSpace.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="3719" max-vertical-offset="4641">
+              <caret line="279" column="64" selection-start-line="279" selection-start-column="20" selection-end-line="279" selection-end-column="64" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="CityKmlExporter.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/controller/CityKmlExporter.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.18052739" vertical-offset="24442" max-vertical-offset="25568">
-              <caret line="1448" column="63" selection-start-line="1448" selection-start-column="63" selection-end-line="1448" selection-end-column="63" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="10315" max-vertical-offset="25568">
+              <caret line="620" column="0" selection-start-line="620" selection-start-column="0" selection-end-line="620" selection-end-column="0" />
               <folding>
                 <element signature="e#0#62052#0" expanded="true" />
                 <element signature="imports" expanded="true" />
@@ -115,8 +95,8 @@
       <file leaf-file-name="CityKmlExportWorker.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/concurrent/CityKmlExportWorker.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="7063" max-vertical-offset="9214">
-              <caret line="414" column="0" selection-start-line="414" selection-start-column="0" selection-end-line="414" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="5839" max-vertical-offset="9265">
+              <caret line="418" column="16" selection-start-line="418" selection-start-column="16" selection-end-line="418" selection-end-column="16" />
               <folding />
             </state>
           </provider>
@@ -125,9 +105,38 @@
       <file leaf-file-name="Building.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Building.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="7362" max-vertical-offset="22032">
-              <caret line="548" column="9" selection-start-line="333" selection-start-column="8" selection-end-line="548" selection-end-column="9" />
-              <folding />
+            <state vertical-scroll-proportion="0.0" vertical-offset="18584" max-vertical-offset="23732">
+              <caret line="325" column="31" selection-start-line="325" selection-start-column="31" selection-end-line="325" selection-end-column="31" />
+              <folding>
+                <element signature="e#0#58764#0" expanded="true" />
+                <element signature="imports" expanded="true" />
+                <element signature="e#4795#4810#0" expanded="true" />
+                <element signature="e#5704#5705#0" expanded="true" />
+                <element signature="e#5759#5760#0" expanded="true" />
+                <element signature="e#5813#5814#0" expanded="true" />
+                <element signature="e#5870#5871#0" expanded="true" />
+                <element signature="e#5918#5919#0" expanded="true" />
+                <element signature="e#5968#5969#0" expanded="true" />
+                <element signature="e#6014#6015#0" expanded="true" />
+                <element signature="e#6053#6054#0" expanded="true" />
+                <element signature="e#6105#6106#0" expanded="true" />
+                <element signature="e#6187#6188#0" expanded="true" />
+                <element signature="e#6298#6313#0" expanded="true" />
+                <element signature="e#8949#8979#0" expanded="true" />
+                <element signature="e#12963#12978#0" expanded="true" />
+                <element signature="e#14282#14297#0" expanded="true" />
+                <element signature="e#49581#49596#0" expanded="true" />
+                <element signature="e#50317#50325#0" expanded="true" />
+                <element signature="e#50946#50954#0" expanded="true" />
+                <element signature="e#51666#51674#0" expanded="true" />
+                <element signature="e#52117#52125#0" expanded="true" />
+                <element signature="e#53103#53111#0" expanded="true" />
+                <element signature="e#53585#53593#0" expanded="true" />
+                <element signature="e#54245#54253#0" expanded="true" />
+                <element signature="e#55008#55023#0" expanded="true" />
+                <element signature="e#57562#57570#0" expanded="true" />
+                <element signature="e#58295#58303#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -183,12 +192,13 @@
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/SurfaceObject.java" />
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Bridge.java" />
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Tunnel.java" />
-        <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/concurrent/CityKmlExportWorker.java" />
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityFurniture.java" />
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/SolitaryVegetationObject.java" />
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityFurnitureObject.java" />
+        <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/concurrent/CityKmlExportWorker.java" />
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/controller/CityKmlExporter.java" />
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Building.java" />
+        <option value="$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/src/org/citydb/modules/citygml/importer/database/content/DBTunnel.java" />
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/TunnelObject.java" />
       </list>
     </option>
@@ -1107,7 +1117,7 @@
       <workItem from="1431240314473" duration="66000" />
       <workItem from="1432191953443" duration="595000" />
       <workItem from="1433923992902" duration="17680000" />
-      <workItem from="1434007222624" duration="24270000" />
+      <workItem from="1434007222624" duration="35421000" />
     </task>
     <task id="LOCAL-00001" summary="First Commit">
       <created>1418730900527</created>
@@ -1149,11 +1159,15 @@
       <created>1430557695978</created>
       <updated>1430557695978</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="CityFurniture and Tunnel and Vegetation are added to the feature classes">
+      <created>1434038997612</created>
+      <updated>1434038997612</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="110823000" />
+    <option name="totallyTimeSpent" value="121974000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1456" height="876" extended-state="6" />
@@ -1166,7 +1180,7 @@
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3997396" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3997396" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -1179,7 +1193,7 @@
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22222222" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.30729166" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.30729166" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -1210,11 +1224,15 @@
     <MESSAGE value="Libraries problem has been solved." />
     <MESSAGE value="Minor changes." />
     <MESSAGE value="Choosing the parent folder has been implemented." />
-    <option name="LAST_COMMIT_MESSAGE" value="Choosing the parent folder has been implemented." />
+    <MESSAGE value="CityFurniture and Tunnel and Vegetation are added to the feature classes" />
+    <option name="LAST_COMMIT_MESSAGE" value="CityFurniture and Tunnel and Vegetation are added to the feature classes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="36" />
+      <breakpoints-dialog>
+        <breakpoints-dialog />
+      </breakpoints-dialog>
+      <option name="time" value="55" />
     </breakpoint-manager>
   </component>
   <component name="antWorkspaceConfiguration">
@@ -1229,13 +1247,6 @@
     </buildFile>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/gui/factory/SrsComboBoxFactory.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="102" max-vertical-offset="3349">
-          <caret line="67" column="68" selection-start-line="67" selection-start-column="68" selection-end-line="67" selection-end-column="68" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/gui/components/bbox/BoundingBoxPanelImpl.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="784" max-vertical-offset="5763">
@@ -1579,41 +1590,25 @@
         <state vertical-scroll-proportion="5.034483" vertical-offset="2890" max-vertical-offset="9724">
           <caret line="316" column="23" selection-start-line="316" selection-start-column="23" selection-end-line="316" selection-end-column="23" />
           <folding>
-            <element signature="e#0#23188#0" expanded="true" />
-            <element signature="imports" expanded="true" />
-            <element signature="e#3274#3289#0" expanded="true" />
-            <element signature="e#4335#4336#0" expanded="true" />
-            <element signature="e#4390#4391#0" expanded="true" />
-            <element signature="e#4440#4441#0" expanded="true" />
-            <element signature="e#4497#4498#0" expanded="true" />
-            <element signature="e#4541#4542#0" expanded="true" />
-            <element signature="e#4591#4592#0" expanded="true" />
-            <element signature="e#4633#4634#0" expanded="true" />
-            <element signature="e#4672#4673#0" expanded="true" />
-            <element signature="e#4720#4721#0" expanded="true" />
-            <element signature="e#4747#4748#0" expanded="true" />
-            <element signature="e#4854#4869#0" expanded="true" />
-            <element signature="e#7505#7535#0" expanded="true" />
-            <element signature="e#11500#11515#0" expanded="true" />
-            <element signature="e#12801#12816#0" expanded="true" />
-            <element signature="e#21996#22013#0" expanded="true" />
+            <element signature="e#0#23188#0" expanded="false" />
+            <element signature="imports" expanded="false" />
+            <element signature="e#3274#3289#0" expanded="false" />
+            <element signature="e#4335#4336#0" expanded="false" />
+            <element signature="e#4390#4391#0" expanded="false" />
+            <element signature="e#4440#4441#0" expanded="false" />
+            <element signature="e#4497#4498#0" expanded="false" />
+            <element signature="e#4541#4542#0" expanded="false" />
+            <element signature="e#4591#4592#0" expanded="false" />
+            <element signature="e#4633#4634#0" expanded="false" />
+            <element signature="e#4672#4673#0" expanded="false" />
+            <element signature="e#4720#4721#0" expanded="false" />
+            <element signature="e#4747#4748#0" expanded="false" />
+            <element signature="e#4854#4869#0" expanded="false" />
+            <element signature="e#7505#7535#0" expanded="false" />
+            <element signature="e#11500#11515#0" expanded="false" />
+            <element signature="e#12801#12816#0" expanded="false" />
+            <element signature="e#21996#22013#0" expanded="false" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Building.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="7362" max-vertical-offset="22032">
-          <caret line="548" column="9" selection-start-line="333" selection-start-column="8" selection-end-line="548" selection-end-column="9" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/src/org/citydb/modules/citygml/importer/database/content/DBTunnel.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="4488" max-vertical-offset="8143">
-          <caret line="180" column="8" selection-start-line="180" selection-start-column="8" selection-end-line="180" selection-end-column="8" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1622,33 +1617,6 @@
         <state vertical-scroll-proportion="0.1724138" vertical-offset="0" max-vertical-offset="1581">
           <caret line="43" column="13" selection-start-line="43" selection-start-column="13" selection-end-line="43" selection-end-column="13" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/TunnelObject.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="4494" max-vertical-offset="9945">
-          <caret line="273" column="24" selection-start-line="273" selection-start-column="24" selection-end-line="273" selection-end-column="24" />
-          <folding>
-            <element signature="e#0#21939#0" expanded="true" />
-            <element signature="imports" expanded="true" />
-            <element signature="e#3279#3294#0" expanded="true" />
-            <element signature="e#4284#4285#0" expanded="true" />
-            <element signature="e#4339#4340#0" expanded="true" />
-            <element signature="e#4393#4394#0" expanded="true" />
-            <element signature="e#4450#4451#0" expanded="true" />
-            <element signature="e#4498#4499#0" expanded="true" />
-            <element signature="e#4548#4549#0" expanded="true" />
-            <element signature="e#4594#4595#0" expanded="true" />
-            <element signature="e#4633#4634#0" expanded="true" />
-            <element signature="e#4685#4686#0" expanded="true" />
-            <element signature="e#4712#4713#0" expanded="true" />
-            <element signature="e#4823#4838#0" expanded="true" />
-            <element signature="e#7478#7508#0" expanded="true" />
-            <element signature="e#11453#11468#0" expanded="true" />
-            <element signature="e#12752#12767#0" expanded="true" />
-            <element signature="e#20365#20380#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1662,21 +1630,101 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/concurrent/CityKmlExportWorker.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="6400" max-vertical-offset="9214">
-          <caret line="414" column="0" selection-start-line="414" selection-start-column="0" selection-end-line="414" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="5839" max-vertical-offset="9265">
+          <caret line="418" column="16" selection-start-line="418" selection-start-column="16" selection-end-line="418" selection-end-column="16" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/controller/CityKmlExporter.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.18052739" vertical-offset="24442" max-vertical-offset="25568">
-          <caret line="1448" column="63" selection-start-line="1448" selection-start-column="63" selection-end-line="1448" selection-end-column="63" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="10315" max-vertical-offset="25568">
+          <caret line="620" column="0" selection-start-line="620" selection-start-column="0" selection-end-line="620" selection-end-column="0" />
           <folding>
             <element signature="e#0#62052#0" expanded="true" />
             <element signature="imports" expanded="true" />
             <element signature="e#6863#6883#0" expanded="true" />
             <element signature="e#18570#18576#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Building.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="18584" max-vertical-offset="23732">
+          <caret line="325" column="31" selection-start-line="325" selection-start-column="31" selection-end-line="325" selection-end-column="31" />
+          <folding>
+            <element signature="e#0#58764#0" expanded="true" />
+            <element signature="imports" expanded="true" />
+            <element signature="e#4795#4810#0" expanded="true" />
+            <element signature="e#5704#5705#0" expanded="true" />
+            <element signature="e#5759#5760#0" expanded="true" />
+            <element signature="e#5813#5814#0" expanded="true" />
+            <element signature="e#5870#5871#0" expanded="true" />
+            <element signature="e#5918#5919#0" expanded="true" />
+            <element signature="e#5968#5969#0" expanded="true" />
+            <element signature="e#6014#6015#0" expanded="true" />
+            <element signature="e#6053#6054#0" expanded="true" />
+            <element signature="e#6105#6106#0" expanded="true" />
+            <element signature="e#6187#6188#0" expanded="true" />
+            <element signature="e#6298#6313#0" expanded="true" />
+            <element signature="e#8949#8979#0" expanded="true" />
+            <element signature="e#12963#12978#0" expanded="true" />
+            <element signature="e#14282#14297#0" expanded="true" />
+            <element signature="e#49581#49596#0" expanded="true" />
+            <element signature="e#50317#50325#0" expanded="true" />
+            <element signature="e#50946#50954#0" expanded="true" />
+            <element signature="e#51666#51674#0" expanded="true" />
+            <element signature="e#52117#52125#0" expanded="true" />
+            <element signature="e#53103#53111#0" expanded="true" />
+            <element signature="e#53585#53593#0" expanded="true" />
+            <element signature="e#54245#54253#0" expanded="true" />
+            <element signature="e#55008#55023#0" expanded="true" />
+            <element signature="e#57562#57570#0" expanded="true" />
+            <element signature="e#58295#58303#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/src/org/citydb/modules/citygml/importer/database/content/DBTunnel.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="6528" max-vertical-offset="8143">
+          <caret line="442" column="52" selection-start-line="442" selection-start-column="52" selection-end-line="442" selection-end-column="52" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/src/org/citydb/modules/citygml/importer/database/content/DBTunnelHollowSpace.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="3821" max-vertical-offset="4641">
+          <caret line="279" column="64" selection-start-line="279" selection-start-column="20" selection-end-line="279" selection-end-column="64" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/TunnelObject.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.75829387" vertical-offset="16544" max-vertical-offset="18547">
+          <caret line="992" column="53" selection-start-line="992" selection-start-column="53" selection-end-line="992" selection-end-column="53" />
+          <folding>
+            <element signature="e#0#46303#0" expanded="true" />
+            <element signature="imports" expanded="true" />
+            <element signature="e#3323#3338#0" expanded="true" />
+            <element signature="e#4328#4329#0" expanded="true" />
+            <element signature="e#4383#4384#0" expanded="true" />
+            <element signature="e#4437#4438#0" expanded="true" />
+            <element signature="e#4494#4495#0" expanded="true" />
+            <element signature="e#4542#4543#0" expanded="true" />
+            <element signature="e#4592#4593#0" expanded="true" />
+            <element signature="e#4638#4639#0" expanded="true" />
+            <element signature="e#4677#4678#0" expanded="true" />
+            <element signature="e#4729#4730#0" expanded="true" />
+            <element signature="e#4756#4757#0" expanded="true" />
+            <element signature="e#4867#4882#0" expanded="true" />
+            <element signature="e#7522#7552#0" expanded="true" />
+            <element signature="e#11497#11512#0" expanded="true" />
+            <element signature="e#12791#12806#0" expanded="true" />
+            <element signature="e#44729#44744#0" expanded="true" />
           </folding>
         </state>
       </provider>

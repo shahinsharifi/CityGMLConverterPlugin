@@ -158,7 +158,7 @@ public class Building extends KmlGenericObject{
                 placemarks.addAll(placemarkBPart);
         }
         catch (Exception Ex) {
-            Logger.getInstance().error("SQL error while getting building parts for building " + work.getGmlId() + ": " + Ex.getMessage());
+            Logger.getInstance().error("Error getting building parts for building " + work.getGmlId() + ": " + Ex.getMessage());
         }
         finally {
 
@@ -295,7 +295,7 @@ public class Building extends KmlGenericObject{
             }
         }
         catch (SQLException sqlEx) {
-            Logger.getInstance().error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
+            Logger.getInstance().error("Error querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
             return null;
         }
         finally {

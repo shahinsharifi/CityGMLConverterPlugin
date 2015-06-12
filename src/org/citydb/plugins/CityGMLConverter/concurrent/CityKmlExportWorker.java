@@ -39,6 +39,7 @@ import javax.xml.bind.JAXBContext;
 
 import net.opengis.kml._2.ObjectFactory;
 
+import org.citydb.log.Logger;
 import org.citydb.plugins.CityGMLConverter.content.*;
 import org.citygml4j.factory.GMLGeometryFactory;
 import org.citygml4j.model.citygml.CityGMLClass;
@@ -254,7 +255,7 @@ public class CityKmlExportWorker implements Worker<KmlSplittingResult> {
 					doWork(work);
 				}
 				catch (InterruptedException ie) {
-					// re-check state
+          
 				}
 			}
 
@@ -483,6 +484,9 @@ public class CityKmlExportWorker implements Worker<KmlSplittingResult> {
 					}
 				}
 		}
+        catch (Exception ex){
+            Logger.getInstance().error(ex.toString());
+        }
 		finally {
 			runLock.unlock();
 		}
