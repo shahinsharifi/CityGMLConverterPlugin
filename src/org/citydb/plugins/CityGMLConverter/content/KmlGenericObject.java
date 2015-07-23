@@ -30,7 +30,6 @@
 package org.citydb.plugins.CityGMLConverter.content;
 
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
@@ -41,22 +40,15 @@ import java.io.BufferedInputStream;
 // import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -65,14 +57,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
-import javax.media.j3d.GeometryArray;
-import javax.media.jai.JAI;
-import javax.media.jai.NullOpImage;
-import javax.media.jai.OpImage;
-import javax.media.jai.PlanarImage;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.vecmath.Point3d;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeConstants;
@@ -95,14 +79,12 @@ import net.opengis.kml._2.PolygonType;
 
 import org.citydb.api.database.DatabaseSrs;
 import org.citydb.api.event.EventDispatcher;
-import org.citydb.api.geometry.GeometryObject;
 import org.citydb.api.log.LogLevel;
 import org.citydb.io.DirectoryScanner;
 import org.citydb.log.Logger;
 import org.citydb.modules.common.event.CounterEvent;
 import org.citydb.modules.common.event.CounterType;
 import org.citydb.modules.common.event.GeometryCounterEvent;
-import org.citydb.plugins.CityGMLConverter.CityKMLExportPlugin;
 import org.citydb.plugins.CityGMLConverter.config.Balloon;
 import org.citydb.plugins.CityGMLConverter.config.ColladaOptions;
 import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
@@ -111,7 +93,6 @@ import org.citydb.plugins.CityGMLConverter.config.Internal;
 import org.citydb.plugins.CityGMLConverter.util.ElevationHelper;
 import org.citydb.plugins.CityGMLConverter.util.ProjConvertor;
 import org.citydb.util.Util;
-import org.citygml.textureAtlasAPI.TextureAtlasGenerator;
 import org.citygml.textureAtlasAPI.dataStructure.TexImage;
 import org.citygml.textureAtlasAPI.dataStructure.TexImageInfo;
 import org.citygml4j.factory.GMLGeometryFactory;
@@ -120,20 +101,10 @@ import org.citygml4j.model.citygml.appearance.Color;
 import org.citygml4j.model.citygml.appearance.X3DMaterial;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.generics.AbstractGenericAttribute;
-import org.citygml4j.model.citygml.generics.DateAttribute;
-import org.citygml4j.model.citygml.generics.DoubleAttribute;
 import org.citygml4j.model.citygml.generics.GenericAttributeSet;
-import org.citygml4j.model.citygml.generics.IntAttribute;
-import org.citygml4j.model.citygml.generics.MeasureAttribute;
 import org.citygml4j.model.citygml.generics.StringAttribute;
-import org.citygml4j.model.citygml.generics.UriAttribute;
 import org.collada._2005._11.colladaschema.*;
 //import org.collada._2005._11.colladaschema.Geometry;					// collides with org.postgis.Geometry
-import org.geotools.geometry.jts.GeometryBuilder;
-import org.geotools.geometry.jts.JTS;
-import org.postgis.Geometry;											// collides with Collada-Geometry
-import org.postgis.MultiPolygon;
-import org.postgis.PGgeometry;
 import org.postgis.Polygon;
 
 // import org.postgresql.largeobject.LargeObject;
@@ -141,8 +112,6 @@ import org.postgis.Polygon;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.sun.image.codec.jpeg.JPEGCodec;
-import com.sun.image.codec.jpeg.JPEGImageEncoder;
 import com.sun.j3d.utils.geometry.GeometryInfo;
 import com.sun.media.jai.codec.FileSeekableStream;
 import com.sun.media.jai.codec.ImageCodec;
@@ -185,7 +154,7 @@ public abstract class KmlGenericObject {
     private double zOffset;
     private boolean ignoreSurfaceOrientation = true;
 
-    protected Connection connection;
+
     protected GMLGeometryFactory cityGMLFactory;
     protected KmlExporterManager kmlExporterManager;
     protected net.opengis.kml._2.ObjectFactory kmlFactory;
@@ -201,8 +170,7 @@ public abstract class KmlGenericObject {
     private SimpleDateFormat dateFormatter;
     private DirectoryScanner directoryScanner;
 
-    public KmlGenericObject(Connection connection,
-                            KmlExporterManager kmlExporterManager,
+    public KmlGenericObject(KmlExporterManager kmlExporterManager,
                             GMLGeometryFactory cityGMLFactory,
                             net.opengis.kml._2.ObjectFactory kmlFactory,
                             ElevationServiceHandler elevationServiceHandler,
@@ -210,7 +178,6 @@ public abstract class KmlGenericObject {
                             EventDispatcher eventDispatcher,
                             ConfigImpl config) {
 
-        this.connection = connection;
         this.kmlExporterManager = kmlExporterManager;
         this.cityGMLFactory = cityGMLFactory;
         this.kmlFactory = kmlFactory;
@@ -1240,7 +1207,7 @@ public abstract class KmlGenericObject {
         return Math.rint(originalValue * PRECISION) / PRECISION;
     }
 
-    protected List<PlacemarkType> createPlacemarksForFootprint(List<BuildingSurface> result, KmlSplittingResult work) throws Exception {
+    protected List<PlacemarkType> createPlacemarksForFootprint(List<SurfaceObject> result, KmlSplittingResult work) throws Exception {
 
     	List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
     	PlacemarkType placemark = kmlFactory.createPlacemarkType();
@@ -1263,7 +1230,7 @@ public abstract class KmlGenericObject {
     	PolygonType polygon = null;
     	try {
 
-    		for (BuildingSurface Row: result) {
+    		for (SurfaceObject Row: result) {
 
     			if (Row != null && Row.getType().equals("GroundSurface")) {
 
@@ -1324,7 +1291,7 @@ public abstract class KmlGenericObject {
     }
     
 
-    protected List<PlacemarkType> createPlacemarksForExtruded(List<BuildingSurface> result,
+    protected List<PlacemarkType> createPlacemarksForExtruded(List<SurfaceObject> result,
                                                               KmlSplittingResult work,
                                                               double measuredHeight,
                                                               boolean reversePointOrder) throws Exception {
@@ -1347,7 +1314,7 @@ public abstract class KmlGenericObject {
             placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
 
             PolygonType polygon = null;            
-            for (BuildingSurface Row: result) {
+            for (SurfaceObject Row: result) {
 
             	if (Row != null && Row.getType().equals("GroundSurface")) {
             		
@@ -1415,13 +1382,13 @@ public abstract class KmlGenericObject {
     }
 
     
-    protected List<PlacemarkType> createPlacemarksForGeometry(List<BuildingSurface> rs,
+    protected List<PlacemarkType> createPlacemarksForGeometry(List<SurfaceObject> rs,
                                                               KmlSplittingResult work) throws Exception{
         return createPlacemarksForGeometry(rs, work, false, false);
     }
 
     
-    protected List<PlacemarkType> createPlacemarksForGeometry(List<BuildingSurface> result,
+    protected List<PlacemarkType> createPlacemarksForGeometry(List<SurfaceObject> result,
                                                               KmlSplittingResult work,
                                                               boolean includeGroundSurface,
                                                               boolean includeClosureSurface) throws Exception {
@@ -1437,7 +1404,7 @@ public abstract class KmlGenericObject {
         }
         
 
-        for (BuildingSurface Row: result) {
+        for (SurfaceObject Row: result) {
 
             String surfaceType = (String)Row.getType();
             if (surfaceType != null && !surfaceType.endsWith("Surface")) {
@@ -1585,9 +1552,9 @@ public abstract class KmlGenericObject {
     }
 
     protected void fillGenericObjectForCollada(KmlSplittingResult work ,
-    		List<BuildingSurface> _SurfaceList ,
+    		List<SurfaceObject> _SurfaceList ,
             SurfaceAppearance _SurfaceAppearance,
-            List<BuildingSurface> _ParentSurfaceList) throws Exception {
+            List<SurfaceObject> _ParentSurfaceList) throws Exception {
 
         String selectedTheme = config.getAppearanceTheme();
         String filePath=GetImagePath();
@@ -1595,7 +1562,7 @@ public abstract class KmlGenericObject {
 
         try {
 
-            for(BuildingSurface Row:_ParentSurfaceList){
+            for(SurfaceObject Row:_ParentSurfaceList){
                 String parentid= String.valueOf(Row.getPId());
                 String id = Row.getId();
                 Map<String, Object> tmpResult = _SurfaceAppearance.GetAppearanceBySurfaceID("#" + id , work.getAppearanceList() , selectedTheme);
@@ -1611,7 +1578,7 @@ public abstract class KmlGenericObject {
                 }
             }
 
-            for (BuildingSurface Row: _SurfaceList)  {
+            for (SurfaceObject Row: _SurfaceList)  {
 
                 Map<String, Object> _AppResult = _SurfaceAppearance.GetAppearanceBySurfaceID("#" + Row.getId() , work.getAppearanceList() , selectedTheme);
                 String surfaceId = Row.getId();
@@ -1860,7 +1827,7 @@ public abstract class KmlGenericObject {
     }
 
 
-    protected List<PlacemarkType> createPlacemarksForHighlighting(List<BuildingSurface> result , KmlSplittingResult work) throws SQLException {
+    protected List<PlacemarkType> createPlacemarksForHighlighting(List<SurfaceObject> result , KmlSplittingResult work) throws SQLException {
 
     
     	List<PlacemarkType> placemarkList= new ArrayList<PlacemarkType>();
@@ -1887,7 +1854,7 @@ public abstract class KmlGenericObject {
                 zOffset = getZOffsetFromGEService(work.getGmlId(),lowestPointCandidates,work.getTargetSrs(),work.GetElevation());
             }
 
-            for (BuildingSurface Row: result) {
+            for (SurfaceObject Row: result) {
             	
             	List<Double> _Geometry = (List<Double>)Row.getGeometry();
                 org.postgis.Point[] tmpPoint = new org.postgis.Point[_Geometry.size()/3];
@@ -2238,7 +2205,7 @@ public abstract class KmlGenericObject {
     }
 
     @SuppressWarnings("unchecked")
-    protected List<Point3d> getLowestPointsCoordinates(List<BuildingSurface> result, KmlSplittingResult work) throws Exception {
+    protected List<Point3d> getLowestPointsCoordinates(List<SurfaceObject> result, KmlSplittingResult work) throws Exception {
 
         double currentlyLowestZCoordinate = Double.MAX_VALUE;
 
@@ -2246,7 +2213,7 @@ public abstract class KmlGenericObject {
         List<Double> ordinates = new ArrayList<Double>();
 
 
-        for(BuildingSurface _row :result)
+        for(SurfaceObject _row :result)
         {
             List<Double> PointList = (List<Double>)_row.getGeometry();
             //ordinates.addAll(ProjConvertor.TransformProjection(PointList.get(0), PointList.get(1), PointList.get(2), work.getTargetSrs() , "4326"));

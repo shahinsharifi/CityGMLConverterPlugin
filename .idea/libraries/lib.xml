@@ -1,0 +1,25 @@
+<component name="libraryTable">
+  <library name="lib">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/resources/plugins/spreadsheet_generator/lib/servlet-api.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/resources/plugins/spreadsheet_generator/lib/gdata-docs-3.0.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/resources/plugins/spreadsheet_generator/lib/stax-api-1.0.1.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/resources/plugins/spreadsheet_generator/lib/mail.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/resources/plugins/spreadsheet_generator/lib/gdata-client-1.0.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/resources/plugins/spreadsheet_generator/lib/google-collect-1.0-rc1.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/resources/plugins/spreadsheet_generator/lib/poi-3.10.1-20140818.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/resources/plugins/spreadsheet_generator/lib/gdata-docs-meta-3.0.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/resources/plugins/spreadsheet_generator/lib/javacsv-2.0.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/resources/plugins/spreadsheet_generator/lib/gdata-client-meta-1.0.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/resources/plugins/spreadsheet_generator/lib/gdata-media-1.0.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/resources/plugins/spreadsheet_generator/lib/poi-ooxml-schemas-3.10.1-20140818.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/resources/plugins/spreadsheet_generator/lib/gdata-core-1.0.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/resources/plugins/spreadsheet_generator/lib/commons-codec-1.5.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/resources/plugins/spreadsheet_generator/lib/dom4j-1.6.1.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/resources/plugins/spreadsheet_generator/lib/xmlbeans-2.6.0.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/resources/plugins/spreadsheet_generator/lib/poi-ooxml-3.10.1-20140818.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

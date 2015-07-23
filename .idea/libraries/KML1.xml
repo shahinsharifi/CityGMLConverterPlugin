@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="KML1">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/samples/Berlin/KML/Molkenmarkt.zip!/" />
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/samples/Berlin/KML/Gasometer_2.zip!/" />
+      <root url="jar://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/samples/Berlin/KML/Gasometer_1.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

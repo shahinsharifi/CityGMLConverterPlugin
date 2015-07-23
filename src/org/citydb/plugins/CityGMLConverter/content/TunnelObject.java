@@ -29,61 +29,14 @@
  */
 package org.citydb.plugins.CityGMLConverter.content;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-
-import javax.vecmath.Point3d;
-import javax.xml.bind.JAXBException;
-
 import net.opengis.kml._2.MultiGeometryType;
 import net.opengis.kml._2.PlacemarkType;
-
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.geometry.GeometryObject;
+import org.citydb.config.internal.Internal;
 import org.citydb.log.Logger;
 import org.citydb.modules.common.event.CounterEvent;
 import org.citydb.modules.common.event.CounterType;
-import org.citygml4j.factory.GMLGeometryFactory;
-import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.building.AbstractBoundarySurface;
-import org.citygml4j.model.citygml.building.AbstractBuilding;
-import org.citygml4j.model.citygml.building.AbstractOpening;
-import org.citygml4j.model.citygml.building.BoundarySurfaceProperty;
-import org.citygml4j.model.citygml.building.BuildingFurniture;
-import org.citygml4j.model.citygml.building.BuildingInstallation;
-import org.citygml4j.model.citygml.building.BuildingInstallationProperty;
-import org.citygml4j.model.citygml.building.BuildingPart;
-import org.citygml4j.model.citygml.building.BuildingPartProperty;
-import org.citygml4j.model.citygml.building.IntBuildingInstallation;
-import org.citygml4j.model.citygml.building.IntBuildingInstallationProperty;
-import org.citygml4j.model.citygml.building.InteriorFurnitureProperty;
-import org.citygml4j.model.citygml.building.InteriorRoomProperty;
-import org.citygml4j.model.citygml.building.OpeningProperty;
-import org.citygml4j.model.citygml.building.Room;
-import org.citygml4j.model.citygml.core.Address;
-import org.citygml4j.model.citygml.core.XalAddressProperty;
-import org.citygml4j.model.gml.basicTypes.DoubleOrNull;
-import org.citygml4j.model.gml.basicTypes.MeasureOrNullList;
-import org.citygml4j.model.gml.geometry.AbstractGeometry;
-import org.citygml4j.model.gml.geometry.GeometryProperty;
-import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
-import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
-import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
-import org.citygml4j.model.xal.AddressDetails;
-import org.citygml4j.model.xal.Country;
-import org.citygml4j.model.xal.CountryName;
-import org.citygml4j.model.xal.DependentLocality;
-import org.citygml4j.model.xal.Locality;
-import org.citygml4j.model.xal.LocalityName;
-import org.citygml4j.model.xal.PostBox;
-import org.citygml4j.model.xal.PostalCode;
-import org.citygml4j.model.xal.PostalCodeNumber;
-import org.citygml4j.model.xal.Thoroughfare;
-import org.citygml4j.model.xal.ThoroughfareName;
-import org.citygml4j.model.xal.ThoroughfareNumberOrRange;
 import org.citydb.plugins.CityGMLConverter.config.Balloon;
 import org.citydb.plugins.CityGMLConverter.config.ColladaOptions;
 import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
@@ -92,32 +45,55 @@ import org.citydb.plugins.CityGMLConverter.util.ProjConvertor;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.SqliteImporterManager;
 import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkBasic;
 import org.citydb.util.Util;
+import org.citygml4j.factory.GMLGeometryFactory;
+import org.citygml4j.geometry.Matrix;
+import org.citygml4j.model.citygml.CityGMLClass;
+import org.citygml4j.model.citygml.core.ImplicitGeometry;
+import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
+import org.citygml4j.model.citygml.tunnel.*;
+import org.citygml4j.model.gml.geometry.AbstractGeometry;
+import org.citygml4j.model.gml.geometry.GeometryProperty;
+import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
+import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
+
+import javax.vecmath.Point3d;
+import javax.xml.bind.JAXBException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 
-public class Building extends KmlGenericObject{
+public class TunnelObject extends KmlGenericObject{
 
-    public static final String STYLE_BASIS_NAME = "";//"Building";
+    public static final String STYLE_BASIS_NAME = "Tunnel";
+    private Matrix transformation;
     private SqliteImporterManager sqlliteImporterManager;
     private List<SurfaceObject> _ParentSurfaceList = new ArrayList<SurfaceObject>();
     private final Logger LOG = Logger.getInstance();
+    private double refPointX;
+    private double refPointY;
+    private double refPointZ;
 
 
-    public Building(KmlExporterManager kmlExporterManager,
-                    SqliteImporterManager sqlliteImporterManager,
-                    GMLGeometryFactory cityGMLFactory,
-                    net.opengis.kml._2.ObjectFactory kmlFactory,
-                    ElevationServiceHandler elevationServiceHandler,
-                    BalloonTemplateHandlerImpl balloonTemplateHandler,
-                    EventDispatcher eventDispatcher,
-                    ConfigImpl config) {
+    public TunnelObject(KmlExporterManager kmlExporterManager,
+                        SqliteImporterManager sqlliteImporterManager,
+                        GMLGeometryFactory cityGMLFactory,
+                        net.opengis.kml._2.ObjectFactory kmlFactory,
+                        ElevationServiceHandler elevationServiceHandler,
+                        BalloonTemplateHandlerImpl balloonTemplateHandler,
+                        EventDispatcher eventDispatcher,
+                        ConfigImpl config) {
 
-          super(kmlExporterManager,
-                cityGMLFactory,
-                kmlFactory,
-                elevationServiceHandler,
-                balloonTemplateHandler,
-                eventDispatcher,
-                config);
+        super(kmlExporterManager,
+            cityGMLFactory,
+            kmlFactory,
+            elevationServiceHandler,
+            balloonTemplateHandler,
+            eventDispatcher,
+            config);
 
         this.sqlliteImporterManager = sqlliteImporterManager;
     }
@@ -143,7 +119,7 @@ public class Building extends KmlGenericObject{
 
     
     protected String getHighlightingQuery() {
-        return null;//Queries.getBuildingPartHighlightingQuery(currentLod);
+        return null;
     }
 
     
@@ -153,12 +129,12 @@ public class Building extends KmlGenericObject{
 
         try {
 
-            List<PlacemarkType> placemarkBPart = readBuildingPart(work);
+            List<PlacemarkType> placemarkBPart = readObject(work);
             if (placemarkBPart != null)
                 placemarks.addAll(placemarkBPart);
         }
         catch (Exception Ex) {
-            Logger.getInstance().error("Error getting building parts for building " + work.getGmlId() + ": " + Ex.getMessage());
+            Logger.getInstance().error("SQL error while getting building parts for building " + work.getGmlId() + ": " + Ex.getMessage());
         }
         finally {
 
@@ -208,17 +184,17 @@ public class Building extends KmlGenericObject{
 
     
     @SuppressWarnings("unchecked")
-    private List<PlacemarkType> readBuildingPart(KmlSplittingResult work) throws Exception {
+    private List<PlacemarkType> readObject(KmlSplittingResult work) throws Exception {
 
         boolean reversePointOrder = true;
 
         try {
 
-            AbstractBuilding _building = (AbstractBuilding)work.getCityGmlClass();
+            Tunnel _tunnel = (Tunnel)work.getCityGmlClass();
             SurfaceAppearance _SurfaceAppear = new SurfaceAppearance();
 
             //this function reads all geometries and returns a list of surfaces.
-            List<SurfaceObject> _surfaceList = GetBuildingGeometries(_building);
+            List<SurfaceObject> _surfaceList = GetGeometries(_tunnel);
 
             //Restarting Xlink worker.
          //   sqlliteImporterManager.getTmpXlinkPool().join();
@@ -236,7 +212,7 @@ public class Building extends KmlGenericObject{
 
                     case DisplayForm.EXTRUDED:
 
-                        double measuredHeight = (_building.getMeasuredHeight() != null) ? _building.getMeasuredHeight().getValue(): 10;
+                        double measuredHeight = 0;//(_landuse.getMeasuredHeight() != null) ? _landuse.getMeasuredHeight().getValue(): 10;
                         return createPlacemarksForExtruded(_surfaceList, work, measuredHeight, reversePointOrder);
 
                     case DisplayForm.GEOMETRY:
@@ -248,7 +224,7 @@ public class Building extends KmlGenericObject{
                                 hlPlacemarks.addAll(createPlacemarksForGeometry(_surfaceList, work));
                                 return hlPlacemarks;
                             }
-                            else { // reverse order for single buildings
+                            else {// reverse order for single objects
 
                                 List<PlacemarkType> placemarks = createPlacemarksForGeometry(_surfaceList, work);
                                 placemarks.addAll(createPlacemarksForHighlighting(_surfaceList, work));
@@ -294,13 +270,11 @@ public class Building extends KmlGenericObject{
                 }
             }
         }
-        catch (SQLException sqlEx) {
-            Logger.getInstance().error("Error querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
+        catch (Exception Ex) {
+            Logger.getInstance().error("Error while querying city object " + work.getGmlId() + ": " + Ex.getMessage());
             return null;
         }
-        finally {
-
-        }
+        finally {}
 
         return null;
         // nothing found
@@ -323,14 +297,14 @@ public class Building extends KmlGenericObject{
     }
 
     
-    public List<SurfaceObject> GetBuildingGeometries(AbstractBuilding _building) throws Exception
+    public List<SurfaceObject> GetGeometries(AbstractTunnel _tunnel) throws Exception
     {
         List<SurfaceObject> _SurfaceList = new ArrayList<SurfaceObject>();
         SurfaceGeometry surfaceGeom = new SurfaceGeometry(config , sqlliteImporterManager);
         String _SurfaceType = "undefined";
-        String buildingGmlId = _building.getId();
-        
-        
+        String buildingGmlId = _tunnel.getId();
+        OtherGeometry others = new OtherGeometry(config , sqlliteImporterManager,3068);
+
         // lodXSolid
         for (int lod = 1; lod < 5; lod++) {
 
@@ -338,16 +312,16 @@ public class Building extends KmlGenericObject{
 
             switch (lod) {
                 case 1:
-                    solidProperty = _building.getLod1Solid();
+                    solidProperty = _tunnel.getLod1Solid();
                     break;
                 case 2:
-                    solidProperty = _building.getLod2Solid();
+                    solidProperty = _tunnel.getLod2Solid();
                     break;
                 case 3:
-                    solidProperty = _building.getLod3Solid();
+                    solidProperty = _tunnel.getLod3Solid();
                     break;
                 case 4:
-                    solidProperty = _building.getLod4Solid();
+                    solidProperty = _tunnel.getLod4Solid();
                     break;
             }
 
@@ -378,7 +352,7 @@ public class Building extends KmlGenericObject{
 
                     if (href != null && href.length() != 0) {
                         DBXlinkBasic xlink = new DBXlinkBasic(
-                                _building.getId(),
+                                _tunnel.getId(),
                                 TableEnum.BUILDING,
                                 href,
                                 TableEnum.SURFACE_GEOMETRY
@@ -408,16 +382,16 @@ public class Building extends KmlGenericObject{
 
             switch (lod) {
                 case 1:
-                    multiSurfaceProperty = _building.getLod1MultiSurface();
+                    multiSurfaceProperty = _tunnel.getLod1MultiSurface();
                     break;
                 case 2:
-                    multiSurfaceProperty = _building.getLod2MultiSurface();
+                    multiSurfaceProperty = _tunnel.getLod2MultiSurface();
                     break;
                 case 3:
-                    multiSurfaceProperty = _building.getLod3MultiSurface();
+                    multiSurfaceProperty = _tunnel.getLod3MultiSurface();
                     break;
                 case 4:
-                    multiSurfaceProperty = _building.getLod4MultiSurface();
+                    multiSurfaceProperty = _tunnel.getLod4MultiSurface();
                     break;
             }
 
@@ -448,7 +422,7 @@ public class Building extends KmlGenericObject{
 
                     if (href != null && href.length() != 0) {
                         DBXlinkBasic xlink = new DBXlinkBasic(
-                                _building.getId(),
+                                _tunnel.getId(),
                                 TableEnum.BUILDING,
                                 href,
                                 TableEnum.SURFACE_GEOMETRY
@@ -471,16 +445,16 @@ public class Building extends KmlGenericObject{
 
             switch (lod) {
                 case 1:
-                    multiCurveProperty = _building.getLod1TerrainIntersection();
+                    multiCurveProperty = _tunnel.getLod1TerrainIntersection();
                     break;
                 case 2:
-                    multiCurveProperty = _building.getLod2TerrainIntersection();
+                    multiCurveProperty = _tunnel.getLod2TerrainIntersection();
                     break;
                 case 3:
-                    multiCurveProperty = _building.getLod3TerrainIntersection();
+                    multiCurveProperty = _tunnel.getLod3TerrainIntersection();
                     break;
                 case 4:
-                    multiCurveProperty = _building.getLod4TerrainIntersection();
+                    multiCurveProperty = _tunnel.getLod4TerrainIntersection();
                     break;
             }
 
@@ -516,13 +490,13 @@ public class Building extends KmlGenericObject{
 
             switch (lod) {
                 case 2:
-                    multiCurveProperty = _building.getLod2MultiCurve();
+                    multiCurveProperty = _tunnel.getLod2MultiCurve();
                     break;
                 case 3:
-                    multiCurveProperty = _building.getLod3MultiCurve();
+                    multiCurveProperty = _tunnel.getLod3MultiCurve();
                     break;
                 case 4:
-                    multiCurveProperty = _building.getLod4MultiCurve();
+                    multiCurveProperty = _tunnel.getLod4MultiCurve();
                     break;
             }
 
@@ -548,14 +522,13 @@ public class Building extends KmlGenericObject{
 
         }
 
-        
         // BoundarySurfaces
-        if (_building.isSetBoundedBySurface()) {
+        if (_tunnel.isSetBoundedBySurface()) {
 
             long ParentCounter = 1;
-            for (BoundarySurfaceProperty boundarySurfaceProperty : _building.getBoundedBySurface()) {
-            	                
-            	AbstractBoundarySurface boundarySurface = boundarySurfaceProperty.getBoundarySurface();
+            for (BoundarySurfaceProperty boundarySurfaceProperty : _tunnel.getBoundedBySurface()) {
+
+                AbstractBoundarySurface boundarySurface = boundarySurfaceProperty.getBoundarySurface();
 
                 if (boundarySurface != null) {
 
@@ -592,7 +565,8 @@ public class Building extends KmlGenericObject{
 
                                 surfaceGeom.ClearPointList();
                                 surfaceGeom.ClearIdList();
-                                _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(boundarySurface.getCityGMLClass()).toString();
+
+                                _SurfaceType = "";//TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_BOUNDARY_SURFACE_PROPERTY).toString();
                                 List<List<Double>> _pointList  = surfaceGeom.GetSurfaceGeometry(buildingGmlId,multiSurfaceProperty.getMultiSurface(), false);
 
                                 int counter = 0;
@@ -618,10 +592,8 @@ public class Building extends KmlGenericObject{
                                 if (href != null && href.length() != 0) {
                                     LOG.error("XLink reference '" + href + "' to BoundarySurface feature is not supported.");
                                 }
-
                             }
                         }
-
                     }
 
 
@@ -653,7 +625,7 @@ public class Building extends KmlGenericObject{
                                             surfaceGeom.ClearPointList();
                                             surfaceGeom.ClearIdList();
                                             List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId,multiSurfaceProperty.getMultiSurface(), false);
-                                            _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
+                                            _SurfaceType = "";//TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
 
                                             int counter = 0;
                                             for(List<Double> _Geometry : _pointList){
@@ -680,21 +652,18 @@ public class Building extends KmlGenericObject{
                         // free memory of nested feature
                         boundarySurfaceProperty.unsetBoundarySurface();
                     }
-
                 }
                 ParentCounter++;
             }
-
         }
 
 
-        // BuildingInstallation
-        if (_building.isSetOuterBuildingInstallation()) {
-            for (BuildingInstallationProperty buildingInstProperty : _building.getOuterBuildingInstallation()) {
-                BuildingInstallation buildingInst = buildingInstProperty.getBuildingInstallation();
+        // TunnelInstallation
+        if (_tunnel.isSetOuterTunnelInstallation()) {
+            for (TunnelInstallationProperty tunnelInstProperty : _tunnel.getOuterTunnelInstallation()) {
+                TunnelInstallation tunnelInst = tunnelInstProperty.getTunnelInstallation();
 
-                if (buildingInst != null) {
-
+                if (tunnelInst != null) {
 
                     // Geometry
                     for (int lod = 2; lod < 5; lod++) {
@@ -703,13 +672,13 @@ public class Building extends KmlGenericObject{
 
                         switch (lod) {
                             case 2:
-                                geometryProperty = buildingInst.getLod2Geometry();
+                                geometryProperty = tunnelInst.getLod2Geometry();
                                 break;
                             case 3:
-                                geometryProperty = buildingInst.getLod3Geometry();
+                                geometryProperty = tunnelInst.getLod3Geometry();
                                 break;
                             case 4:
-                                geometryProperty = buildingInst.getLod4Geometry();
+                                geometryProperty = tunnelInst.getLod4Geometry();
                                 break;
                         }
 
@@ -719,7 +688,7 @@ public class Building extends KmlGenericObject{
                                 surfaceGeom.ClearPointList();
                                 surfaceGeom.ClearIdList();
                                 List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId,geometryProperty.getGeometry(), false);
-                                _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
+                                _SurfaceType = "";//TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_WALL_SURFACE).toString();
 
                                 int counter = 0;
                                 for(List<Double> _Geometry : _pointList){
@@ -738,10 +707,10 @@ public class Building extends KmlGenericObject{
                     }
 
                     // free memory of nested feature
-                    buildingInstProperty.unsetBuildingInstallation();
+                    tunnelInstProperty.unsetTunnelInstallation();
                 } else {
                     // xlink
-                    String href = buildingInstProperty.getHref();
+                    String href = tunnelInstProperty.getHref();
 
                     if (href != null && href.length() != 0) {
                         LOG.error("XLink reference '" + href + "' to BuildingInstallation feature is not supported.");
@@ -753,22 +722,22 @@ public class Building extends KmlGenericObject{
 
 
         // IntBuildingInstallation
-        if (_building.isSetInteriorBuildingInstallation()) {
-            for (IntBuildingInstallationProperty intBuildingInstProperty : _building.getInteriorBuildingInstallation()) {
-                IntBuildingInstallation intBuildingInst = intBuildingInstProperty.getIntBuildingInstallation();
+        if (_tunnel.isSetInteriorTunnelInstallation()) {
+            for (IntTunnelInstallationProperty intTunnelInstProperty : _tunnel.getInteriorTunnelInstallation()) {
+                IntTunnelInstallation intTunnelInst = intTunnelInstProperty.getIntTunnelInstallation();
 
-                if (intBuildingInst != null) {
+                if (intTunnelInst != null) {
 
 
-                    if (intBuildingInst.isSetLod4Geometry()) {
-                        GeometryProperty<? extends AbstractGeometry> geometryProperty = intBuildingInst.getLod4Geometry();
+                    if (intTunnelInst.isSetLod4Geometry()) {
+                        GeometryProperty<? extends AbstractGeometry> geometryProperty = intTunnelInst.getLod4Geometry();
 
                         if (geometryProperty.isSetGeometry()) {
 
                             surfaceGeom.ClearPointList();
                             surfaceGeom.ClearIdList();
                             List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId,geometryProperty.getGeometry(), false);
-                            _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
+                            _SurfaceType = "";//TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
 
                             int counter = 0;
                             for(List<Double> _Geometry : _pointList){
@@ -786,11 +755,11 @@ public class Building extends KmlGenericObject{
 
 
                     // free memory of nested feature
-                    intBuildingInstProperty.unsetIntBuildingInstallation();
+                    intTunnelInstProperty.unsetIntTunnelInstallation();
                 }
                 else {
                     // xlink
-                    String href = intBuildingInstProperty.getHref();
+                    String href = intTunnelInstProperty.getHref();
 
                     if (href != null && href.length() != 0) {
                         LOG.error("XLink reference '" + href + "' to IntBuildingInstallation feature is not supported.");
@@ -799,36 +768,34 @@ public class Building extends KmlGenericObject{
             }
         }
 
-
-
         // Room
-        if (_building.isSetInteriorRoom()) {
-            for (InteriorRoomProperty roomProperty : _building.getInteriorRoom()) {
-                Room room = roomProperty.getRoom();
+        if (_tunnel.isSetInteriorHollowSpace()) {
+            for (InteriorHollowSpaceProperty hollowSpaceProperty : _tunnel.getInteriorHollowSpace()) {
+                HollowSpace hollowSpace = hollowSpaceProperty.getHollowSpace();
 
-                if (room != null) {
+                if (hollowSpace != null) {
 
-                    if (room.isSetLod4MultiSurface() && room.isSetLod4Solid()) {
+                    if (hollowSpace.isSetLod4MultiSurface() && hollowSpace.isSetLod4Solid()) {
 
                         StringBuilder msg = new StringBuilder();
                         msg.append("Found both elements lod4Solid and lod4MultiSurface. Only lod4Solid will be imported.");
                         Logger.getInstance().warn(msg.toString());
 
-                        room.unsetLod4MultiSurface();
+                        hollowSpace.unsetLod4MultiSurface();
                     }
 
 
 
-                    if (room.isSetLod4Solid()) {
+                    if (hollowSpace.isSetLod4Solid()) {
 
-                        SolidProperty solidProperty = room.getLod4Solid();
+                        SolidProperty solidProperty = hollowSpace.getLod4Solid();
 
                         if (solidProperty.isSetSolid()) {
 
                             surfaceGeom.ClearPointList();
                             surfaceGeom.ClearIdList();
                             List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId,solidProperty.getSolid(), false);
-                            _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
+                            _SurfaceType = "";//TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
 
                             int counter = 0;
                             for(List<Double> _Geometry : _pointList){
@@ -844,16 +811,16 @@ public class Building extends KmlGenericObject{
 
                         }
 
-                    } else if (room.isSetLod4MultiSurface()) {
+                    } else if (hollowSpace.isSetLod4MultiSurface()) {
 
-                        MultiSurfaceProperty multiSurfacePropery = room.getLod4MultiSurface();
+                        MultiSurfaceProperty multiSurfacePropery = hollowSpace.getLod4MultiSurface();
 
                         if (multiSurfacePropery.isSetMultiSurface()) {
 
                             surfaceGeom.ClearPointList();
                             surfaceGeom.ClearIdList();
                             List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId,multiSurfacePropery.getMultiSurface(), false);
-                            _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
+                            _SurfaceType = "";//TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
 
                             int counter = 0;
                             for(List<Double> _Geometry : _pointList){
@@ -871,10 +838,10 @@ public class Building extends KmlGenericObject{
 
 
                     // Room - BoundarySurfaces
-                    if (room.isSetBoundedBySurface()) {
+                    if (hollowSpace.isSetBoundedBySurface()) {
 
                         long ParentCounter = 1;
-                        for (BoundarySurfaceProperty boundarySurfaceProperty : room.getBoundedBySurface()) {
+                        for (BoundarySurfaceProperty boundarySurfaceProperty : hollowSpace.getBoundedBySurface()) {
                             AbstractBoundarySurface boundarySurface = boundarySurfaceProperty.getBoundarySurface();
 
                             if (boundarySurface != null) {
@@ -932,87 +899,27 @@ public class Building extends KmlGenericObject{
                                     }
 
                                 }
-
-                                // Room - BoundrySurface - Openings
-                                if (boundarySurface.isSetOpening()) {
-
-                                    for (OpeningProperty openingProperty : boundarySurface.getOpening()) {
-                                        if (openingProperty.isSetOpening()) {
-                                            AbstractOpening opening = openingProperty.getOpening();
-
-
-                                            // Opening - Geometry
-                                            for (int lod = 3; lod < 5; lod++) {
-
-                                                MultiSurfaceProperty multiSurfaceProperty = null;
-
-
-                                                switch (lod) {
-                                                    case 3:
-                                                        multiSurfaceProperty = opening.getLod3MultiSurface();
-                                                        break;
-                                                    case 4:
-                                                        multiSurfaceProperty = opening.getLod4MultiSurface();
-                                                        break;
-                                                }
-
-                                                if (multiSurfaceProperty != null) {
-                                                    if (multiSurfaceProperty.isSetMultiSurface()) {
-
-                                                        surfaceGeom.ClearPointList();
-                                                        surfaceGeom.ClearIdList();
-                                                        List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId,multiSurfaceProperty.getMultiSurface(), false);
-                                                        _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
-
-                                                        int counter = 0;
-                                                        for(List<Double> _Geometry : _pointList){
-
-
-
-                                                            SurfaceObject BSurface = new SurfaceObject();
-                                                            BSurface.setPId(null);
-                                                            BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
-                                                            BSurface.setType(_SurfaceType);
-                                                            BSurface.setGeometry(_Geometry);
-                                                            _SurfaceList.add(BSurface);
-
-                                                            counter++;
-                                                        }
-
-
-                                                    }
-                                                }
-
-                                                // free memory of nested feature
-                                                openingProperty.unsetOpening();
-                                            }
-                                        }
-                                    }
-
-                                    // free memory of nested feature
-                                    boundarySurfaceProperty.unsetBoundarySurface();
-                                }
                             }
                             ParentCounter++;
                         }
 
 
-                        // Room - IntBuildingInstallation
-                        if (room.isSetRoomInstallation()) {
-                            for (IntBuildingInstallationProperty intBuildingInstProperty : room.getRoomInstallation()) {
-                                IntBuildingInstallation intBuildingInst = intBuildingInstProperty.getObject();
+                        // HollowSpace - IntInstallation
+                        if (hollowSpace.isSetHollowSpaceInstallation()) {
+                            for (IntTunnelInstallationProperty intTunnelInstProperty : hollowSpace.getHollowSpaceInstallation()) {
+                                IntTunnelInstallation intTunnelInst = intTunnelInstProperty.getObject();
 
-                                if (intBuildingInst != null) {
+                                if (intTunnelInst != null) {
 
-                                    if (intBuildingInst.isSetLod4Geometry()) {
-                                        GeometryProperty<? extends AbstractGeometry> geometryProperty = intBuildingInst.getLod4Geometry();
+                                    if (intTunnelInst.isSetLod4Geometry()) {
+                                        GeometryProperty<? extends AbstractGeometry> geometryProperty = intTunnelInst.getLod4Geometry();
 
                                         if (geometryProperty.isSetGeometry()) {
 
                                             surfaceGeom.ClearPointList();
                                             surfaceGeom.ClearIdList();
                                             List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId,geometryProperty.getGeometry(), false);
-                                            _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
+                                            _SurfaceType = "";//TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
 
                                             int counter = 0;
                                             for(List<Double> _Geometry : _pointList){
@@ -1030,17 +937,17 @@ public class Building extends KmlGenericObject{
 
 
                                     // free memory of nested feature
-                                    intBuildingInstProperty.unsetIntBuildingInstallation();
+                                    intTunnelInstProperty.unsetIntTunnelInstallation();
                                 }
                             }
                         }
 
 
 
-                        // Room - BuildingFurniture
-                        if (room.isSetInteriorFurniture()) {
-                            for (InteriorFurnitureProperty intFurnitureProperty : room.getInteriorFurniture()) {
-                                BuildingFurniture furniture = intFurnitureProperty.getObject();
+                        // Tunnel - Furniture
+                        if (hollowSpace.isSetInteriorFurniture()) {
+                            for (InteriorFurnitureProperty intFurnitureProperty : hollowSpace.getInteriorFurniture()) {
+                                TunnelFurniture furniture = intFurnitureProperty.getObject();
 
                                 if (furniture != null) {
 
@@ -1071,19 +978,19 @@ public class Building extends KmlGenericObject{
 
 
                                     // free memory of nested feature
-                                    intFurnitureProperty.unsetBuildingFurniture();
+                                    intFurnitureProperty.unsetTunnelFurniture();
                                 }
                             }
                         }
 
 
                         // free memory of nested feature
-                        roomProperty.unsetRoom();
+                        hollowSpaceProperty.unsetHollowSpace();
                     }
                 }
                 else {
                     // xlink
-                    String href = roomProperty.getHref();
+                    String href = hollowSpaceProperty.getHref();
 
                     if (href != null && href.length() != 0) {
                         LOG.error("XLink reference '" + href + "' to Room feature is not supported.");
@@ -1095,297 +1002,85 @@ public class Building extends KmlGenericObject{
 
 
 
-        // BuildingPart
-        if (_building.isSetConsistsOfBuildingPart()) {
-            for (BuildingPartProperty buildingPartProperty : _building.getConsistsOfBuildingPart()) {
-                BuildingPart buildingPart = buildingPartProperty.getBuildingPart();
+        // TunnelPart
+        if (_tunnel.isSetConsistsOfTunnelPart()) {
+            for (TunnelPartProperty tunnelPartProperty : _tunnel.getConsistsOfTunnelPart()) {
+                TunnelPart tunnelPart = tunnelPartProperty.getTunnelPart();
 
-                if (buildingPart != null) {
+                if (tunnelPart != null) {
 
-                		_SurfaceList.addAll(GetBuildingGeometries(buildingPart));
+                    _SurfaceList.addAll(GetGeometries(tunnelPart));
 
 
                     // free memory of nested feature
-                    buildingPartProperty.unsetBuildingPart();
+                    tunnelPartProperty.unsetTunnelPart();
                 }
                 else {
                     // xlink
-                    String href = buildingPartProperty.getHref();
+                    String href = tunnelPartProperty.getHref();
 
                     if (href != null && href.length() != 0) {
                         LOG.error("XLink reference '" + href + "' to BuildingPart feature is not supported.");
                     }
                 }
             }
-            
+
+        }
+
+        return _SurfaceList;
+    }
+
+    public static HashMap<String,Object> getObjectProperties(Tunnel tunnel){
+
+        HashMap<String, Object> objectgMap = new HashMap<String,Object>();
+
+        //Building GmlID
+        if (tunnel.isSetId()) {
+            objectgMap.put("GMLID",tunnel.getId());
+        }
+
+        //Building name and codespace
+        if (tunnel.isSetName()) {
+            objectgMap.put("NAME",tunnel.getName());
+            if(tunnel.getName().get(0).isSetCodeSpace())
+                objectgMap.put("NAME_CODESPACE", tunnel.getName().get(0).getCodeSpace());
+        }
+
+        // class
+        if (tunnel.isSetClazz() && tunnel.getClazz().isSetValue()) {
+            objectgMap.put("CLASS",tunnel.getClazz().getValue());
+        }
+
+        //Description
+        if(tunnel.isSetDescription())
+        {
+            objectgMap.put("DESCRIPTION",tunnel.getDescription());
+        }
+
+        // function
+        if (tunnel.isSetFunction()) {
+            String[] function = Util.codeList2string(tunnel.getFunction());
+            objectgMap.put("FUNCTION",function[0]);
+        }
+
+        // usage
+        if (tunnel.isSetUsage()) {
+            String[] usage = Util.codeList2string(tunnel.getUsage());
+            objectgMap.put("USAGE",usage[0]);
         }
 
 
-        return _SurfaceList;
-
-    }
-    
-    
-    public static HashMap<String,Object> getBuildingAddressProperties(Address address){
-		
-		HashMap<String, Object> addressMap = new HashMap<String,Object>();
-		if (!address.isSetXalAddress() || !address.getXalAddress().isSetAddressDetails())
-			return addressMap;
-
-		XalAddressProperty xalAddressProperty = address.getXalAddress();
-		AddressDetails addressDetails = xalAddressProperty.getAddressDetails();
-		
-		String streetAttr, houseNoAttr, poBoxAttr, zipCodeAttr, cityAttr, countryAttr, xalSource;
-		streetAttr = houseNoAttr = poBoxAttr = zipCodeAttr = cityAttr = countryAttr = xalSource = null;
-		GeometryObject multiPoint = null;		
-
-		// try and interpret <country> child element
-		if (addressDetails.isSetCountry()) {
-			Country country = addressDetails.getCountry();
-
-			// country name
-			if (country.isSetCountryName()) {
-				List<String> countryName = new ArrayList<String>();				
-				for (CountryName name : country.getCountryName())
-					countryName.add(name.getContent());
-
-				countryAttr = Util.collection2string(countryName, ",");
-				addressMap.put("COUNTRY", countryAttr);
-			} 
-
-			// locality
-			if (country.isSetLocality()) {
-				Locality locality = country.getLocality();
-
-				// check whether we deal with a city or a town
-				if (locality.isSetType() && 
-						(locality.getType().toUpperCase().equals("CITY") ||
-								locality.getType().toUpperCase().equals("TOWN"))) {
-
-					// city name
-					if (locality.isSetLocalityName()) {
-						List<String> localityName = new ArrayList<String>();						
-						for (LocalityName name : locality.getLocalityName())
-							localityName.add(name.getContent());
-
-						cityAttr = Util.collection2string(localityName, ",");
-						addressMap.put("CITY", cityAttr);
-					} 
-
-					// thoroughfare - just streets are supported
-					if (locality.isSetThoroughfare()) {
-						Thoroughfare thoroughfare = locality.getThoroughfare();
-
-						// check whether we deal with a street
-						if (thoroughfare.isSetType() && 
-								(thoroughfare.getType().toUpperCase().equals("STREET") ||
-										thoroughfare.getType().toUpperCase().equals("ROAD"))) {
-
-							// street name
-							if (thoroughfare.isSetThoroughfareName()) {
-								List<String> fareName = new ArrayList<String>();								
-								for (ThoroughfareName name : thoroughfare.getThoroughfareName())
-									fareName.add(name.getContent());
-
-								streetAttr = Util.collection2string(fareName, ",");
-								addressMap.put("STREET", streetAttr);
-							}
-
-							// house number - we do not support number ranges so far...						
-							if (thoroughfare.isSetThoroughfareNumberOrThoroughfareNumberRange()) {
-								List<String> houseNumber = new ArrayList<String>();								
-								for (ThoroughfareNumberOrRange number : thoroughfare.getThoroughfareNumberOrThoroughfareNumberRange()) {
-									if (number.isSetThoroughfareNumber())
-										houseNumber.add(number.getThoroughfareNumber().getContent());
-								}
-
-								houseNoAttr = Util.collection2string(houseNumber, ",");
-								addressMap.put("HOUSE_NUMBER", streetAttr);
-							}
-						}
-					}
-
-					// dependent locality
-					if (streetAttr == null && houseNoAttr == null && locality.isSetDependentLocality()) {
-						DependentLocality dependentLocality = locality.getDependentLocality();
-
-						if (dependentLocality.isSetType() && 
-								dependentLocality.getType().toUpperCase().equals("DISTRICT")) {
-
-							if (dependentLocality.isSetThoroughfare()) {
-								Thoroughfare thoroughfare = dependentLocality.getThoroughfare();
-
-								// street name
-								if (streetAttr == null && thoroughfare.isSetThoroughfareName()) {
-									List<String> fareName = new ArrayList<String>();								
-									for (ThoroughfareName name : thoroughfare.getThoroughfareName())
-										fareName.add(name.getContent());
-
-									streetAttr = Util.collection2string(fareName, ",");
-									addressMap.put("STREET", streetAttr);
-								}
-
-								// house number - we do not support number ranges so far...						
-								if (houseNoAttr == null && thoroughfare.isSetThoroughfareNumberOrThoroughfareNumberRange()) {
-									List<String> houseNumber = new ArrayList<String>();								
-									for (ThoroughfareNumberOrRange number : thoroughfare.getThoroughfareNumberOrThoroughfareNumberRange()) {
-										if (number.isSetThoroughfareNumber())
-											houseNumber.add(number.getThoroughfareNumber().getContent());
-									}
-
-									houseNoAttr = Util.collection2string(houseNumber, ",");
-									addressMap.put("HOUSE_NUMBER", houseNoAttr);
-								}
-							}
-						}
-					}
-
-					// postal code
-					if (locality.isSetPostalCode()) {
-						PostalCode postalCode = locality.getPostalCode();
-
-						// get postal code number
-						if (postalCode.isSetPostalCodeNumber()) {
-							List<String> zipCode = new ArrayList<String>();							
-							for (PostalCodeNumber number : postalCode.getPostalCodeNumber())
-								zipCode.add(number.getContent());
-
-							zipCodeAttr = Util.collection2string(zipCode, ",");
-							addressMap.put("ZIP_CODE", zipCodeAttr);
-						}
-					}
-
-					// post box
-					if (locality.isSetPostBox()) {
-						PostBox postBox = locality.getPostBox();
-
-						// get post box nummber
-						if (postBox.isSetPostBoxNumber()){
-							poBoxAttr = postBox.getPostBoxNumber().getContent();
-							addressMap.put("PO_BOX", poBoxAttr);
-						}
-							
-					}
-				}
-			}
-						
-		}
-		return addressMap;
-	}		
-
-
-    
-    public static HashMap<String,Object> getBuildingProperties(AbstractBuilding building){
-    	
-    	 HashMap<String, Object> buildingMap = new HashMap<String,Object>();
-
-		 //Building GmlID
-		 if (building.isSetId()) {
-			 buildingMap.put("GMLID",building.getId());
-		 }   	
-		 
-		 //Building name and codespace
-		 if (building.isSetName()) {
-			 buildingMap.put("NAME",building.getName());
-			 if(building.getName().get(0).isSetCodeSpace())
-				 buildingMap.put("NAME_CODESPACE", building.getName().get(0).getCodeSpace());
-		 }    	
-		 
-		 // bldg:class
-    	if (building.isSetClazz() && building.getClazz().isSetValue()) {
-    		buildingMap.put("CLASS",building.getClazz().getValue());
-    	}
-    	
-    	//Building Description
-    	if(building.isSetDescription())
-    	{
-    		buildingMap.put("DESCRIPTION",building.getDescription());
-    	}
-    	
-    	// bldg:function
-    	if (building.isSetFunction()) {
-    		String[] function = Util.codeList2string(building.getFunction());
-    		 buildingMap.put("FUNCTION",function[0]);    		 
-    	} 
-    	
-    	// bldg:usage
-    	if (building.isSetUsage()) {
-    		String[] usage = Util.codeList2string(building.getUsage());
-   		 	buildingMap.put("USAGE",usage[0]);
-    	}
         // bldg:yearOfConstruction
-        if (building.isSetYearOfConstruction()) {
-            buildingMap.put("YEAR_OF_CONSTRUCTION",new Date(building.getYearOfConstruction().getTime().getTime()).toString());
+        if (tunnel.isSetYearOfConstruction()) {
+            objectgMap.put("YEAR_OF_CONSTRUCTION",new Date(tunnel.getYearOfConstruction().getTime().getTime()).toString());
         }
 
         // bldg:yearOfDemolition
-        if (building.isSetYearOfDemolition()) {
-            buildingMap.put("YEAR_OF_DEMOLITION",new Date(building.getYearOfDemolition().getTime().getTime()).toString());
+        if (tunnel.isSetYearOfDemolition()) {
+            objectgMap.put("YEAR_OF_DEMOLITION",new Date(tunnel.getYearOfDemolition().getTime().getTime()).toString());
         }
 
-    	
-    	// bldg:roofType
-    	if (building.isSetRoofType() && building.getRoofType().isSetValue()) {
-    		buildingMap.put("ROOF_TYPE",building.getRoofType().getValue());
-    	}
-    	
-    	// bldg:measuredHeight
-    	if (building.isSetMeasuredHeight() && building.getMeasuredHeight().isSetValue()) {
-    		 buildingMap.put("MEASURED_HEIGHT",building.getMeasuredHeight().getValue());
-    	}
-
-    	
-    	// bldg:storeysAboveGround
-    	if (building.isSetStoreysAboveGround()) {
-    		buildingMap.put("STOREYS_ABOVE_GROUND", building.getStoreysAboveGround());
-    	}
-    	
-    	// bldg:storeysBelowGround
-    	if (building.isSetStoreysBelowGround()) {
-    		buildingMap.put("STOREYS_BELOW_GROUND", building.getStoreysBelowGround());
-    	}
-    	
-    	
-    	// bldg:storeyHeightsAboveGround
-    	String heights = null;
-    	if (building.isSetStoreyHeightsAboveGround()) {
-    		MeasureOrNullList measureOrNullList = building.getStoreyHeightsAboveGround();
-    		if (measureOrNullList.isSetDoubleOrNull()) {
-    			List<String> values = new ArrayList<String>();
-    			for (DoubleOrNull doubleOrNull : measureOrNullList.getDoubleOrNull()) {
-    				if (doubleOrNull.isSetDouble())
-    					values.add(String.valueOf(doubleOrNull.getDouble()));
-    				else
-    					doubleOrNull.getNull().getValue();
-    			}
-    			heights = Util.collection2string(values, " ");
-    		}
-    	}    	
-    	if (heights != null) {
-    		buildingMap.put("STOREY_HEIGHTS_ABOVE_GROUND", heights);
-    	}
-    	
-    	
-    	// bldg:storeyHeightsBelowGround
-    	heights = null;
-    	if (building.isSetStoreyHeightsBelowGround()) {
-    		MeasureOrNullList measureOrNullList = building.getStoreyHeightsBelowGround();
-    		if (measureOrNullList.isSetDoubleOrNull()) {
-    			List<String> values = new ArrayList<String>();
-    			for (DoubleOrNull doubleOrNull : measureOrNullList.getDoubleOrNull()) {
-    				if (doubleOrNull.isSetDouble())
-    					values.add(String.valueOf(doubleOrNull.getDouble()));
-    				else
-    					doubleOrNull.getNull().getValue();
-    			}
-    			heights = Util.collection2string(values, " ");
-    		}
-    	}    	
-    	if (heights != null) {
-    		buildingMap.put("STOREY_HEIGHTS_BELOW_GROUND", heights);
-    	}   
-
-    	return buildingMap;
+        return objectgMap;
     }
 
 }

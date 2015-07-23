@@ -35,26 +35,16 @@ import java.sql.Statement;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
 import org.citydb.api.concurrent.WorkerPool;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.log.Logger;
-import org.citydb.plugins.CityGMLConverter.content.BuildingSurface;
+import org.citydb.plugins.CityGMLConverter.content.SurfaceObject;
 import org.citydb.plugins.CityGMLConverter.content.TableEnum;
 import org.citydb.plugins.CityGMLConverter.events.StatusDialogMessage;
 import org.citydb.plugins.CityGMLConverter.events.StatusDialogProgressBar;
-
-import com.sun.istack.FinalArrayList;
-
-
-
-
-
-
-
 
 
 import org.citydb.plugins.CityGMLConverter.util.Util;
@@ -68,7 +58,6 @@ import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkBasic;
 import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkDeprecatedMaterial;
 import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkGroupToCityObject;
 import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkLibraryObject;
-import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkSurfaceGeometry;
 import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkTextureFile;
 import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkTextureFileEnum;
 import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkTextureParam;
@@ -85,7 +74,7 @@ public class DBXlinkSplitter {
 	private  WorkerPool<DBXlink> tmpXlinkPool;
 	private  EventDispatcher eventDispatcher;
 	private volatile boolean shouldRun = true;
-	private static java.util.List<BuildingSurface> list = new ArrayList<BuildingSurface>();
+	private static java.util.List<SurfaceObject> list = new ArrayList<SurfaceObject>();
 
 	
 	public DBXlinkSplitter()
@@ -107,7 +96,7 @@ public class DBXlinkSplitter {
 		shouldRun = false;
 	}
 
-	public java.util.List<BuildingSurface> startQuery(java.util.List<BuildingSurface> _list) throws SQLException {	
+	public java.util.List<SurfaceObject> startQuery(java.util.List<SurfaceObject> _list) throws SQLException {
 		/*basicXlinks();
 		groupMemberXLinks(true);
 		appearanceXlinks();
@@ -572,7 +561,7 @@ public class DBXlinkSplitter {
 		}
 	}
 
-	public java.util.List<BuildingSurface> surfaceGeometryXlinks(boolean checkRecursive) throws SQLException {
+	public java.util.List<SurfaceObject> surfaceGeometryXlinks(boolean checkRecursive) throws SQLException {
 		if (!shouldRun)
 			return null;
 
@@ -585,14 +574,14 @@ public class DBXlinkSplitter {
 		return querySurfaceGeometryXlinks((TemporaryCacheTable)cacheTable, checkRecursive, -1, 1);
 	}
 
-	private java.util.List<BuildingSurface> querySurfaceGeometryXlinks(TemporaryCacheTable cacheTable, 
+	private java.util.List<SurfaceObject> querySurfaceGeometryXlinks(TemporaryCacheTable cacheTable,
 			boolean checkRecursive, 
 			long remaining, 
 			int pass) throws SQLException {
 		
 		Statement stmt = null;
 		ResultSet rs = null;
-		java.util.List<BuildingSurface> tmpList = new ArrayList<BuildingSurface>();
+		java.util.List<SurfaceObject> tmpList = new ArrayList<SurfaceObject>();
 
 		try {
 			eventDispatcher.triggerEvent(new StatusDialogProgressBar(0, 0, this));
@@ -616,7 +605,7 @@ public class DBXlinkSplitter {
 				boolean reverse = rs.getInt("REVERSE") == 1;
 				final String gmlId = rs.getString("GMLID");
 		
-				BuildingSurface bSurface = null;
+				SurfaceObject bSurface = null;
 				if((bSurface = CompareGeom(gmlId.replace("#",""))) != null)
 						tmpList.add(bSurface);
 				
@@ -670,7 +659,7 @@ public class DBXlinkSplitter {
 	}
 
 	
-	private BuildingSurface CompareGeom(String GmlID)
+	private SurfaceObject CompareGeom(String GmlID)
 	{
 		final String id = GmlID;
 		
@@ -679,16 +668,16 @@ public class DBXlinkSplitter {
 
             public boolean evaluate(Object object) {
             	
-            	if(((BuildingSurface) object).getPId() != null  && ((BuildingSurface) object).getPId().equals(id))
+            	if(((SurfaceObject) object).getPId() != null  && ((SurfaceObject) object).getPId().equals(id))
             		return true;
             	else
-            		return ((BuildingSurface) object).getId().equals(id);
+            		return ((SurfaceObject) object).getId().equals(id);
             }
         };
         
-        Collection<BuildingSurface> filtered = CollectionUtils.select(list, predicate);
+        Collection<SurfaceObject> filtered = CollectionUtils.select(list, predicate);
         
-		return (filtered.size()>0) ? new ArrayList<BuildingSurface>(filtered).get(0) : null;
+		return (filtered.size()>0) ? new ArrayList<SurfaceObject>(filtered).get(0) : null;
 
 	}
 }

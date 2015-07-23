@@ -39,36 +39,24 @@ import javax.xml.bind.JAXBContext;
 
 import net.opengis.kml._2.ObjectFactory;
 
+import org.citydb.log.Logger;
+import org.citydb.plugins.CityGMLConverter.content.*;
 import org.citygml4j.factory.GMLGeometryFactory;
 import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.util.xml.SAXEventBuffer;
 import org.citydb.api.concurrent.Worker;
 import org.citydb.api.concurrent.WorkerPool;
 import org.citydb.api.concurrent.WorkerPool.WorkQueue;
-import org.citydb.api.database.DatabaseAdapter;
-import org.citydb.api.database.DatabaseType;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.config.project.exporter.ExportFilterConfig;
-import org.citydb.database.adapter.AbstractDatabaseAdapter;
 import org.citydb.database.adapter.BlobExportAdapter;
-import org.citydb.database.adapter.BlobType;
-import org.citydb.database.adapter.DatabaseAdapterFactory;
 import org.citydb.plugins.CityGMLConverter.config.Balloon;
 import org.citydb.plugins.CityGMLConverter.config.BalloonContentMode;
 import org.citydb.plugins.CityGMLConverter.config.ColladaOptions;
 import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
 import org.citydb.plugins.CityGMLConverter.config.DisplayForm;
-import org.citydb.plugins.CityGMLConverter.content.BalloonTemplateHandlerImpl;
-import org.citydb.plugins.CityGMLConverter.content.Building;
-import org.citydb.plugins.CityGMLConverter.content.CityObjectGroup;
-import org.citydb.plugins.CityGMLConverter.content.ColladaBundle;
-import org.citydb.plugins.CityGMLConverter.content.ElevationServiceHandler;
-import org.citydb.plugins.CityGMLConverter.content.KmlExporterManager;
-import org.citydb.plugins.CityGMLConverter.content.KmlGenericObject;
-import org.citydb.plugins.CityGMLConverter.content.KmlSplittingResult;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.SqliteImporterManager;
 import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlink;
-import org.citydb.plugins.CityGMLConverter.xlink.importer.DBXlinkImporterManager;
 
 public class CityKmlExportWorker implements Worker<KmlSplittingResult> {
 
@@ -267,7 +255,7 @@ public class CityKmlExportWorker implements Worker<KmlSplittingResult> {
 					doWork(work);
 				}
 				catch (InterruptedException ie) {
-					// re-check state
+          
 				}
 			}
 
@@ -298,8 +286,7 @@ public class CityKmlExportWorker implements Worker<KmlSplittingResult> {
 		try {
 			switch (featureClass) {
 				case BUILDING:					
-					singleObject = new Building(connection,
-												kmlExporterManager,
+					singleObject = new Building(kmlExporterManager,
 												sqliteImporterManager,
 												cityGMLFactory,
 												kmlFactory,
@@ -308,6 +295,17 @@ public class CityKmlExportWorker implements Worker<KmlSplittingResult> {
 												eventDispatcher,
 												config);
 					break;
+
+                case SOLITARY_VEGETATION_OBJECT:
+                    singleObject = new SolitaryVegetationObject(kmlExporterManager,
+                                               sqliteImporterManager,
+                                               cityGMLFactory,
+                                               kmlFactory,
+                                               elevationServiceHandler,
+                                               getBalloonTemplateHandler(featureClass),
+                                               eventDispatcher,
+                                               config);
+                    break;
 					
 			/*	case WATER_BODY:
 				case WATER_CLOSURE_SURFACE:
@@ -394,18 +392,41 @@ public class CityKmlExportWorker implements Worker<KmlSplittingResult> {
 											  eventDispatcher,
 											  config);
 					break;
-
+*/
 				case CITY_FURNITURE:
-					singleObject = new CityFurniture(connection,
-												   	 kmlExporterManager,
-												   	 cityGMLFactory,
-											   	   	 kmlFactory,
-											   	   	 elevationServiceHandler,
-											   	   	 getBalloonTemplateHandler(featureClass),
-											   	   	 eventDispatcher,
-											   	   	 config);
+                    singleObject = new CityFurnitureObject(kmlExporterManager,
+                            sqliteImporterManager,
+                            cityGMLFactory,
+                            kmlFactory,
+                            elevationServiceHandler,
+                            getBalloonTemplateHandler(featureClass),
+                            eventDispatcher,
+                            config);
 					break;
 
+                case TUNNEL:
+                    singleObject = new TunnelObject(kmlExporterManager,
+                            sqliteImporterManager,
+                            cityGMLFactory,
+                            kmlFactory,
+                            elevationServiceHandler,
+                            getBalloonTemplateHandler(featureClass),
+                            eventDispatcher,
+                            config);
+                    break;
+
+
+                case BRIDGE:
+                    singleObject = new BridgeObject(kmlExporterManager,
+                            sqliteImporterManager,
+                            cityGMLFactory,
+                            kmlFactory,
+                            elevationServiceHandler,
+                            getBalloonTemplateHandler(featureClass),
+                            eventDispatcher,
+                            config);
+                    break;
+/*
 				case CITY_OBJECT_GROUP:
 					singleObject = new CityObjectGroup(connection,
 												   	   kmlExporterManager,
@@ -463,6 +484,9 @@ public class CityKmlExportWorker implements Worker<KmlSplittingResult> {
 					}
 				}
 		}
+        catch (Exception ex){
+            Logger.getInstance().error(ex.toString());
+        }
 		finally {
 			runLock.unlock();
 		}

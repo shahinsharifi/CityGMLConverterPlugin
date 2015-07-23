@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/CityGMLConverterPlugin.iml" filepath="$PROJECT_DIR$/CityGMLConverterPlugin.iml" />
+      <module fileurl="file://$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/importer-exporter-master.iml" filepath="$USER_HOME$/Downloads/importer-exporter-master/importer-exporter-master/importer-exporter-master.iml" />
     </modules>
   </component>
 </project>
