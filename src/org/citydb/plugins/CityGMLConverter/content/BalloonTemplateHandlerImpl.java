@@ -1564,7 +1564,7 @@ public class BalloonTemplateHandlerImpl implements BalloonTemplateHandler {
 			
 			if (CITYOBJECT_TABLE.equalsIgnoreCase(table)) {
 				
-				HashMap<String, Object> cityObjectMap = CityObject.getCityObjectProperties((AbstractCityObject) work.getCityGmlClass());
+				HashMap<String, Object> cityObjectMap = CityObjectGroup.getObjectProperties((org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroup) work.getCityGmlClass());
 				 HashMap<String, Object> tmpMap = new HashMap<String, Object>();
 				 for(String columnName : columns){
 					 if(cityObjectMap.containsKey(columnName))

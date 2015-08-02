@@ -1756,8 +1756,5 @@ public class CityKmlExportPanel extends JPanel implements EventHandler {
 			// nothing to do here
 		}
 	}
-	
-	
-
 
 }

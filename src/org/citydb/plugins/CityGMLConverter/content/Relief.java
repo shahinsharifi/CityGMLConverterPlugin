@@ -47,10 +47,16 @@ import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkBasic;
 import org.citydb.util.Util;
 import org.citygml4j.factory.GMLGeometryFactory;
 import org.citygml4j.geometry.Matrix;
+import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
+import org.citygml4j.model.citygml.relief.*;
+import org.citygml4j.model.gml.GMLClass;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
+import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
+import org.citygml4j.model.gml.geometry.primitives.Tin;
+import org.citygml4j.model.gml.geometry.primitives.TriangulatedSurface;
 
 import javax.vecmath.Point3d;
 import javax.xml.bind.JAXBException;
@@ -60,9 +66,9 @@ import java.util.HashMap;
 import java.util.List;
 
 
-public class BridgeObject extends KmlGenericObject{
+public class Relief extends KmlGenericObject{
 
-    public static final String STYLE_BASIS_NAME = "Bridge";
+    public static final String STYLE_BASIS_NAME = "Relief";
     private Matrix transformation;
     private SqliteImporterManager sqlliteImporterManager;
     private List<SurfaceObject> _ParentSurfaceList = new ArrayList<SurfaceObject>();
@@ -72,14 +78,14 @@ public class BridgeObject extends KmlGenericObject{
     private double refPointZ;
 
 
-    public BridgeObject(KmlExporterManager kmlExporterManager,
-                        SqliteImporterManager sqlliteImporterManager,
-                        GMLGeometryFactory cityGMLFactory,
-                        net.opengis.kml._2.ObjectFactory kmlFactory,
-                        ElevationServiceHandler elevationServiceHandler,
-                        BalloonTemplateHandlerImpl balloonTemplateHandler,
-                        EventDispatcher eventDispatcher,
-                        ConfigImpl config) {
+    public Relief(KmlExporterManager kmlExporterManager,
+                  SqliteImporterManager sqlliteImporterManager,
+                  GMLGeometryFactory cityGMLFactory,
+                  net.opengis.kml._2.ObjectFactory kmlFactory,
+                  ElevationServiceHandler elevationServiceHandler,
+                  BalloonTemplateHandlerImpl balloonTemplateHandler,
+                  EventDispatcher eventDispatcher,
+                  ConfigImpl config) {
 
         super(kmlExporterManager,
             cityGMLFactory,
@@ -96,34 +102,34 @@ public class BridgeObject extends KmlGenericObject{
         return config.getBuildingDisplayForms();
     }
 
-    
+
     public ColladaOptions getColladaOptions() {
         return config.getBuildingColladaOptions();
     }
 
-    
+
     public Balloon getBalloonSettings() {
         return config.getBuildingBalloon();
     }
 
-    
+
     public String getStyleBasisName() {
         return STYLE_BASIS_NAME;
     }
 
-    
+
     protected String getHighlightingQuery() {
         return null;
     }
 
-    
+
     public void read(KmlSplittingResult work) {
 
         List<PlacemarkType> placemarks = new ArrayList<PlacemarkType>();
 
         try {
 
-            List<PlacemarkType> placemarkBPart = readBuildingPart(work);
+            List<PlacemarkType> placemarkBPart = readObject(work);
             if (placemarkBPart != null)
                 placemarks.addAll(placemarkBPart);
         }
@@ -176,20 +182,19 @@ public class BridgeObject extends KmlGenericObject{
 
     }
 
-    
+
     @SuppressWarnings("unchecked")
-    private List<PlacemarkType> readBuildingPart(KmlSplittingResult work) throws Exception {
+    private List<PlacemarkType> readObject(KmlSplittingResult work) throws Exception {
 
         boolean reversePointOrder = true;
 
         try {
 
-            org.citygml4j.model.citygml.vegetation.SolitaryVegetationObject _vegetation
-                    = (org.citygml4j.model.citygml.vegetation.SolitaryVegetationObject)work.getCityGmlClass();
+            ReliefFeature _furniture = (ReliefFeature)work.getCityGmlClass();
             SurfaceAppearance _SurfaceAppear = new SurfaceAppearance();
 
             //this function reads all geometries and returns a list of surfaces.
-            List<SurfaceObject> _surfaceList = GetGeometries(_vegetation);
+            List<SurfaceObject> _surfaceList = GetGeometries(_furniture);
 
             //Restarting Xlink worker.
          //   sqlliteImporterManager.getTmpXlinkPool().join();
@@ -275,7 +280,7 @@ public class BridgeObject extends KmlGenericObject{
         // nothing found
     }
 
-    
+
     public PlacemarkType createPlacemarkForColladaModel(KmlSplittingResult work) throws Exception {
 
         List<Double> originInWGS84 = ProjConvertor.transformPoint(
@@ -291,255 +296,195 @@ public class BridgeObject extends KmlGenericObject{
         return super.createPlacemarkForColladaModel(work);
     }
 
-    
-    public List<SurfaceObject> GetGeometries(org.citygml4j.model.citygml.vegetation.SolitaryVegetationObject _vegetation) throws Exception
+
+    public List<SurfaceObject> GetGeometries(ReliefFeature _relief) throws Exception
     {
         List<SurfaceObject> _SurfaceList = new ArrayList<SurfaceObject>();
         SurfaceGeometry surfaceGeom = new SurfaceGeometry(config , sqlliteImporterManager);
         String _SurfaceType = "undefined";
-        String buildingGmlId = _vegetation.getId();
-        OtherGeometry others = new OtherGeometry(config , sqlliteImporterManager,3068);
+        String RootGmlId = _relief.getId();
+        OtherGeometry otherGeom = new OtherGeometry(config , sqlliteImporterManager , 3068);
 
-        // //Geometry
-        for (int lod = 0; lod < 4; lod++) {
+        /// Geometry
+        // relief component
+        if (_relief.isSetReliefComponent()) {
+            for (ReliefComponentProperty property : _relief.getReliefComponent()) {
+                AbstractReliefComponent reliefComponent = property.getReliefComponent();
+                List<List<Double>> _pointList = null;
+                if (reliefComponent != null) {
 
-            GeometryProperty<? extends AbstractGeometry> geometryProperty = null;
-            long geometryId = 0;
-            GeometryObject geometryObject = null;
+                    if (reliefComponent.getCityGMLClass() != CityGMLClass.RASTER_RELIEF) {
 
-            switch (lod) {
-                case 0:
-                    geometryProperty = _vegetation.getLod1Geometry();
-                    break;
-                case 1:
-                    geometryProperty = _vegetation.getLod2Geometry();
-                    break;
-                case 2:
-                    geometryProperty = _vegetation.getLod3Geometry();
-                    break;
-                case 3:
-                    geometryProperty = _vegetation.getLod4Geometry();
-                    break;
-            }
+                        if (reliefComponent.getCityGMLClass() == CityGMLClass.TIN_RELIEF) {
+
+                            TINRelief tinRelief = (TINRelief)reliefComponent;
 
 
-            if (geometryProperty != null) {
+                            GeometryObject stopLines, breakLines, controlPoints;
+                            stopLines = breakLines = controlPoints = null;
 
-                if (geometryProperty.isSetGeometry()) {
-                    AbstractGeometry abstractGeometry = geometryProperty.getGeometry();
-                   if (others.isPointOrLineGeometry(abstractGeometry))
-                        geometryObject = others.getPointOrCurveGeometry(abstractGeometry);
+                            // gml:TriangulatedSurface
+                            if (tinRelief.isSetTin()) {
+                                TinProperty tinProperty = tinRelief.getTin();
+                                TriangulatedSurface triangulatedSurface = tinProperty.getObject();
 
-                    surfaceGeom.ClearPointList();
-                    List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId , geometryProperty.getGeometry(), false);
+                                if (triangulatedSurface != null) {
 
-                    int counter = 0;
-                    for(List<Double> _Geometry : _pointList){
+                                    surfaceGeom.ClearPointList();
+                                    _pointList = surfaceGeom.getSurfaceGeometry(RootGmlId, triangulatedSurface, false);
 
-                        SurfaceObject BSurface = new SurfaceObject();
-                        _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
-                        BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
-                        BSurface.setType(_SurfaceType);
-                        BSurface.setGeometry(_Geometry);
-                        _SurfaceList.add(BSurface);
-                        counter++;
-                    }
 
-                }
-                else{
-                    // xlink
-                    String href = geometryProperty.getHref();
+                                    // gml:Tin
+                                    if (triangulatedSurface.getGMLClass() == GMLClass.TIN) {
+                                        Tin tin = (Tin)triangulatedSurface;
 
-                    if (href != null && href.length() != 0) {
-                        DBXlinkBasic xlink = new DBXlinkBasic(
-                                _vegetation.getId(),
-                                TableEnum.BUILDING,
-                                href,
-                                TableEnum.SURFACE_GEOMETRY
-                        );
+                                        // stopLines
+                                        if (tin.isSetStopLines()) {
+                                            stopLines = otherGeom.getMultiCurve(tin.getStopLines());
+                                            _pointList.addAll(otherGeom.ConvertGeomObjectToPointList(stopLines));
+                                        }
+                                        // breakLines
+                                        if (tin.isSetBreakLines()) {
+                                            breakLines = otherGeom.getMultiCurve(tin.getBreakLines());
+                                            _pointList.addAll(otherGeom.ConvertGeomObjectToPointList(breakLines));
+                                        }
+                                        // controlPoints
+                                        if (tin.isSetControlPoint()) {
+                                            controlPoints = otherGeom.getMultiPoint(tin.getControlPoint());
+                                            _pointList.addAll(otherGeom.ConvertGeomObjectToPointList(controlPoints));
+                                        }
+                                    }
 
-                        xlink.setAttrName("LOD" + lod + "_GEOMETRY_ID");
-                        sqlliteImporterManager.propagateXlink(xlink);
-                    }
-                }
-            }
-        }
+                                    tinProperty.unsetTriangulatedSurface();
 
-        // implicit geometry
-        for (int lod = 0; lod < 4; lod++) {
-            ImplicitRepresentationProperty implicit = null;
-            GeometryObject pointGeom = null;
+                                } else {
+                                    // xlink
+                                    String href = tinProperty.getHref();
 
-            switch (lod) {
-                case 0:
-                    implicit = _vegetation.getLod1ImplicitRepresentation();
-                    break;
-                case 1:
-                    implicit = _vegetation.getLod2ImplicitRepresentation();
-                    break;
-                case 2:
-                    implicit = _vegetation.getLod3ImplicitRepresentation();
-                    break;
-                case 3:
-                    implicit = _vegetation.getLod4ImplicitRepresentation();
-                    break;
-            }
-
-            if (implicit != null) {
-                if (implicit.isSetObject()) {
-
-                    ImplicitGeometry geometry = implicit.getObject();
-
-                    // reference Point
-                    if (geometry.isSetReferencePoint()) {
-                        pointGeom = others.getPoint(geometry.getReferencePoint());
-                        double[] ordinatesArray = pointGeom.getCoordinates(0);
-                        refPointX = ordinatesArray[0];
-                        refPointY = ordinatesArray[1];
-                        refPointZ = ordinatesArray[2];
-                    }
-
-                    // transformation matrix
-                    if (geometry.isSetTransformationMatrix())
-                        transformation = geometry.getTransformationMatrix().getMatrix();
-
-                    long implicitGeometryId = 0;
-                    boolean updateTable = false;
-                    boolean isXLink = false;
-
-                    String libraryURI = geometry.getLibraryObject();
-                    if (libraryURI != null)
-                        libraryURI = libraryURI.trim();
-
-                    AbstractGeometry relativeGeometry = null;
-                    String gmlId = null;
-
-                    if (geometry.isSetRelativeGMLGeometry()) {
-                        GeometryProperty<? extends AbstractGeometry> property = geometry.getRelativeGMLGeometry();
-
-                        if (property.isSetHref()) {
-                            gmlId = property.getHref();
-                            if (Util.isRemoteXlink(gmlId)) {
-                                LOG.error("XLink reference '" + gmlId + "' to remote relative GML geometry is not supported.");
+                                    if (href != null && href.length() != 0)
+                                        LOG.error("XLink reference '" + href + "' to " + GMLClass.TRIANGULATED_SURFACE + " element is not supported");
+                                }
                             }
 
-                            gmlId = gmlId.replaceAll("^#", "");
-                            isXLink = true;
 
-                        } else if (property.isSetGeometry()) {
-                            relativeGeometry = property.getGeometry();
-                            gmlId = relativeGeometry.getId();
-                            updateTable = !relativeGeometry.hasLocalProperty(Internal.GEOMETRY_ORIGINAL);
+                        }else if (reliefComponent.getCityGMLClass() == CityGMLClass.MASSPOINT_RELIEF) {
+
+                            MassPointRelief massPointRelief = (MassPointRelief)reliefComponent;
+
+                            // reliefPoints
+                            GeometryObject reliefPoints = null;
+                            if (massPointRelief.isSetReliefPoints()) {
+                                reliefPoints = otherGeom.getMultiPoint(massPointRelief.getReliefPoints());
+                                _pointList.addAll(otherGeom.ConvertGeomObjectToPointList(reliefPoints));
+
+                                massPointRelief.unsetReliefPoints();
+                            }
+
+                        }else if (reliefComponent.getCityGMLClass() == CityGMLClass.BREAKLINE_RELIEF) {
+                            BreaklineRelief breakLineRelief = (BreaklineRelief)reliefComponent;
+
+
+                            GeometryObject ridgeOrValleyLines, breakLines;
+                            ridgeOrValleyLines = breakLines = null;
+
+                            if (breakLineRelief.isSetRidgeOrValleyLines()) {
+                                ridgeOrValleyLines = otherGeom.getMultiCurve(breakLineRelief.getRidgeOrValleyLines());
+                                _pointList.addAll(otherGeom.ConvertGeomObjectToPointList(ridgeOrValleyLines));
+
+                                breakLineRelief.unsetRidgeOrValleyLines();
+                            }
+
+                            if (breakLineRelief.isSetBreaklines()) {
+                                breakLines = otherGeom.getMultiCurve(breakLineRelief.getBreaklines());
+                                _pointList.addAll(otherGeom.ConvertGeomObjectToPointList(ridgeOrValleyLines));
+
+                                breakLineRelief.unsetBreaklines();
+                            }
+
+
+
+
                         }
+
+                        //iterating the geometry lists
+                        int counter = 0;
+                        for(List<Double> _geometry : _pointList){
+
+                            SurfaceObject BSurface = new SurfaceObject();
+                            _SurfaceType = surfaceGeom.DetectSurfaceType(_geometry);
+                            BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
+                            BSurface.setType(_SurfaceType);
+                            BSurface.setGeometry(_geometry);
+                            _SurfaceList.add(BSurface);
+                            counter++;
+                        }
+
+                    }else {
+
+                        LOG.error("Raster relief components are not supported.");
                     }
+                    // free memory of nested feature
+                    property.unsetReliefComponent();
 
-                    GeometryObject geometryObject = null;
-
-                    surfaceGeom.ClearPointList();
-                    List<List<Double>> _pointList = null;//surfaceGeom.GetSurfaceGeometry(buildingGmlId , implicit.getGeometry(), false);
-                    if (relativeGeometry != null) {
-                        _pointList = surfaceGeom.GetSurfaceGeometry(gmlId , relativeGeometry, false);
-                    }
-
-                    int counter = 0;
-                    for(List<Double> _Geometry : _pointList){
-
-
-                        SurfaceObject BSurface = new SurfaceObject();
-                        _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
-                        BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
-                        BSurface.setType(_SurfaceType);
-                        BSurface.setGeometry(_Geometry);
-                        _SurfaceList.add(BSurface);
-                        counter++;
-                    }
-
-                }
-                else{
+                } else{
                     // xlink
-                    String href = implicit.getHref();
+                    String href = property.getHref();
 
                     if (href != null && href.length() != 0) {
                         DBXlinkBasic xlink = new DBXlinkBasic(
-                                _vegetation.getId(),
-                                TableEnum.BUILDING,
+                                reliefComponent.getId(),
+                                TableEnum.RELIEF_FEATURE,
                                 href,
-                                TableEnum.SURFACE_GEOMETRY
+                                TableEnum.RELIEF_COMPONENT
                         );
 
-                        xlink.setAttrName("LOD" + lod + "_GEOMETRY_ID");
+                   //     xlink.setAttrName("LOD" + lod + "_GEOMETRY_ID");
                         sqlliteImporterManager.propagateXlink(xlink);
                     }
                 }
             }
-
         }
 
         return _SurfaceList;
     }
 
-    public static HashMap<String,Object> getObjectProperties(org.citygml4j.model.citygml.vegetation.SolitaryVegetationObject vegetation){
+    public static HashMap<String,Object> getObjectProperties(org.citygml4j.model.citygml.cityfurniture.CityFurniture furniture){
 
-        HashMap<String, Object> objectgMap = new HashMap<String,Object>();
+        HashMap<String, Object> objectgMap = new HashMap<String , Object>();
 
         //Building GmlID
-        if (vegetation.isSetId()) {
-            objectgMap.put("GMLID",vegetation.getId());
+        if (furniture.isSetId()) {
+            objectgMap.put("GMLID",furniture.getId());
         }
 
         //Building name and codespace
-        if (vegetation.isSetName()) {
-            objectgMap.put("NAME",vegetation.getName());
-            if(vegetation.getName().get(0).isSetCodeSpace())
-                objectgMap.put("NAME_CODESPACE", vegetation.getName().get(0).getCodeSpace());
+        if (furniture.isSetName()) {
+            objectgMap.put("NAME",furniture.getName());
+            if(furniture.getName().get(0).isSetCodeSpace())
+                objectgMap.put("NAME_CODESPACE", furniture.getName().get(0).getCodeSpace());
         }
 
         // class
-        if (vegetation.isSetClazz() && vegetation.getClazz().isSetValue()) {
-            objectgMap.put("CLASS",vegetation.getClazz().getValue());
+        if (furniture.isSetClazz() && furniture.getClazz().isSetValue()) {
+            objectgMap.put("CLASS",furniture.getClazz().getValue());
         }
 
         //Description
-        if(vegetation.isSetDescription())
+        if(furniture.isSetDescription())
         {
-            objectgMap.put("DESCRIPTION",vegetation.getDescription());
+            objectgMap.put("DESCRIPTION",furniture.getDescription());
         }
 
         // function
-        if (vegetation.isSetFunction()) {
-            String[] function = Util.codeList2string(vegetation.getFunction());
+        if (furniture.isSetFunction()) {
+            String[] function = Util.codeList2string(furniture.getFunction());
             objectgMap.put("FUNCTION",function[0]);
         }
 
         // usage
-        if (vegetation.isSetUsage()) {
-            String[] usage = Util.codeList2string(vegetation.getUsage());
+        if (furniture.isSetUsage()) {
+            String[] usage = Util.codeList2string(furniture.getUsage());
             objectgMap.put("USAGE",usage[0]);
-        }
-
-
-        // veg:species
-        if (vegetation.isSetSpecies() && vegetation.getSpecies().isSetValue()) {
-            objectgMap.put("SPECIES_VALUE",vegetation.getSpecies().getValue());
-            objectgMap.put("SPECIES_CODESPACE",vegetation.getSpecies().getCodeSpace());
-        }
-
-        // veg:height
-        if (vegetation.isSetHeight() && vegetation.getHeight().isSetValue()) {
-            objectgMap.put("HEIGHT_VALUE",vegetation.getHeight().getValue());
-            objectgMap.put("HEIGHT_UOM",vegetation.getSpecies().getCodeSpace());
-        }
-
-        // veg:trunkDiameter
-        if (vegetation.isSetTrunkDiameter() && vegetation.getTrunkDiameter().isSetValue()) {
-            objectgMap.put("TRUNK_VALUE",vegetation.getTrunkDiameter().getValue());
-            objectgMap.put("TRUNK_UOM",vegetation.getTrunkDiameter().getUom());
-        }
-
-        // veg:crownDiameter
-        if (vegetation.isSetCrownDiameter() && vegetation.getCrownDiameter().isSetValue()) {
-            objectgMap.put("CROWN_VALUE",vegetation.getCrownDiameter().getValue());
-            objectgMap.put("CROWN_UOM",vegetation.getCrownDiameter().getUom());
         }
 
         return objectgMap;

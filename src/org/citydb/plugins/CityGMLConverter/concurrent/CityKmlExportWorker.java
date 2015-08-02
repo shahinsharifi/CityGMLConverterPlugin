@@ -285,84 +285,74 @@ public class CityKmlExportWorker implements Worker<KmlSplittingResult> {
 		
 		try {
 			switch (featureClass) {
-				case BUILDING:					
+				case BUILDING:
 					singleObject = new Building(kmlExporterManager,
-												sqliteImporterManager,
-												cityGMLFactory,
-												kmlFactory,
-												elevationServiceHandler,
-												getBalloonTemplateHandler(featureClass),
-												eventDispatcher,
-												config);
-					break;
-
-                case SOLITARY_VEGETATION_OBJECT:
-                    singleObject = new SolitaryVegetationObject(kmlExporterManager,
-                                               sqliteImporterManager,
-                                               cityGMLFactory,
-                                               kmlFactory,
-                                               elevationServiceHandler,
-                                               getBalloonTemplateHandler(featureClass),
-                                               eventDispatcher,
-                                               config);
-                    break;
-					
-			/*	case WATER_BODY:
-				case WATER_CLOSURE_SURFACE:
-				case WATER_GROUND_SURFACE:
-				case WATER_SURFACE:
-					singleObject = new WaterBody(connection,
-												 kmlExporterManager,
-												 cityGMLFactory,
-												 kmlFactory,
-												 elevationServiceHandler,
-												 getBalloonTemplateHandler(featureClass),
-												 eventDispatcher,
-												 config);
-					break;
-
-				case LAND_USE:
-					singleObject = new LandUse(connection,
-											   kmlExporterManager,
-											   cityGMLFactory,
-											   kmlFactory,
-											   elevationServiceHandler,
-											   getBalloonTemplateHandler(featureClass),
-											   eventDispatcher,
-											   config);
+							sqliteImporterManager,
+							cityGMLFactory,
+							kmlFactory,
+							elevationServiceHandler,
+							getBalloonTemplateHandler(featureClass),
+							eventDispatcher,
+							config);
 					break;
 
 				case SOLITARY_VEGETATION_OBJECT:
-					singleObject = new SolitaryVegetationObject(connection,
-												   				kmlExporterManager,
-												   				cityGMLFactory,
-												   				kmlFactory,
-												   				elevationServiceHandler,
-																getBalloonTemplateHandler(featureClass),
-												   				eventDispatcher,
-												   				config);
+					singleObject = new Vegetation(kmlExporterManager,
+							sqliteImporterManager,
+							cityGMLFactory,
+							kmlFactory,
+							elevationServiceHandler,
+							getBalloonTemplateHandler(featureClass),
+							eventDispatcher,
+							config);
 					break;
 
+				case WATER_BODY:
+				case WATER_CLOSURE_SURFACE:
+				case WATER_GROUND_SURFACE:
+				case WATER_SURFACE:
+							singleObject = new WaterBody(kmlExporterManager,
+									sqliteImporterManager,
+									cityGMLFactory,
+									kmlFactory,
+									elevationServiceHandler,
+									getBalloonTemplateHandler(featureClass),
+									eventDispatcher,
+									config);
+					break;
+
+				case LAND_USE:
+							singleObject = new LandUse(kmlExporterManager,
+									sqliteImporterManager,
+									cityGMLFactory,
+									kmlFactory,
+									elevationServiceHandler,
+									getBalloonTemplateHandler(featureClass),
+									eventDispatcher,
+									config);
+					break;
+
+
 				case PLANT_COVER:
-					singleObject = new PlantCover(connection,
-												  kmlExporterManager,
-												  cityGMLFactory,
-												  kmlFactory,
-												  elevationServiceHandler,
-												  getBalloonTemplateHandler(featureClass),
-												  eventDispatcher,
-												  config);
+							singleObject = new PlantCover(kmlExporterManager,
+									sqliteImporterManager,
+									cityGMLFactory,
+									kmlFactory,
+									elevationServiceHandler,
+									getBalloonTemplateHandler(featureClass),
+									eventDispatcher,
+									config);
 					break;
 
 				case GENERIC_CITY_OBJECT:
-					singleObject = new GenericCityObject(connection,
-												   	   	 kmlExporterManager,
-												   	   	 cityGMLFactory,
-												   	   	 kmlFactory,
-												   	   	 elevationServiceHandler,
-												   	   	 getBalloonTemplateHandler(featureClass),
-												   	   	 eventDispatcher,
-												   	   	 config);
+							singleObject = new GenericCityObject(kmlExporterManager,
+									sqliteImporterManager,
+									cityGMLFactory,
+									kmlFactory,
+									elevationServiceHandler,
+									getBalloonTemplateHandler(featureClass),
+									eventDispatcher,
+									config);
 					break;
 
 				case TRAFFIC_AREA:
@@ -372,72 +362,74 @@ public class CityKmlExportWorker implements Worker<KmlSplittingResult> {
 				case RAILWAY:
 				case ROAD:
 				case SQUARE:
-					singleObject = new Transportation(connection,
-												   	  kmlExporterManager,
-												   	  cityGMLFactory,
-												   	  kmlFactory,
-												   	  elevationServiceHandler,
-												   	  getBalloonTemplateHandler(featureClass),
-												   	  eventDispatcher,
-												   	  config);
+						singleObject = new Transportation(kmlExporterManager,
+									sqliteImporterManager,
+									cityGMLFactory,
+									kmlFactory,
+									elevationServiceHandler,
+									getBalloonTemplateHandler(featureClass),
+									eventDispatcher,
+									config);
 					break;
 
 				case RELIEF_FEATURE:
-					singleObject = new Relief(connection,
-											  kmlExporterManager,
-											  cityGMLFactory,
-											  kmlFactory,
-											  elevationServiceHandler,
-											  getBalloonTemplateHandler(featureClass),
-											  eventDispatcher,
-											  config);
+					singleObject = new Relief(kmlExporterManager,
+									sqliteImporterManager,
+									cityGMLFactory,
+									kmlFactory,
+									elevationServiceHandler,
+									getBalloonTemplateHandler(featureClass),
+									eventDispatcher,
+									config);
 					break;
-*/
+
+
 				case CITY_FURNITURE:
-                    singleObject = new CityFurnitureObject(kmlExporterManager,
-                            sqliteImporterManager,
-                            cityGMLFactory,
-                            kmlFactory,
-                            elevationServiceHandler,
-                            getBalloonTemplateHandler(featureClass),
-                            eventDispatcher,
-                            config);
+						singleObject = new CityFurniture(kmlExporterManager,
+									sqliteImporterManager,
+									cityGMLFactory,
+									kmlFactory,
+									elevationServiceHandler,
+									getBalloonTemplateHandler(featureClass),
+									eventDispatcher,
+									config);
+							break;
+
+
+				case TUNNEL:
+						singleObject = new Tunnel(kmlExporterManager,
+									sqliteImporterManager,
+									cityGMLFactory,
+									kmlFactory,
+									elevationServiceHandler,
+									getBalloonTemplateHandler(featureClass),
+									eventDispatcher,
+									config);
+							break;
+
+
+				case BRIDGE:
+						singleObject = new Bridge(kmlExporterManager,
+									sqliteImporterManager,
+									cityGMLFactory,
+									kmlFactory,
+									elevationServiceHandler,
+									getBalloonTemplateHandler(featureClass),
+									eventDispatcher,
+									config);
+							break;
+
+				case CITY_OBJECT_GROUP:
+							singleObject = new CityObjectGroup(kmlExporterManager,
+									sqliteImporterManager,
+									cityGMLFactory,
+									kmlFactory,
+									elevationServiceHandler,
+									getBalloonTemplateHandler(featureClass),
+									eventDispatcher,
+									config);
 					break;
 
-                case TUNNEL:
-                    singleObject = new TunnelObject(kmlExporterManager,
-                            sqliteImporterManager,
-                            cityGMLFactory,
-                            kmlFactory,
-                            elevationServiceHandler,
-                            getBalloonTemplateHandler(featureClass),
-                            eventDispatcher,
-                            config);
-                    break;
-
-
-                case BRIDGE:
-                    singleObject = new BridgeObject(kmlExporterManager,
-                            sqliteImporterManager,
-                            cityGMLFactory,
-                            kmlFactory,
-                            elevationServiceHandler,
-                            getBalloonTemplateHandler(featureClass),
-                            eventDispatcher,
-                            config);
-                    break;
-/*
-				case CITY_OBJECT_GROUP:
-					singleObject = new CityObjectGroup(connection,
-												   	   kmlExporterManager,
-												   	   cityGMLFactory,
-												   	   kmlFactory,
-												   	   elevationServiceHandler,
-												   	   getBalloonTemplateHandler(featureClass),
-												   	   eventDispatcher,
-												   	   config);
-					break;*/
-					
 				default:
 					break;
 			}

@@ -151,7 +151,7 @@ public class ThemeUtil implements EventHandler{
 			else if (kmlExportObject instanceof Relief) {
 				type = CityGMLClass.RELIEF_FEATURE;
 			}
-			else if (kmlExportObject instanceof SolitaryVegetationObject) {
+			else if (kmlExportObject instanceof Vegetation) {
 				type = CityGMLClass.SOLITARY_VEGETATION_OBJECT;
 			}
 			else if (kmlExportObject instanceof PlantCover) {

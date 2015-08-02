@@ -29,51 +29,20 @@
  */
 package org.citydb.plugins.CityGMLConverter.concurrent;
 
-import java.io.File;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.EnumMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.xml.bind.JAXBContext;
-
-import net.opengis.kml._2.ObjectFactory;
-
 import org.citygml4j.builder.jaxb.JAXBBuilder;
-import org.citygml4j.factory.GMLGeometryFactory;
 import org.citygml4j.model.citygml.CityGML;
-import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.model.gml.feature.BoundingShape;
-import org.citygml4j.util.xml.SAXEventBuffer;
 import org.citydb.api.concurrent.Worker;
 import org.citydb.api.concurrent.WorkerPool;
 import org.citydb.api.concurrent.WorkerPool.WorkQueue;
-import org.citydb.api.database.DatabaseAdapter;
-import org.citydb.api.database.DatabaseType;
 import org.citydb.api.event.EventDispatcher;
-import org.citydb.api.event.EventHandler;
-import org.citydb.config.project.exporter.ExportFilterConfig;
-import org.citydb.database.adapter.AbstractDatabaseAdapter;
-import org.citydb.database.adapter.BlobExportAdapter;
-import org.citydb.database.adapter.BlobType;
-import org.citydb.database.adapter.DatabaseAdapterFactory;
 import org.citydb.log.Logger;
-import org.citydb.plugins.CityGMLConverter.config.Balloon;
-import org.citydb.plugins.CityGMLConverter.config.BalloonContentMode;
-import org.citydb.plugins.CityGMLConverter.config.ColladaOptions;
 import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
-import org.citydb.plugins.CityGMLConverter.config.DisplayForm;
-import org.citydb.plugins.CityGMLConverter.content.BalloonTemplateHandlerImpl;
-import org.citydb.plugins.CityGMLConverter.content.Building;
-import org.citydb.plugins.CityGMLConverter.content.CityObjectGroup;
-import org.citydb.plugins.CityGMLConverter.content.ColladaBundle;
-import org.citydb.plugins.CityGMLConverter.content.ElevationServiceHandler;
-import org.citydb.plugins.CityGMLConverter.content.KmlExporterManager;
-import org.citydb.plugins.CityGMLConverter.content.KmlGenericObject;
 import org.citydb.plugins.CityGMLConverter.util.BoundingBox;
-import org.citydb.plugins.CityGMLConverter.util.Sqlite.SqliteImporterManager;
 import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlink;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;

@@ -176,7 +176,14 @@ public class KmlSplitter {
 				&& config.getLodToExportFrom() > 0) {
 			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.CITY_OBJECT_GROUP);
 		}
-
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetBridge()
+				&& config.getLodToExportFrom() > 0) {
+			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.BRIDGE);
+		}
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetTunnel()
+				&& config.getLodToExportFrom() > 0) {
+			CURRENTLY_ALLOWED_CITY_OBJECT_TYPES.add(CityGMLClass.TUNNEL);
+		}
 
 	}
 
@@ -384,6 +391,8 @@ public class KmlSplitter {
 									tmpAppearanceList.clear();									
 							//	}
 							}
+						}else{
+							LOG.info(cityGML.getCityGMLClass().name());
 						}
 
 					}catch (Exception e) {

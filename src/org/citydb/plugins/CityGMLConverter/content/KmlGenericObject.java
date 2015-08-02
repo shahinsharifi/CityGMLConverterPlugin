@@ -1392,58 +1392,60 @@ public abstract class KmlGenericObject {
                                                               KmlSplittingResult work,
                                                               boolean includeGroundSurface,
                                                               boolean includeClosureSurface) throws Exception {
-    	
+
         HashMap<String, MultiGeometryType> multiGeometries = new HashMap<String, MultiGeometryType>();
+        List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
         MultiGeometryType multiGeometry = null;
         PolygonType polygon = null;
 
-        double zOffset = getZOffsetFromDBorConfig(work.getGmlId(),work.GetElevation());
+
+        double zOffset = getZOffsetFromDBorConfig(work.getGmlId(), work.GetElevation());
         if (zOffset == Double.MAX_VALUE) {
-            List<Point3d> lowestPointCandidates = getLowestPointsCoordinates(result,  work);
-            zOffset = getZOffsetFromGEService(work.getGmlId(),lowestPointCandidates,work.getTargetSrs(),work.GetElevation());
+            List<Point3d> lowestPointCandidates = getLowestPointsCoordinates(result, work);
+            zOffset = getZOffsetFromGEService(work.getGmlId(), lowestPointCandidates, work.getTargetSrs(), work.GetElevation());
         }
-        
 
-        for (SurfaceObject Row: result) {
 
-            String surfaceType = (String)Row.getType();
+        for (SurfaceObject Row : result) {
+
+            String surfaceType = (String) Row.getType();
             if (surfaceType != null && !surfaceType.endsWith("Surface")) {
                 surfaceType = surfaceType + "Surface";
             }
             if ((!includeGroundSurface && TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_GROUND_SURFACE).toString().equalsIgnoreCase(surfaceType)) ||
-                    (!includeClosureSurface && TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_CLOSURE_SURFACE).toString().equalsIgnoreCase(surfaceType)))	{
+                    (!includeClosureSurface && TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_CLOSURE_SURFACE).toString().equalsIgnoreCase(surfaceType))) {
                 continue;
             }
 
 
             @SuppressWarnings("unchecked")
-            List<Double> _Geometry = (List<Double>)Row.getGeometry();
+            List<Double> _Geometry = (List<Double>) Row.getGeometry();
 
-            org.postgis.Point[] tmpPoint = new org.postgis.Point[_Geometry.size()/3];
+            org.postgis.Point[] tmpPoint = new org.postgis.Point[_Geometry.size() / 3];
 
-            for (int i = 1,j = 0; i < _Geometry.size(); j++, i = i+3) {
+            for (int i = 1, j = 0; i < _Geometry.size(); j++, i = i + 3) {
 
-                List<Double> Target_Coordinates = ProjConvertor.transformPoint(_Geometry.get(i-1),_Geometry.get(i),_Geometry.get(i+1), work.getTargetSrs(), "4326");
+                List<Double> Target_Coordinates = ProjConvertor.transformPoint(_Geometry.get(i - 1), _Geometry.get(i), _Geometry.get(i + 1), work.getTargetSrs(), "4326");
                 tmpPoint[j] = new org.postgis.Point(
                         Target_Coordinates.get(1),
                         Target_Coordinates.get(0),
                         Target_Coordinates.get(2));
             }
 
-            Polygon surface = new Polygon(new org.postgis.LinearRing[] {new org.postgis.LinearRing(tmpPoint)});
-            double[] ordinatesArray = new double[surface.numPoints()*3];
+            Polygon surface = new Polygon(new org.postgis.LinearRing[]{new org.postgis.LinearRing(tmpPoint)});
+            double[] ordinatesArray = new double[surface.numPoints() * 3];
 
-            for (int i = 0, j = 0; i < surface.numPoints(); i++, j+=3){
+            for (int i = 0, j = 0; i < surface.numPoints(); i++, j += 3) {
                 ordinatesArray[j] = surface.getPoint(i).x;
-                ordinatesArray[j+1] = surface.getPoint(i).y;
-                ordinatesArray[j+2] = surface.getPoint(i).z;
+                ordinatesArray[j + 1] = surface.getPoint(i).y;
+                ordinatesArray[j + 2] = surface.getPoint(i).z;
             }
 
             eventDispatcher.triggerEvent(new GeometryCounterEvent(null, this));
             //		eventDispatcher.triggerEvent(new CounterEvent(CounterType.TOPLEVEL_FEATURE,counter , this));
 
             polygon = kmlFactory.createPolygonType();
-         
+
             switch (config.getAltitudeMode()) {
                 case ABSOLUTE:
                     polygon.setAltitudeModeGroup(kmlFactory.createAltitudeMode(AltitudeModeEnumType.ABSOLUTE));
@@ -1461,37 +1463,36 @@ public abstract class KmlGenericObject {
             double nz = 0;
             int cellCount = 0;
 
-            for (int i = 0; i < surface.numRings(); i++){
+            for (int i = 0; i < surface.numRings(); i++) {
                 LinearRingType linearRing = kmlFactory.createLinearRingType();
                 BoundaryType boundary = kmlFactory.createBoundaryType();
                 boundary.setLinearRing(linearRing);
                 if (i == 0) {
                     polygon.setOuterBoundaryIs(boundary);
-                }
-                else {
+                } else {
                     polygon.getInnerBoundaryIs().add(boundary);
                 }
 
-                int startNextRing = ((i+1) < surface.numRings()) ?
-                        (surface.getRing(i).numPoints()*3): // still holes to come
+                int startNextRing = ((i + 1) < surface.numRings()) ?
+                        (surface.getRing(i).numPoints() * 3) : // still holes to come
                         ordinatesArray.length; // default
 
                 // order points clockwise
-                for (int j = cellCount; j < startNextRing; j+=3) {
+                for (int j = cellCount; j < startNextRing; j += 3) {
                     linearRing.getCoordinates().add(String.valueOf(reducePrecisionForXorY(ordinatesArray[j]) + ","
-                            + reducePrecisionForXorY(ordinatesArray[j+1]) + ","
-                            + reducePrecisionForZ(ordinatesArray[j+2] + zOffset)));
+                            + reducePrecisionForXorY(ordinatesArray[j + 1]) + ","
+                            + reducePrecisionForZ(ordinatesArray[j + 2] + zOffset)));
 
                     if (currentLod == 1) { // calculate normal
                         int current = j;
-                        int next = j+3;
+                        int next = j + 3;
                         if (next >= ordinatesArray.length) next = 0;
-                        nx = nx + ((ordinatesArray[current+1] - ordinatesArray[next+1]) * (ordinatesArray[current+2] + ordinatesArray[next+2]));
-                        ny = ny + ((ordinatesArray[current+2] - ordinatesArray[next+2]) * (ordinatesArray[current] + ordinatesArray[next]));
-                        nz = nz + ((ordinatesArray[current] - ordinatesArray[next]) * (ordinatesArray[current+1] + ordinatesArray[next+1]));
+                        nx = nx + ((ordinatesArray[current + 1] - ordinatesArray[next + 1]) * (ordinatesArray[current + 2] + ordinatesArray[next + 2]));
+                        ny = ny + ((ordinatesArray[current + 2] - ordinatesArray[next + 2]) * (ordinatesArray[current] + ordinatesArray[next]));
+                        nz = nz + ((ordinatesArray[current] - ordinatesArray[next]) * (ordinatesArray[current + 1] + ordinatesArray[next + 1]));
                     }
                 }
-                cellCount += (surface.getRing(i).numPoints()*3);
+                cellCount += (surface.getRing(i).numPoints() * 3);
             }
 
             if (currentLod == 1) { // calculate normal
@@ -1528,7 +1529,6 @@ public abstract class KmlGenericObject {
             multiGeometry.getAbstractGeometryGroup().add(kmlFactory.createPolygon(polygon));
         }
 
-        List<PlacemarkType> placemarkList = new ArrayList<PlacemarkType>();
         Set<String> keySet = multiGeometries.keySet();
         Iterator<String> iterator = keySet.iterator();
         while (iterator.hasNext()) {
@@ -1536,7 +1536,7 @@ public abstract class KmlGenericObject {
             PlacemarkType placemark = kmlFactory.createPlacemarkType();
             placemark.setName(work.getGmlId() + "_" + surfaceType);
             placemark.setId(DisplayForm.GEOMETRY_PLACEMARK_ID + placemark.getName());
-            if (work.isBuilding())
+            if (work.isBuilding() || work.isBridge() || work.isTunnel())
                 placemark.setStyleUrl("#" + surfaceType + "Normal");
             else
                 placemark.setStyleUrl("#" + getStyleBasisName() + DisplayForm.GEOMETRY_STR + "Normal");
@@ -1548,6 +1548,7 @@ public abstract class KmlGenericObject {
             placemark.setAbstractGeometryGroup(kmlFactory.createMultiGeometry(multiGeometry));
             placemarkList.add(placemark);
         }
+
         return placemarkList;
     }
 
@@ -1559,6 +1560,7 @@ public abstract class KmlGenericObject {
         String selectedTheme = config.getAppearanceTheme();
         String filePath=GetImagePath();
         int texImageCounter = 0;
+
 
         try {
 

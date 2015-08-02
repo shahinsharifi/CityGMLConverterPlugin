@@ -44,14 +44,9 @@ import org.citydb.plugins.CityGMLConverter.config.DisplayForm;
 import org.citydb.plugins.CityGMLConverter.util.ProjConvertor;
 import org.citydb.plugins.CityGMLConverter.util.Sqlite.SqliteImporterManager;
 import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkBasic;
-import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkGroupToCityObject;
-import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkSurfaceGeometry;
-import org.citydb.plugins.CityGMLConverter.xlink.resolver.DBXlinkSplitter;
 import org.citydb.util.Util;
 import org.citygml4j.factory.GMLGeometryFactory;
 import org.citygml4j.geometry.Matrix;
-import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroupMember;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
@@ -66,9 +61,9 @@ import java.util.HashMap;
 import java.util.List;
 
 
-public class CityObjectGroup extends KmlGenericObject{
+public class CityFurniture extends KmlGenericObject{
 
-    public static final String STYLE_BASIS_NAME = "Group";
+    public static final String STYLE_BASIS_NAME = "Furniture";
     private Matrix transformation;
     private SqliteImporterManager sqlliteImporterManager;
     private List<SurfaceObject> _ParentSurfaceList = new ArrayList<SurfaceObject>();
@@ -78,14 +73,14 @@ public class CityObjectGroup extends KmlGenericObject{
     private double refPointZ;
 
 
-    public CityObjectGroup(KmlExporterManager kmlExporterManager,
-                           SqliteImporterManager sqlliteImporterManager,
-                           GMLGeometryFactory cityGMLFactory,
-                           net.opengis.kml._2.ObjectFactory kmlFactory,
-                           ElevationServiceHandler elevationServiceHandler,
-                           BalloonTemplateHandlerImpl balloonTemplateHandler,
-                           EventDispatcher eventDispatcher,
-                           ConfigImpl config) {
+    public CityFurniture(KmlExporterManager kmlExporterManager,
+                         SqliteImporterManager sqlliteImporterManager,
+                         GMLGeometryFactory cityGMLFactory,
+                         net.opengis.kml._2.ObjectFactory kmlFactory,
+                         ElevationServiceHandler elevationServiceHandler,
+                         BalloonTemplateHandlerImpl balloonTemplateHandler,
+                         EventDispatcher eventDispatcher,
+                         ConfigImpl config) {
 
         super(kmlExporterManager,
             cityGMLFactory,
@@ -190,20 +185,18 @@ public class CityObjectGroup extends KmlGenericObject{
 
         try {
 
-            org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroup cityObjectGroup =
-                    (org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroup)work.getCityGmlClass();
-
+            org.citygml4j.model.citygml.cityfurniture.CityFurniture _furniture = (org.citygml4j.model.citygml.cityfurniture.CityFurniture)work.getCityGmlClass();
             SurfaceAppearance _SurfaceAppear = new SurfaceAppearance();
 
             //this function reads all geometries and returns a list of surfaces.
-            List<SurfaceObject> _surfaceList = GetGeometries(cityObjectGroup);
+            List<SurfaceObject> _surfaceList = GetGeometries(_furniture);
 
             //Restarting Xlink worker.
-            sqlliteImporterManager.getTmpXlinkPool().join();
-            DBXlinkSplitter xlinkSplitter = config.getXlinkSplitter();
-            List<SurfaceObject> tmpList = xlinkSplitter.startQuery(_surfaceList);
-            if(tmpList != null && tmpList.size() > 0) //We should join xlinks with Main geometries
-                _surfaceList.addAll(tmpList);
+         //   sqlliteImporterManager.getTmpXlinkPool().join();
+          //  DBXlinkSplitter xlinkSplitter = config.getXlinkSplitter();
+         //   List<BuildingSurface> tmpList = xlinkSplitter.startQuery(_surfaceList);
+         //   if(tmpList != null && tmpList.size() > 0) //We should join xlinks with Main geometries
+          //      _surfaceList.addAll(tmpList);
 
             if (_surfaceList.size()!=0) { // result not empty
 
@@ -299,40 +292,42 @@ public class CityObjectGroup extends KmlGenericObject{
     }
 
 
-    public List<SurfaceObject> GetGeometries(org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroup cityObjectGroup) throws Exception
+    public List<SurfaceObject> GetGeometries(org.citygml4j.model.citygml.cityfurniture.CityFurniture _furniture) throws Exception
     {
         List<SurfaceObject> _SurfaceList = new ArrayList<SurfaceObject>();
         SurfaceGeometry surfaceGeom = new SurfaceGeometry(config , sqlliteImporterManager);
         String _SurfaceType = "undefined";
-        String RootGmlId = cityObjectGroup.getId();
+        String RootGmlId = _furniture.getId();
         OtherGeometry otherGeom = new OtherGeometry(config , sqlliteImporterManager , 3068);
 
         /// Geometry
-        if (cityObjectGroup.isSetGeometry()) {
-            GeometryProperty<? extends AbstractGeometry> geometryProperty = cityObjectGroup.getGeometry();
+        // lodXTerrainIntersectionCurve
+        for (int i = 0; i < 4; i++) {
+            MultiCurveProperty multiCurveProperty = null;
+            GeometryObject multiLine = null;
 
-            if (geometryProperty.isSetGeometry()) {
-                AbstractGeometry abstractGeometry = geometryProperty.getGeometry();
-                List<List<Double>> _pointList = new ArrayList<List<Double>>();
-                GeometryObject geometryObject = null;
+            switch (i) {
+                case 0:
+                    multiCurveProperty = _furniture.getLod1TerrainIntersection();
+                    break;
+                case 1:
+                    multiCurveProperty = _furniture.getLod2TerrainIntersection();
+                    break;
+                case 2:
+                    multiCurveProperty = _furniture.getLod3TerrainIntersection();
+                    break;
+                case 3:
+                    multiCurveProperty = _furniture.getLod4TerrainIntersection();
+                    break;
+            }
 
-                if (surfaceGeom.isSurfaceGeometry(abstractGeometry))
-                    _pointList.addAll(surfaceGeom.getSurfaceGeometry(RootGmlId, abstractGeometry, false));
-                else if (otherGeom.isPointOrLineGeometry(abstractGeometry)) {
-                    geometryObject = otherGeom.getPointOrCurveGeometry(abstractGeometry);
-                    _pointList.addAll(otherGeom.ConvertGeomObjectToPointList(geometryObject));
-                }else {
-                    StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-                            cityObjectGroup.getCityGMLClass(),
-                            cityObjectGroup.getId()));
-                    msg.append(": Unsupported geometry type ");
-                    msg.append(abstractGeometry.getGMLClass()).append('.');
-
-                    LOG.error(msg.toString());
-                }
+            if (multiCurveProperty != null)
+            {
+                surfaceGeom.ClearPointList();
+                List<List<Double>> _pointList  = surfaceGeom.getMultiCurve(multiCurveProperty);
 
                 int counter = 0;
-                for (List<Double> _Geometry : _pointList) {
+                for(List<Double> _Geometry : _pointList){
 
                     SurfaceObject BSurface = new SurfaceObject();
                     _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
@@ -343,72 +338,177 @@ public class CityObjectGroup extends KmlGenericObject{
                     counter++;
                 }
 
-                geometryProperty.unsetGeometry();
-            } else {
-                // xlink
-                String href = geometryProperty.getHref();
-
-                if (href != null && href.length() != 0) {
-
-                    DBXlinkSurfaceGeometry xlink = new DBXlinkSurfaceGeometry(
-                            RootGmlId,
-                            "0",
-                            "0",
-                            false,
-                            href
-                    );
-
-                    sqlliteImporterManager.propagateXlink(xlink);
-
-                }
             }
         }
 
+        // lodXGeometry
+        for (int lod = 0; lod < 4; lod++) {
+            GeometryProperty<? extends AbstractGeometry> geometryProperty = null;
+            long geometryId = 0;
+            GeometryObject geometryObject = null;
 
-
-        // group parent
-        if (cityObjectGroup.isSetGroupParent()) {
-            if (cityObjectGroup.getGroupParent().isSetCityObject()) {
-                StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-                        CityGMLClass.CITY_OBJECT_GROUP,
-                        RootGmlId));
-
-                msg.append(": XML read error while parsing parent element.");
-                LOG.error(msg.toString());
-            } else {
-                // xlink
-                String href = cityObjectGroup.getGroupParent().getHref();
-
-                if (href != null && href.length() != 0) {
-                    sqlliteImporterManager.propagateXlink(new DBXlinkGroupToCityObject(
-                            RootGmlId,
-                            href,
-                            true));
-                }
+            switch (lod) {
+                case 0:
+                    geometryProperty = _furniture.getLod1Geometry();
+                    break;
+                case 1:
+                    geometryProperty = _furniture.getLod2Geometry();
+                    break;
+                case 2:
+                    geometryProperty = _furniture.getLod3Geometry();
+                    break;
+                case 3:
+                    geometryProperty = _furniture.getLod4Geometry();
+                    break;
             }
-        }
 
-        // group member
-        if (cityObjectGroup.isSetGroupMember()) {
-            for (CityObjectGroupMember groupMember : cityObjectGroup.getGroupMember()) {
-                if (groupMember.isSetObject()) {
-                    StringBuilder msg = new StringBuilder(Util.getFeatureSignature(
-                            CityGMLClass.CITY_OBJECT_GROUP,
-                            RootGmlId));
+            if (geometryProperty != null) {
 
-                    msg.append(": XML read error while parsing groupMember element.");
-                    LOG.error(msg.toString());
-                } else {
+                if (geometryProperty.isSetGeometry()) {
+                    AbstractGeometry abstractGeometry = geometryProperty.getGeometry();
+                    if (otherGeom.isPointOrLineGeometry(abstractGeometry))
+                        geometryObject = otherGeom.getPointOrCurveGeometry(abstractGeometry);
+
+                    surfaceGeom.ClearPointList();
+                    List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(RootGmlId, geometryProperty.getGeometry(), false);
+
+                    int counter = 0;
+                    for(List<Double> _Geometry : _pointList){
+
+                        SurfaceObject BSurface = new SurfaceObject();
+                        _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
+                        BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
+                        BSurface.setType(_SurfaceType);
+                        BSurface.setGeometry(_Geometry);
+                        _SurfaceList.add(BSurface);
+                        counter++;
+                    }
+
+                }
+                else{
                     // xlink
-                    String href = groupMember.getHref();
+                    String href = geometryProperty.getHref();
 
                     if (href != null && href.length() != 0) {
-                        DBXlinkGroupToCityObject xlink = new DBXlinkGroupToCityObject(
-                                RootGmlId,
+                        DBXlinkBasic xlink = new DBXlinkBasic(
+                                _furniture.getId(),
+                                TableEnum.BUILDING,
                                 href,
-                                false);
+                                TableEnum.SURFACE_GEOMETRY
+                        );
 
-                        xlink.setRole(groupMember.getGroupRole());
+                        xlink.setAttrName("LOD" + lod + "_GEOMETRY_ID");
+                        sqlliteImporterManager.propagateXlink(xlink);
+                    }
+                }
+            }
+        }
+
+        // implicit geometry
+        for (int lod = 0; lod < 4; lod++) {
+            ImplicitRepresentationProperty implicit = null;
+            GeometryObject pointGeom = null;
+            String matrixString = null;
+            long implicitId = 0;
+
+            switch (lod) {
+                case 0:
+                    implicit = _furniture.getLod1ImplicitRepresentation();
+                    break;
+                case 1:
+                    implicit = _furniture.getLod2ImplicitRepresentation();
+                    break;
+                case 2:
+                    implicit = _furniture.getLod3ImplicitRepresentation();
+                    break;
+                case 3:
+                    implicit = _furniture.getLod4ImplicitRepresentation();
+                    break;
+            }
+
+            if (implicit != null) {
+                if (implicit.isSetObject()) {
+
+                    ImplicitGeometry geometry = implicit.getObject();
+
+                    // reference Point
+                    if (geometry.isSetReferencePoint()) {
+                        pointGeom = otherGeom.getPoint(geometry.getReferencePoint());
+                        double[] ordinatesArray = pointGeom.getCoordinates(0);
+                        refPointX = ordinatesArray[0];
+                        refPointY = ordinatesArray[1];
+                        refPointZ = ordinatesArray[2];
+                    }
+
+                    // transformation matrix
+                    if (geometry.isSetTransformationMatrix())
+                        transformation = geometry.getTransformationMatrix().getMatrix();
+
+                    long implicitGeometryId = 0;
+                    boolean updateTable = false;
+                    boolean isXLink = false;
+
+                    String libraryURI = geometry.getLibraryObject();
+                    if (libraryURI != null)
+                        libraryURI = libraryURI.trim();
+
+                    AbstractGeometry relativeGeometry = null;
+                    String gmlId = null;
+
+                    if (geometry.isSetRelativeGMLGeometry()) {
+                        GeometryProperty<? extends AbstractGeometry> property = geometry.getRelativeGMLGeometry();
+
+                        if (property.isSetHref()) {
+                            gmlId = property.getHref();
+                            if (Util.isRemoteXlink(gmlId)) {
+                                LOG.error("XLink reference '" + gmlId + "' to remote relative GML geometry is not supported.");
+                            }
+
+                            gmlId = gmlId.replaceAll("^#", "");
+                            isXLink = true;
+
+                        } else if (property.isSetGeometry()) {
+                            relativeGeometry = property.getGeometry();
+                            gmlId = relativeGeometry.getId();
+                            updateTable = !relativeGeometry.hasLocalProperty(Internal.GEOMETRY_ORIGINAL);
+                        }
+                    }
+
+                    GeometryObject geometryObject = null;
+
+                    surfaceGeom.ClearPointList();
+                    List<List<Double>> _pointList = null;//surfaceGeom.getSurfaceGeometry(buildingGmlId , implicit.getGeometry(), false);
+                    if (relativeGeometry != null) {
+                        _pointList = surfaceGeom.getSurfaceGeometry(RootGmlId, relativeGeometry, false);
+                    }
+
+                    int counter = 0;
+                    for(List<Double> _Geometry : _pointList){
+
+
+                        SurfaceObject BSurface = new SurfaceObject();
+                        _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
+                        BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
+                        BSurface.setType(_SurfaceType);
+                        BSurface.setGeometry(_Geometry);
+                        _SurfaceList.add(BSurface);
+                        counter++;
+                    }
+
+                }
+                else{
+                    // xlink
+                    String href = implicit.getHref();
+
+                    if (href != null && href.length() != 0) {
+                        DBXlinkBasic xlink = new DBXlinkBasic(
+                                _furniture.getId(),
+                                TableEnum.BUILDING,
+                                href,
+                                TableEnum.SURFACE_GEOMETRY
+                        );
+
+                        xlink.setAttrName("LOD" + lod + "_GEOMETRY_ID");
                         sqlliteImporterManager.propagateXlink(xlink);
                     }
                 }
@@ -418,43 +518,42 @@ public class CityObjectGroup extends KmlGenericObject{
         return _SurfaceList;
     }
 
-
-    public static HashMap<String,Object> getObjectProperties(org.citygml4j.model.citygml.cityobjectgroup.CityObjectGroup cityObjectGroup){
+    public static HashMap<String,Object> getObjectProperties(org.citygml4j.model.citygml.cityfurniture.CityFurniture furniture){
 
         HashMap<String, Object> objectgMap = new HashMap<String , Object>();
 
         //Building GmlID
-        if (cityObjectGroup.isSetId()) {
-            objectgMap.put("GMLID",cityObjectGroup.getId());
+        if (furniture.isSetId()) {
+            objectgMap.put("GMLID",furniture.getId());
         }
 
         //Building name and codespace
-        if (cityObjectGroup.isSetName()) {
-            objectgMap.put("NAME",cityObjectGroup.getName());
-            if(cityObjectGroup.getName().get(0).isSetCodeSpace())
-                objectgMap.put("NAME_CODESPACE", cityObjectGroup.getName().get(0).getCodeSpace());
+        if (furniture.isSetName()) {
+            objectgMap.put("NAME",furniture.getName());
+            if(furniture.getName().get(0).isSetCodeSpace())
+                objectgMap.put("NAME_CODESPACE", furniture.getName().get(0).getCodeSpace());
         }
 
         // class
-        if (cityObjectGroup.isSetClazz() && cityObjectGroup.getClazz().isSetValue()) {
-            objectgMap.put("CLASS",cityObjectGroup.getClazz().getValue());
+        if (furniture.isSetClazz() && furniture.getClazz().isSetValue()) {
+            objectgMap.put("CLASS",furniture.getClazz().getValue());
         }
 
         //Description
-        if(cityObjectGroup.isSetDescription())
+        if(furniture.isSetDescription())
         {
-            objectgMap.put("DESCRIPTION",cityObjectGroup.getDescription());
+            objectgMap.put("DESCRIPTION",furniture.getDescription());
         }
 
         // function
-        if (cityObjectGroup.isSetFunction()) {
-            String[] function = Util.codeList2string(cityObjectGroup.getFunction());
+        if (furniture.isSetFunction()) {
+            String[] function = Util.codeList2string(furniture.getFunction());
             objectgMap.put("FUNCTION",function[0]);
         }
 
         // usage
-        if (cityObjectGroup.isSetUsage()) {
-            String[] usage = Util.codeList2string(cityObjectGroup.getUsage());
+        if (furniture.isSetUsage()) {
+            String[] usage = Util.codeList2string(furniture.getUsage());
             objectgMap.put("USAGE",usage[0]);
         }
 

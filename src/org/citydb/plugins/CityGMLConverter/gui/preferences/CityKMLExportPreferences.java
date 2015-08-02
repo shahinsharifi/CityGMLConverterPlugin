@@ -38,7 +38,7 @@ public class CityKMLExportPreferences extends AbstractPreferences {
 	
 	public CityKMLExportPreferences(CityKMLExportPlugin plugin) {
 		super(new CityKMLExportEntry());
-		
+
 		DefaultPreferencesEntry renderingNode = new RenderingPanel();
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new BuildingRenderingPanel(plugin)));
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new WaterBodyRenderingPanel(plugin)));
@@ -50,8 +50,10 @@ public class CityKMLExportPreferences extends AbstractPreferences {
 		DefaultPreferencesEntry genericCityObjectRenderingNode = new GenericCityObjectBalloonPanel();
 	//	genericCityObjectRenderingNode.addChildEntry(new DefaultPreferencesEntry(new ThreeDRenderingPanel(plugin)));
 	//	genericCityObjectRenderingNode.addChildEntry(new DefaultPreferencesEntry(new PointAndCurveRenderingPanel(plugin)));
-		renderingNode.addChildEntry(genericCityObjectRenderingNode);		
+		renderingNode.addChildEntry(genericCityObjectRenderingNode);
 		renderingNode.addChildEntry(new DefaultPreferencesEntry(new CityObjectGroupRenderingPanel(plugin)));
+		renderingNode.addChildEntry(new DefaultPreferencesEntry(new BridgeRenderingPanel(plugin)));
+		renderingNode.addChildEntry(new DefaultPreferencesEntry(new TunnelRenderingPanel(plugin)));
 
 		DefaultPreferencesEntry balloonNode = new BalloonPanel();
 		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BuildingBalloonPanel(plugin)));
@@ -66,6 +68,8 @@ public class CityKMLExportPreferences extends AbstractPreferences {
 	//	genericCityObjectBalloonNode.addChildEntry(new DefaultPreferencesEntry(new PointAndCurveBalloonPanel(plugin)));
 		balloonNode.addChildEntry(genericCityObjectBalloonNode);
 		balloonNode.addChildEntry(new DefaultPreferencesEntry(new CityObjectGroupBalloonPanel(plugin)));
+		balloonNode.addChildEntry(new DefaultPreferencesEntry(new BridgeBalloonPanel(plugin)));
+		balloonNode.addChildEntry(new DefaultPreferencesEntry(new TunnelBalloonPanel(plugin)));
 
 		root.addChildEntry(new DefaultPreferencesEntry(new GeneralPanel(plugin)));
 		root.addChildEntry(renderingNode);

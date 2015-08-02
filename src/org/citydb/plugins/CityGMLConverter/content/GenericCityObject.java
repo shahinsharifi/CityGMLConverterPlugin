@@ -34,9 +34,7 @@ import net.opengis.kml._2.PlacemarkType;
 import org.citydb.api.event.EventDispatcher;
 import org.citydb.api.geometry.GeometryObject;
 import org.citydb.config.internal.Internal;
-import org.citydb.database.*;
 import org.citydb.log.Logger;
-import org.citydb.modules.citygml.common.database.xlink.DBXlinkSurfaceGeometry;
 import org.citydb.modules.common.event.CounterEvent;
 import org.citydb.modules.common.event.CounterType;
 import org.citydb.plugins.CityGMLConverter.config.Balloon;
@@ -49,7 +47,6 @@ import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkBasic;
 import org.citydb.util.Util;
 import org.citygml4j.factory.GMLGeometryFactory;
 import org.citygml4j.geometry.Matrix;
-import org.citygml4j.model.citygml.cityfurniture.CityFurniture;
 import org.citygml4j.model.citygml.core.ImplicitGeometry;
 import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
@@ -59,15 +56,14 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 import javax.vecmath.Point3d;
 import javax.xml.bind.JAXBException;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 
-public class CityFurnitureObject extends KmlGenericObject{
+public class GenericCityObject extends KmlGenericObject{
 
-    public static final String STYLE_BASIS_NAME = "Furniture";
+    public static final String STYLE_BASIS_NAME = "Generic";
     private Matrix transformation;
     private SqliteImporterManager sqlliteImporterManager;
     private List<SurfaceObject> _ParentSurfaceList = new ArrayList<SurfaceObject>();
@@ -77,14 +73,14 @@ public class CityFurnitureObject extends KmlGenericObject{
     private double refPointZ;
 
 
-    public CityFurnitureObject(KmlExporterManager kmlExporterManager,
-                               SqliteImporterManager sqlliteImporterManager,
-                               GMLGeometryFactory cityGMLFactory,
-                               net.opengis.kml._2.ObjectFactory kmlFactory,
-                               ElevationServiceHandler elevationServiceHandler,
-                               BalloonTemplateHandlerImpl balloonTemplateHandler,
-                               EventDispatcher eventDispatcher,
-                               ConfigImpl config) {
+    public GenericCityObject(KmlExporterManager kmlExporterManager,
+                             SqliteImporterManager sqlliteImporterManager,
+                             GMLGeometryFactory cityGMLFactory,
+                             net.opengis.kml._2.ObjectFactory kmlFactory,
+                             ElevationServiceHandler elevationServiceHandler,
+                             BalloonTemplateHandlerImpl balloonTemplateHandler,
+                             EventDispatcher eventDispatcher,
+                             ConfigImpl config) {
 
         super(kmlExporterManager,
             cityGMLFactory,
@@ -189,7 +185,7 @@ public class CityFurnitureObject extends KmlGenericObject{
 
         try {
 
-            CityFurniture _furniture = (CityFurniture)work.getCityGmlClass();
+            org.citygml4j.model.citygml.cityfurniture.CityFurniture _furniture = (org.citygml4j.model.citygml.cityfurniture.CityFurniture)work.getCityGmlClass();
             SurfaceAppearance _SurfaceAppear = new SurfaceAppearance();
 
             //this function reads all geometries and returns a list of surfaces.
@@ -296,7 +292,7 @@ public class CityFurnitureObject extends KmlGenericObject{
     }
 
 
-    public List<SurfaceObject> GetGeometries(CityFurniture _furniture) throws Exception
+    public List<SurfaceObject> GetGeometries(org.citygml4j.model.citygml.cityfurniture.CityFurniture _furniture) throws Exception
     {
         List<SurfaceObject> _SurfaceList = new ArrayList<SurfaceObject>();
         SurfaceGeometry surfaceGeom = new SurfaceGeometry(config , sqlliteImporterManager);
@@ -374,7 +370,7 @@ public class CityFurnitureObject extends KmlGenericObject{
                         geometryObject = otherGeom.getPointOrCurveGeometry(abstractGeometry);
 
                     surfaceGeom.ClearPointList();
-                    List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(RootGmlId , geometryProperty.getGeometry(), false);
+                    List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(RootGmlId, geometryProperty.getGeometry(), false);
 
                     int counter = 0;
                     for(List<Double> _Geometry : _pointList){
@@ -481,9 +477,9 @@ public class CityFurnitureObject extends KmlGenericObject{
                     GeometryObject geometryObject = null;
 
                     surfaceGeom.ClearPointList();
-                    List<List<Double>> _pointList = null;//surfaceGeom.GetSurfaceGeometry(buildingGmlId , implicit.getGeometry(), false);
+                    List<List<Double>> _pointList = null;//surfaceGeom.getSurfaceGeometry(buildingGmlId , implicit.getGeometry(), false);
                     if (relativeGeometry != null) {
-                        _pointList = surfaceGeom.GetSurfaceGeometry(RootGmlId , relativeGeometry, false);
+                        _pointList = surfaceGeom.getSurfaceGeometry(RootGmlId, relativeGeometry, false);
                     }
 
                     int counter = 0;
@@ -522,7 +518,7 @@ public class CityFurnitureObject extends KmlGenericObject{
         return _SurfaceList;
     }
 
-    public static HashMap<String,Object> getObjectProperties(CityFurniture furniture){
+    public static HashMap<String,Object> getObjectProperties(org.citygml4j.model.citygml.cityfurniture.CityFurniture furniture){
 
         HashMap<String, Object> objectgMap = new HashMap<String , Object>();
 

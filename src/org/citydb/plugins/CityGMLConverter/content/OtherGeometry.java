@@ -245,6 +245,40 @@ public class OtherGeometry {
         return curveGeom;
     }
 
+    public List<List<Double>> getPointList(GeometricComplex geometricComplex) {
+
+        List<List<Double>> pointList = new ArrayList<List<Double>>();
+
+        if (geometricComplex != null && geometricComplex.isSetElement()) {
+
+            for (GeometricPrimitiveProperty primitiveProperty : geometricComplex.getElement()) {
+                if (primitiveProperty.isSetGeometricPrimitive()) {
+                    AbstractGeometricPrimitive primitive = primitiveProperty.getGeometricPrimitive();
+                    List<Double> points = new ArrayList<Double>();
+
+                    switch (primitive.getGMLClass()) {
+                        case LINE_STRING:
+                        case COMPOSITE_CURVE:
+                        case ORIENTABLE_CURVE:
+                        case CURVE:
+                            generatePointList((AbstractCurve)primitive, points, false);
+                            break;
+                        default:
+                            // nothing to do
+                    }
+
+                    if (!points.isEmpty())
+                        pointList.add(points);
+                }
+            }
+
+        }
+
+        return pointList;
+    }
+
+
+
     public GeometryObject getMultiCurve(List<LineStringSegmentArrayProperty> propertyList) {
         GeometryObject multiCurveGeom = null;
 
@@ -384,6 +418,7 @@ public class OtherGeometry {
         }
     }
 
+
     private double[] convertPrimitive(List<Double> pointList) {
         //if (affineTransformation)
         //    dbImporterManager.getAffineTransformer().transformCoordinates(pointList);
@@ -414,6 +449,17 @@ public class OtherGeometry {
         }
 
         return result;
+    }
+
+
+
+    public List<List<Double>> ConvertGeomObjectToPointList(GeometryObject geomObject) {
+
+        List<List<Double>> pointList = new ArrayList<List<Double>>();
+        for (int i = 0; i < geomObject.getNumElements(); i++)
+            pointList.add(geomObject.getCoordinatesAsList(i));
+
+        return pointList;
     }
 
     public GeometryObject get2DPolygon(Polygon polygon) {

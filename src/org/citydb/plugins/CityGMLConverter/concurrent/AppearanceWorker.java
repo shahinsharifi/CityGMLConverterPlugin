@@ -132,14 +132,14 @@ public class AppearanceWorker  implements Worker<CityGML>{
 				ThemeUtil.getTmpAppearanceList().add(_appreance);
 
 			}
-			else if(cityGML.getCityGMLClass() == CityGMLClass.BUILDING){
+			else{
 
 				AbstractCityObject cityObject = (AbstractCityObject)cityGML;
 
 				if (cityObject!=null) {					
 					if(cityObject.isSetAppearance())
 						ThemeUtil.getTmpAppearanceList().addAll(cityObject.getAppearance());
-					else {
+					else if(cityGML.getCityGMLClass() == CityGMLClass.BUILDING){
 
 						AbstractBuilding building = (AbstractBuilding)cityObject;
 						if(building.isSetConsistsOfBuildingPart())
@@ -157,12 +157,6 @@ public class AppearanceWorker  implements Worker<CityGML>{
 					}
 				}
 			}
-			else
-			{
-				//this part will be added in the future.
-			}
-			
-			
 		}
 		catch(Exception ex){
 			Logger.getInstance().error(ex.toString());

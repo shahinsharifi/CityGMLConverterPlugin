@@ -29,7 +29,6 @@
  */
 package org.citydb.plugins.CityGMLConverter.content;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -96,7 +95,7 @@ import org.citydb.util.Util;
 
 public class Building extends KmlGenericObject{
 
-    public static final String STYLE_BASIS_NAME = "";//"Building";
+    public static final String STYLE_BASIS_NAME = "Building";//"Building";
     private SqliteImporterManager sqlliteImporterManager;
     private List<SurfaceObject> _ParentSurfaceList = new ArrayList<SurfaceObject>();
     private final Logger LOG = Logger.getInstance();
@@ -294,8 +293,8 @@ public class Building extends KmlGenericObject{
                 }
             }
         }
-        catch (SQLException sqlEx) {
-            Logger.getInstance().error("Error querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
+        catch (Exception Ex) {
+            Logger.getInstance().error("Error in city object " + work.getGmlId() + ": " + Ex.getMessage());
             return null;
         }
         finally {
@@ -323,47 +322,174 @@ public class Building extends KmlGenericObject{
     }
 
     
-    public List<SurfaceObject> GetBuildingGeometries(AbstractBuilding _building) throws Exception
-    {
+    public List<SurfaceObject> GetBuildingGeometries(AbstractBuilding _building) throws Exception {
+
         List<SurfaceObject> _SurfaceList = new ArrayList<SurfaceObject>();
-        SurfaceGeometry surfaceGeom = new SurfaceGeometry(config , sqlliteImporterManager);
+        SurfaceGeometry surfaceGeom = new SurfaceGeometry(config, sqlliteImporterManager);
         String _SurfaceType = "undefined";
         String buildingGmlId = _building.getId();
-        
-        
-        // lodXSolid
-        for (int lod = 1; lod < 5; lod++) {
 
-            SolidProperty solidProperty = null;
+        try {
+            // lodXSolid
+            for (int lod = 1; lod < 5; lod++) {
 
-            switch (lod) {
-                case 1:
-                    solidProperty = _building.getLod1Solid();
-                    break;
-                case 2:
-                    solidProperty = _building.getLod2Solid();
-                    break;
-                case 3:
-                    solidProperty = _building.getLod3Solid();
-                    break;
-                case 4:
-                    solidProperty = _building.getLod4Solid();
-                    break;
+                SolidProperty solidProperty = null;
+
+                switch (lod) {
+                    case 1:
+                        solidProperty = _building.getLod1Solid();
+                        break;
+                    case 2:
+                        solidProperty = _building.getLod2Solid();
+                        break;
+                    case 3:
+                        solidProperty = _building.getLod3Solid();
+                        break;
+                    case 4:
+                        solidProperty = _building.getLod4Solid();
+                        break;
+                }
+
+                if (solidProperty != null) {
+
+
+                    if (solidProperty.isSetSolid()) {
+
+                        surfaceGeom.ClearPointList();
+                        List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, solidProperty.getSolid(), false);
+
+                        int counter = 0;
+                        for (List<Double> _Geometry : _pointList) {
+
+                            SurfaceObject BSurface = new SurfaceObject();
+                            _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry , "Building");
+                            BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
+                            BSurface.setType(_SurfaceType);
+                            BSurface.setGeometry(_Geometry);
+                            _SurfaceList.add(BSurface);
+                            counter++;
+                        }
+
+                    } else {
+
+                        // xlink
+                        String href = solidProperty.getHref();
+
+                        if (href != null && href.length() != 0) {
+                            DBXlinkBasic xlink = new DBXlinkBasic(
+                                    _building.getId(),
+                                    TableEnum.BUILDING,
+                                    href,
+                                    TableEnum.SURFACE_GEOMETRY
+                            );
+
+                            xlink.setAttrName("LOD" + lod + "_GEOMETRY_ID");
+                            sqlliteImporterManager.propagateXlink(xlink);
+                        }
+
+                    }
+
+
+                }
+
             }
 
-            if (solidProperty != null) {
+
+            // lodXMultiSurface
+            for (int lod = 1; lod < 5; lod++) {
+
+                //if (lodGeometry[lod - 1])
+                //continue;
+
+                MultiSurfaceProperty multiSurfaceProperty = null;
 
 
-                if (solidProperty.isSetSolid()) {
+                switch (lod) {
+                    case 1:
+                        multiSurfaceProperty = _building.getLod1MultiSurface();
+                        break;
+                    case 2:
+                        multiSurfaceProperty = _building.getLod2MultiSurface();
+                        break;
+                    case 3:
+                        multiSurfaceProperty = _building.getLod3MultiSurface();
+                        break;
+                    case 4:
+                        multiSurfaceProperty = _building.getLod4MultiSurface();
+                        break;
+                }
+
+                if (multiSurfaceProperty != null) {
+
+                    if (multiSurfaceProperty.isSetMultiSurface()) {
+
+                        surfaceGeom.ClearPointList();
+                        List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, multiSurfaceProperty.getMultiSurface(), false);
+
+                        int counter = 0;
+                        for (List<Double> _Geometry : _pointList) {
+
+
+                            SurfaceObject BSurface = new SurfaceObject();
+                            _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry, "Building");
+                            BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
+                            BSurface.setType(_SurfaceType);
+                            BSurface.setGeometry(_Geometry);
+                            _SurfaceList.add(BSurface);
+                            counter++;
+                        }
+
+                    } else {
+                        // xlink
+                        String href = multiSurfaceProperty.getHref();
+
+                        if (href != null && href.length() != 0) {
+                            DBXlinkBasic xlink = new DBXlinkBasic(
+                                    _building.getId(),
+                                    TableEnum.BUILDING,
+                                    href,
+                                    TableEnum.SURFACE_GEOMETRY
+                            );
+
+                            xlink.setAttrName("LOD" + lod + "_GEOMETRY_ID");
+                            sqlliteImporterManager.propagateXlink(xlink);
+                        }
+                    }
+                }
+
+            }
+
+
+            // lodXTerrainIntersectionCurve
+            for (int lod = 1; lod < 5; lod++) {
+
+                MultiCurveProperty multiCurveProperty = null;
+
+                switch (lod) {
+                    case 1:
+                        multiCurveProperty = _building.getLod1TerrainIntersection();
+                        break;
+                    case 2:
+                        multiCurveProperty = _building.getLod2TerrainIntersection();
+                        break;
+                    case 3:
+                        multiCurveProperty = _building.getLod3TerrainIntersection();
+                        break;
+                    case 4:
+                        multiCurveProperty = _building.getLod4TerrainIntersection();
+                        break;
+                }
+
+                if (multiCurveProperty != null) {
 
                     surfaceGeom.ClearPointList();
-                    List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId , solidProperty.getSolid() , false);
+                    List<List<Double>> _pointList = surfaceGeom.getMultiCurve(multiCurveProperty);
 
                     int counter = 0;
-                    for(List<Double> _Geometry : _pointList){
+                    for (List<Double> _Geometry : _pointList) {
 
                         SurfaceObject BSurface = new SurfaceObject();
-                        _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
+                        _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry, "Building");
                         BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                         BSurface.setType(_SurfaceType);
                         BSurface.setGeometry(_Geometry);
@@ -371,69 +497,39 @@ public class Building extends KmlGenericObject{
                         counter++;
                     }
 
-                }else{
-
-                    // xlink
-                    String href = solidProperty.getHref();
-
-                    if (href != null && href.length() != 0) {
-                        DBXlinkBasic xlink = new DBXlinkBasic(
-                                _building.getId(),
-                                TableEnum.BUILDING,
-                                href,
-                                TableEnum.SURFACE_GEOMETRY
-                        );
-
-                        xlink.setAttrName("LOD" + lod + "_GEOMETRY_ID");
-                        sqlliteImporterManager.propagateXlink(xlink);
-                    }
-
                 }
 
-
             }
 
-        }
+
+            // lodXMultiCurve
+            for (int lod = 2; lod < 5; lod++) {
+
+                MultiCurveProperty multiCurveProperty = null;
 
 
+                switch (lod) {
+                    case 2:
+                        multiCurveProperty = _building.getLod2MultiCurve();
+                        break;
+                    case 3:
+                        multiCurveProperty = _building.getLod3MultiCurve();
+                        break;
+                    case 4:
+                        multiCurveProperty = _building.getLod4MultiCurve();
+                        break;
+                }
 
-        // lodXMultiSurface
-        for (int lod = 1; lod < 5; lod++) {
-
-            //if (lodGeometry[lod - 1])
-            //continue;
-
-            MultiSurfaceProperty multiSurfaceProperty = null;
-
-
-            switch (lod) {
-                case 1:
-                    multiSurfaceProperty = _building.getLod1MultiSurface();
-                    break;
-                case 2:
-                    multiSurfaceProperty = _building.getLod2MultiSurface();
-                    break;
-                case 3:
-                    multiSurfaceProperty = _building.getLod3MultiSurface();
-                    break;
-                case 4:
-                    multiSurfaceProperty = _building.getLod4MultiSurface();
-                    break;
-            }
-
-            if (multiSurfaceProperty != null) {
-
-                if (multiSurfaceProperty.isSetMultiSurface()) {
-
+                if (multiCurveProperty != null) {
                     surfaceGeom.ClearPointList();
-                    List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId,multiSurfaceProperty.getMultiSurface(), false);
+
+                    List<List<Double>> _pointList = surfaceGeom.getMultiCurve(multiCurveProperty);
 
                     int counter = 0;
-                    for(List<Double> _Geometry : _pointList){
-
+                    for (List<Double> _Geometry : _pointList) {
 
                         SurfaceObject BSurface = new SurfaceObject();
-                        _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
+                        _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry, "Building");
                         BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                         BSurface.setType(_SurfaceType);
                         BSurface.setGeometry(_Geometry);
@@ -442,684 +538,573 @@ public class Building extends KmlGenericObject{
                     }
 
                 }
-                else{
-                    // xlink
-                    String href = multiSurfaceProperty.getHref();
-
-                    if (href != null && href.length() != 0) {
-                        DBXlinkBasic xlink = new DBXlinkBasic(
-                                _building.getId(),
-                                TableEnum.BUILDING,
-                                href,
-                                TableEnum.SURFACE_GEOMETRY
-                        );
-
-                        xlink.setAttrName("LOD" + lod + "_GEOMETRY_ID");
-                        sqlliteImporterManager.propagateXlink(xlink);
-                    }
-                }
-            }
-
-        }
-
-
-
-        // lodXTerrainIntersectionCurve
-        for (int lod = 1; lod < 5; lod++) {
-
-            MultiCurveProperty multiCurveProperty = null;
-
-            switch (lod) {
-                case 1:
-                    multiCurveProperty = _building.getLod1TerrainIntersection();
-                    break;
-                case 2:
-                    multiCurveProperty = _building.getLod2TerrainIntersection();
-                    break;
-                case 3:
-                    multiCurveProperty = _building.getLod3TerrainIntersection();
-                    break;
-                case 4:
-                    multiCurveProperty = _building.getLod4TerrainIntersection();
-                    break;
-            }
-
-            if (multiCurveProperty != null)
-            {
-
-                surfaceGeom.ClearPointList();
-                List<List<Double>> _pointList  = surfaceGeom.getMultiCurve(multiCurveProperty);
-
-                int counter = 0;
-                for(List<Double> _Geometry : _pointList){
-
-                    SurfaceObject BSurface = new SurfaceObject();
-                    _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
-                    BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
-                    BSurface.setType(_SurfaceType);
-                    BSurface.setGeometry(_Geometry);
-                    _SurfaceList.add(BSurface);
-                    counter++;
-                }
 
             }
 
-        }
 
+            // BoundarySurfaces
+            if (_building.isSetBoundedBySurface()) {
 
+                long ParentCounter = 1;
+                for (BoundarySurfaceProperty boundarySurfaceProperty : _building.getBoundedBySurface()) {
 
-        // lodXMultiCurve
-        for (int lod = 2; lod < 5; lod++) {
+                    AbstractBoundarySurface boundarySurface = boundarySurfaceProperty.getBoundarySurface();
 
-            MultiCurveProperty multiCurveProperty = null;
+                    if (boundarySurface != null) {
 
+                        for (int lod = 2; lod < 5; lod++) {
 
-            switch (lod) {
-                case 2:
-                    multiCurveProperty = _building.getLod2MultiCurve();
-                    break;
-                case 3:
-                    multiCurveProperty = _building.getLod3MultiCurve();
-                    break;
-                case 4:
-                    multiCurveProperty = _building.getLod4MultiCurve();
-                    break;
-            }
+                            MultiSurfaceProperty multiSurfaceProperty = null;
 
-            if (multiCurveProperty != null)
-            {
-                surfaceGeom.ClearPointList();
-
-                List<List<Double>> _pointList  = surfaceGeom.getMultiCurve(multiCurveProperty);
-
-                int counter = 0;
-                for(List<Double> _Geometry : _pointList){
-
-                    SurfaceObject BSurface = new SurfaceObject();
-                    _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
-                    BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
-                    BSurface.setType(_SurfaceType);
-                    BSurface.setGeometry(_Geometry);
-                    _SurfaceList.add(BSurface);
-                    counter ++;
-                }
-
-            }
-
-        }
-
-        
-        // BoundarySurfaces
-        if (_building.isSetBoundedBySurface()) {
-
-            long ParentCounter = 1;
-            for (BoundarySurfaceProperty boundarySurfaceProperty : _building.getBoundedBySurface()) {
-            	                
-            	AbstractBoundarySurface boundarySurface = boundarySurfaceProperty.getBoundarySurface();
-
-                if (boundarySurface != null) {
-
-                    for (int lod = 2; lod < 5; lod++) {
-
-                        MultiSurfaceProperty multiSurfaceProperty = null;
-
-                        switch (lod) {
-                            case 2:
-                                multiSurfaceProperty = boundarySurface.getLod2MultiSurface();
-                                break;
-                            case 3:
-                                multiSurfaceProperty = boundarySurface.getLod3MultiSurface();
-                                break;
-                            case 4:
-                                multiSurfaceProperty = boundarySurface.getLod4MultiSurface();
-                                break;
-                        }
-
-                        if (multiSurfaceProperty != null) {
-
-                            if (multiSurfaceProperty.isSetMultiSurface()) {
-
-                                //We should take care about the parent surfaces, because we need them for exporting collada.
-                                if(multiSurfaceProperty.getMultiSurface().isSetId()){
-
-                                    SurfaceObject BPSurface = new SurfaceObject();
-                                    BPSurface.setPId(ParentCounter);
-                                    BPSurface.setId(multiSurfaceProperty.getMultiSurface().getId());
-                                    BPSurface.setType(null);
-                                    BPSurface.setGeometry(null);
-                                    _ParentSurfaceList.add(BPSurface);
-                                }
-
-                                surfaceGeom.ClearPointList();
-                                surfaceGeom.ClearIdList();
-                                _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(boundarySurface.getCityGMLClass()).toString();
-                                List<List<Double>> _pointList  = surfaceGeom.GetSurfaceGeometry(buildingGmlId,multiSurfaceProperty.getMultiSurface(), false);
-
-                                int counter = 0;
-                                for(List<Double> _Geometry : _pointList){
-
-
-                                    SurfaceObject BSurface = new SurfaceObject();
-                                    BSurface.setPId(ParentCounter);
-                                    BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
-                                    BSurface.setType(_SurfaceType);
-                                    BSurface.setGeometry(_Geometry);
-                                    _SurfaceList.add(BSurface);
-
-                                    counter++;
-
-                                }
+                            switch (lod) {
+                                case 2:
+                                    multiSurfaceProperty = boundarySurface.getLod2MultiSurface();
+                                    break;
+                                case 3:
+                                    multiSurfaceProperty = boundarySurface.getLod3MultiSurface();
+                                    break;
+                                case 4:
+                                    multiSurfaceProperty = boundarySurface.getLod4MultiSurface();
+                                    break;
                             }
-                            else {
 
-                                // xlink
-                                String href = boundarySurfaceProperty.getHref();
+                            if (multiSurfaceProperty != null) {
 
-                                if (href != null && href.length() != 0) {
-                                    LOG.error("XLink reference '" + href + "' to BoundarySurface feature is not supported.");
-                                }
+                                if (multiSurfaceProperty.isSetMultiSurface()) {
 
-                            }
-                        }
+                                    //We should take care about the parent surfaces, because we need them for exporting collada.
+                                    if (multiSurfaceProperty.getMultiSurface().isSetId()) {
 
-                    }
-
-
-                    // BoundrySurface - Openings
-                    if (boundarySurface.isSetOpening()) {
-
-                        for (OpeningProperty openingProperty : boundarySurface.getOpening()) {
-                            if (openingProperty.isSetOpening()) {
-                                AbstractOpening opening = openingProperty.getOpening();
-
-                                // Opening - Geometry
-                                for (int lod = 3; lod < 5; lod++) {
-
-                                    MultiSurfaceProperty multiSurfaceProperty = null;
-
-
-                                    switch (lod) {
-                                        case 3:
-                                            multiSurfaceProperty = opening.getLod3MultiSurface();
-                                            break;
-                                        case 4:
-                                            multiSurfaceProperty = opening.getLod4MultiSurface();
-                                            break;
+                                        SurfaceObject BPSurface = new SurfaceObject();
+                                        BPSurface.setPId(ParentCounter);
+                                        BPSurface.setId(multiSurfaceProperty.getMultiSurface().getId());
+                                        BPSurface.setType(null);
+                                        BPSurface.setGeometry(null);
+                                        _ParentSurfaceList.add(BPSurface);
                                     }
 
-                                    if (multiSurfaceProperty != null) {
-                                        if (multiSurfaceProperty.isSetMultiSurface()) {
+                                    surfaceGeom.ClearPointList();
+                                    surfaceGeom.ClearIdList();
+                                    _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(boundarySurface.getCityGMLClass()).toString();
+                                    List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, multiSurfaceProperty.getMultiSurface(), false);
 
-                                            surfaceGeom.ClearPointList();
-                                            surfaceGeom.ClearIdList();
-                                            List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId,multiSurfaceProperty.getMultiSurface(), false);
-                                            _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
+                                    int counter = 0;
+                                    for (List<Double> _Geometry : _pointList) {
 
-                                            int counter = 0;
-                                            for(List<Double> _Geometry : _pointList){
+                                        SurfaceObject BSurface = new SurfaceObject();
+                                        BSurface.setPId(ParentCounter);
+                                        BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
+                                        BSurface.setType(_SurfaceType);
+                                        BSurface.setGeometry(_Geometry);
+                                        _SurfaceList.add(BSurface);
 
-                                                SurfaceObject BSurface = new SurfaceObject();
-                                                BSurface.setPId(ParentCounter);
-                                                BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
-                                                BSurface.setType(_SurfaceType);
-                                                BSurface.setGeometry(_Geometry);
-                                                _SurfaceList.add(BSurface);
-                                                counter++;
-                                            }
+                                        counter++;
+                                    }
+
+                                } else {
+
+                                    // xlink
+                                    String href = boundarySurfaceProperty.getHref();
+
+                                    if (href != null && href.length() != 0) {
+                                        LOG.error("XLink reference '" + href + "' to BoundarySurface feature is not supported.");
+                                    }
+
+                                }
+                            }
+
+                        }
 
 
+                        // BoundrySurface - Openings
+                        if (boundarySurface.isSetOpening()) {
+
+                            for (OpeningProperty openingProperty : boundarySurface.getOpening()) {
+                                if (openingProperty.isSetOpening()) {
+                                    AbstractOpening opening = openingProperty.getOpening();
+
+                                    // Opening - Geometry
+                                    for (int lod = 3; lod < 5; lod++) {
+
+                                        MultiSurfaceProperty multiSurfaceProperty = null;
+
+
+                                        switch (lod) {
+                                            case 3:
+                                                multiSurfaceProperty = opening.getLod3MultiSurface();
+                                                break;
+                                            case 4:
+                                                multiSurfaceProperty = opening.getLod4MultiSurface();
+                                                break;
                                         }
-                                    }
 
-                                    // free memory of nested feature
-                                    openingProperty.unsetOpening();
+                                        if (multiSurfaceProperty != null) {
+                                            if (multiSurfaceProperty.isSetMultiSurface()) {
+
+                                                surfaceGeom.ClearPointList();
+                                                surfaceGeom.ClearIdList();
+                                                List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, multiSurfaceProperty.getMultiSurface(), false);
+                                                _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
+
+                                                int counter = 0;
+                                                for (List<Double> _Geometry : _pointList) {
+
+                                                    SurfaceObject BSurface = new SurfaceObject();
+                                                    BSurface.setPId(ParentCounter);
+                                                    BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
+                                                    BSurface.setType(_SurfaceType);
+                                                    BSurface.setGeometry(_Geometry);
+                                                    _SurfaceList.add(BSurface);
+                                                    counter++;
+                                                }
+
+
+                                            }
+                                        }
+
+                                        // free memory of nested feature
+                                        openingProperty.unsetOpening();
+                                    }
                                 }
                             }
+
+                            // free memory of nested feature
+                            boundarySurfaceProperty.unsetBoundarySurface();
+                        }
+
+                    }
+                    ParentCounter++;
+                }
+
+            }
+
+
+            // BuildingInstallation
+            if (_building.isSetOuterBuildingInstallation()) {
+                for (BuildingInstallationProperty buildingInstProperty : _building.getOuterBuildingInstallation()) {
+                    BuildingInstallation buildingInst = buildingInstProperty.getBuildingInstallation();
+
+                    if (buildingInst != null) {
+
+
+                        // Geometry
+                        for (int lod = 2; lod < 5; lod++) {
+                            GeometryProperty<? extends AbstractGeometry> geometryProperty = null;
+
+
+                            switch (lod) {
+                                case 2:
+                                    geometryProperty = buildingInst.getLod2Geometry();
+                                    break;
+                                case 3:
+                                    geometryProperty = buildingInst.getLod3Geometry();
+                                    break;
+                                case 4:
+                                    geometryProperty = buildingInst.getLod4Geometry();
+                                    break;
+                            }
+
+                            if (geometryProperty != null) {
+                                if (geometryProperty.isSetGeometry()) {
+
+                                    surfaceGeom.ClearPointList();
+                                    surfaceGeom.ClearIdList();
+                                    List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, geometryProperty.getGeometry(), false);
+                                    _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
+
+                                    int counter = 0;
+                                    for (List<Double> _Geometry : _pointList) {
+
+                                        SurfaceObject BSurface = new SurfaceObject();
+                                        _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry, "Building");
+                                        BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
+                                        BSurface.setType(_SurfaceType);
+                                        BSurface.setGeometry(_Geometry);
+                                        _SurfaceList.add(BSurface);
+                                        counter++;
+                                    }
+                                }
+                            }
+
                         }
 
                         // free memory of nested feature
-                        boundarySurfaceProperty.unsetBoundarySurface();
+                        buildingInstProperty.unsetBuildingInstallation();
+                    } else {
+                        // xlink
+                        String href = buildingInstProperty.getHref();
+
+                        if (href != null && href.length() != 0) {
+                            LOG.error("XLink reference '" + href + "' to BuildingInstallation feature is not supported.");
+                        }
                     }
 
                 }
-                ParentCounter++;
             }
 
-        }
+
+            // IntBuildingInstallation
+            if (_building.isSetInteriorBuildingInstallation()) {
+                for (IntBuildingInstallationProperty intBuildingInstProperty : _building.getInteriorBuildingInstallation()) {
+                    IntBuildingInstallation intBuildingInst = intBuildingInstProperty.getIntBuildingInstallation();
+
+                    if (intBuildingInst != null) {
 
 
-        // BuildingInstallation
-        if (_building.isSetOuterBuildingInstallation()) {
-            for (BuildingInstallationProperty buildingInstProperty : _building.getOuterBuildingInstallation()) {
-                BuildingInstallation buildingInst = buildingInstProperty.getBuildingInstallation();
+                        if (intBuildingInst.isSetLod4Geometry()) {
+                            GeometryProperty<? extends AbstractGeometry> geometryProperty = intBuildingInst.getLod4Geometry();
 
-                if (buildingInst != null) {
-
-
-                    // Geometry
-                    for (int lod = 2; lod < 5; lod++) {
-                        GeometryProperty<? extends AbstractGeometry> geometryProperty = null;
-
-
-                        switch (lod) {
-                            case 2:
-                                geometryProperty = buildingInst.getLod2Geometry();
-                                break;
-                            case 3:
-                                geometryProperty = buildingInst.getLod3Geometry();
-                                break;
-                            case 4:
-                                geometryProperty = buildingInst.getLod4Geometry();
-                                break;
-                        }
-
-                        if (geometryProperty != null) {
                             if (geometryProperty.isSetGeometry()) {
 
                                 surfaceGeom.ClearPointList();
                                 surfaceGeom.ClearIdList();
-                                List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId,geometryProperty.getGeometry(), false);
+                                List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, geometryProperty.getGeometry(), false);
                                 _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
 
                                 int counter = 0;
-                                for(List<Double> _Geometry : _pointList){
+                                for (List<Double> _Geometry : _pointList) {
 
                                     SurfaceObject BSurface = new SurfaceObject();
-                                    _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
+                                    _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry, "Building");
                                     BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                                     BSurface.setType(_SurfaceType);
                                     BSurface.setGeometry(_Geometry);
                                     _SurfaceList.add(BSurface);
-                                    counter ++;
-                                }
-                            }
-                        }
-
-                    }
-
-                    // free memory of nested feature
-                    buildingInstProperty.unsetBuildingInstallation();
-                } else {
-                    // xlink
-                    String href = buildingInstProperty.getHref();
-
-                    if (href != null && href.length() != 0) {
-                        LOG.error("XLink reference '" + href + "' to BuildingInstallation feature is not supported.");
-                    }
-                }
-
-            }
-        }
-
-
-        // IntBuildingInstallation
-        if (_building.isSetInteriorBuildingInstallation()) {
-            for (IntBuildingInstallationProperty intBuildingInstProperty : _building.getInteriorBuildingInstallation()) {
-                IntBuildingInstallation intBuildingInst = intBuildingInstProperty.getIntBuildingInstallation();
-
-                if (intBuildingInst != null) {
-
-
-                    if (intBuildingInst.isSetLod4Geometry()) {
-                        GeometryProperty<? extends AbstractGeometry> geometryProperty = intBuildingInst.getLod4Geometry();
-
-                        if (geometryProperty.isSetGeometry()) {
-
-                            surfaceGeom.ClearPointList();
-                            surfaceGeom.ClearIdList();
-                            List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId,geometryProperty.getGeometry(), false);
-                            _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
-
-                            int counter = 0;
-                            for(List<Double> _Geometry : _pointList){
-
-                                SurfaceObject BSurface = new SurfaceObject();
-                                _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
-                                BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
-                                BSurface.setType(_SurfaceType);
-                                BSurface.setGeometry(_Geometry);
-                                _SurfaceList.add(BSurface);
-                                counter ++;
-                            }
-                        }
-                    }
-
-
-                    // free memory of nested feature
-                    intBuildingInstProperty.unsetIntBuildingInstallation();
-                }
-                else {
-                    // xlink
-                    String href = intBuildingInstProperty.getHref();
-
-                    if (href != null && href.length() != 0) {
-                        LOG.error("XLink reference '" + href + "' to IntBuildingInstallation feature is not supported.");
-                    }
-                }
-            }
-        }
-
-
-
-        // Room
-        if (_building.isSetInteriorRoom()) {
-            for (InteriorRoomProperty roomProperty : _building.getInteriorRoom()) {
-                Room room = roomProperty.getRoom();
-
-                if (room != null) {
-
-                    if (room.isSetLod4MultiSurface() && room.isSetLod4Solid()) {
-
-                        StringBuilder msg = new StringBuilder();
-                        msg.append("Found both elements lod4Solid and lod4MultiSurface. Only lod4Solid will be imported.");
-                        Logger.getInstance().warn(msg.toString());
-
-                        room.unsetLod4MultiSurface();
-                    }
-
-
-
-                    if (room.isSetLod4Solid()) {
-
-                        SolidProperty solidProperty = room.getLod4Solid();
-
-                        if (solidProperty.isSetSolid()) {
-
-                            surfaceGeom.ClearPointList();
-                            surfaceGeom.ClearIdList();
-                            List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId,solidProperty.getSolid(), false);
-                            _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
-
-                            int counter = 0;
-                            for(List<Double> _Geometry : _pointList){
-
-                                SurfaceObject BSurface = new SurfaceObject();
-                                _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
-                                BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
-                                BSurface.setType(_SurfaceType);
-                                BSurface.setGeometry(_Geometry);
-                                _SurfaceList.add(BSurface);
-                                counter ++;
-                            }
-
-                        }
-
-                    } else if (room.isSetLod4MultiSurface()) {
-
-                        MultiSurfaceProperty multiSurfacePropery = room.getLod4MultiSurface();
-
-                        if (multiSurfacePropery.isSetMultiSurface()) {
-
-                            surfaceGeom.ClearPointList();
-                            surfaceGeom.ClearIdList();
-                            List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId,multiSurfacePropery.getMultiSurface(), false);
-                            _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
-
-                            int counter = 0;
-                            for(List<Double> _Geometry : _pointList){
-
-                                SurfaceObject BSurface = new SurfaceObject();
-                                _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
-                                BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
-                                BSurface.setType(_SurfaceType);
-                                BSurface.setGeometry(_Geometry);
-                                _SurfaceList.add(BSurface);
-                                counter ++;
-                            }
-                        }
-                    }
-
-
-                    // Room - BoundarySurfaces
-                    if (room.isSetBoundedBySurface()) {
-
-                        long ParentCounter = 1;
-                        for (BoundarySurfaceProperty boundarySurfaceProperty : room.getBoundedBySurface()) {
-                            AbstractBoundarySurface boundarySurface = boundarySurfaceProperty.getBoundarySurface();
-
-                            if (boundarySurface != null) {
-
-                                for (int lod = 2; lod < 5; lod++) {
-                                    MultiSurfaceProperty multiSurfaceProperty = null;
-
-
-                                    switch (lod) {
-                                        case 2:
-                                            multiSurfaceProperty = boundarySurface.getLod2MultiSurface();
-                                            break;
-                                        case 3:
-                                            multiSurfaceProperty = boundarySurface.getLod3MultiSurface();
-                                            break;
-                                        case 4:
-                                            multiSurfaceProperty = boundarySurface.getLod4MultiSurface();
-                                            break;
-                                    }
-
-                                    if (multiSurfaceProperty != null) {
-                                        if (multiSurfaceProperty.isSetMultiSurface()) {
-
-                                            if(multiSurfaceProperty.getMultiSurface().isSetId()){
-
-                                                SurfaceObject BPSurface = new SurfaceObject();
-                                                BPSurface.setPId(ParentCounter);
-                                                BPSurface.setId(multiSurfaceProperty.getMultiSurface().getId());
-                                                BPSurface.setType(null);
-                                                BPSurface.setGeometry(null);
-                                                _ParentSurfaceList.add(BPSurface);
-                                            }
-
-                                            surfaceGeom.ClearPointList();
-                                            surfaceGeom.ClearIdList();
-                                            _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(boundarySurface.getCityGMLClass()).toString();
-                                            List<List<Double>> _pointList  = surfaceGeom.GetSurfaceGeometry(buildingGmlId,multiSurfaceProperty.getMultiSurface(), false);
-
-                                            int counter = 0;
-                                            for(List<Double> _Geometry : _pointList){
-
-
-                                                SurfaceObject BSurface = new SurfaceObject();
-                                                BSurface.setPId(ParentCounter);
-                                                BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
-                                                BSurface.setType(_SurfaceType);
-                                                BSurface.setGeometry(_Geometry);
-                                                _SurfaceList.add(BSurface);
-
-                                                counter++;
-
-                                            }
-
-                                        }
-                                    }
-
-                                }
-
-                                // Room - BoundrySurface - Openings
-                                if (boundarySurface.isSetOpening()) {
-
-                                    for (OpeningProperty openingProperty : boundarySurface.getOpening()) {
-                                        if (openingProperty.isSetOpening()) {
-                                            AbstractOpening opening = openingProperty.getOpening();
-
-
-                                            // Opening - Geometry
-                                            for (int lod = 3; lod < 5; lod++) {
-
-                                                MultiSurfaceProperty multiSurfaceProperty = null;
-
-
-                                                switch (lod) {
-                                                    case 3:
-                                                        multiSurfaceProperty = opening.getLod3MultiSurface();
-                                                        break;
-                                                    case 4:
-                                                        multiSurfaceProperty = opening.getLod4MultiSurface();
-                                                        break;
-                                                }
-
-                                                if (multiSurfaceProperty != null) {
-                                                    if (multiSurfaceProperty.isSetMultiSurface()) {
-
-                                                        surfaceGeom.ClearPointList();
-                                                        surfaceGeom.ClearIdList();
-                                                        List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId,multiSurfaceProperty.getMultiSurface(), false);
-                                                        _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
-
-                                                        int counter = 0;
-                                                        for(List<Double> _Geometry : _pointList){
-
-
-
-                                                            SurfaceObject BSurface = new SurfaceObject();
-                                                            BSurface.setPId(null);
-                                                            BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
-                                                            BSurface.setType(_SurfaceType);
-                                                            BSurface.setGeometry(_Geometry);
-                                                            _SurfaceList.add(BSurface);
-
-                                                            counter++;
-                                                        }
-
-
-                                                    }
-                                                }
-
-                                                // free memory of nested feature
-                                                openingProperty.unsetOpening();
-                                            }
-                                        }
-                                    }
-
-                                    // free memory of nested feature
-                                    boundarySurfaceProperty.unsetBoundarySurface();
-                                }
-                            }
-                            ParentCounter++;
-                        }
-
-
-                        // Room - IntBuildingInstallation
-                        if (room.isSetRoomInstallation()) {
-                            for (IntBuildingInstallationProperty intBuildingInstProperty : room.getRoomInstallation()) {
-                                IntBuildingInstallation intBuildingInst = intBuildingInstProperty.getObject();
-
-                                if (intBuildingInst != null) {
-
-                                    if (intBuildingInst.isSetLod4Geometry()) {
-                                        GeometryProperty<? extends AbstractGeometry> geometryProperty = intBuildingInst.getLod4Geometry();
-
-                                        if (geometryProperty.isSetGeometry()) {
-
-                                            surfaceGeom.ClearPointList();
-                                            surfaceGeom.ClearIdList();
-                                            List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId,geometryProperty.getGeometry(), false);
-                                            _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
-
-                                            int counter = 0;
-                                            for(List<Double> _Geometry : _pointList){
-
-                                                SurfaceObject BSurface = new SurfaceObject();
-                                                _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
-                                                BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
-                                                BSurface.setType(_SurfaceType);
-                                                BSurface.setGeometry(_Geometry);
-                                                _SurfaceList.add(BSurface);
-                                                counter ++;
-                                            }
-                                        }
-                                    }
-
-
-                                    // free memory of nested feature
-                                    intBuildingInstProperty.unsetIntBuildingInstallation();
-                                }
-                            }
-                        }
-
-
-
-                        // Room - BuildingFurniture
-                        if (room.isSetInteriorFurniture()) {
-                            for (InteriorFurnitureProperty intFurnitureProperty : room.getInteriorFurniture()) {
-                                BuildingFurniture furniture = intFurnitureProperty.getObject();
-
-                                if (furniture != null) {
-
-
-                                    if (furniture.isSetLod4Geometry()) {
-                                        GeometryProperty<? extends AbstractGeometry> geometryProperty = furniture.getLod4Geometry();
-
-                                        if (geometryProperty.isSetGeometry()) {
-
-                                            surfaceGeom.ClearPointList();
-                                            surfaceGeom.ClearIdList();
-                                            List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId,geometryProperty.getGeometry(), false);
-                                            _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
-
-                                            int counter = 0;
-                                            for(List<Double> _Geometry : _pointList){
-
-                                                SurfaceObject BSurface = new SurfaceObject();
-                                                _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
-                                                BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
-                                                BSurface.setType(_SurfaceType);
-                                                BSurface.setGeometry(_Geometry);
-                                                _SurfaceList.add(BSurface);
-                                                counter ++;
-                                            }
-                                        }
-                                    }
-
-
-                                    // free memory of nested feature
-                                    intFurnitureProperty.unsetBuildingFurniture();
+                                    counter++;
                                 }
                             }
                         }
 
 
                         // free memory of nested feature
-                        roomProperty.unsetRoom();
-                    }
-                }
-                else {
-                    // xlink
-                    String href = roomProperty.getHref();
+                        intBuildingInstProperty.unsetIntBuildingInstallation();
+                    } else {
+                        // xlink
+                        String href = intBuildingInstProperty.getHref();
 
-                    if (href != null && href.length() != 0) {
-                        LOG.error("XLink reference '" + href + "' to Room feature is not supported.");
-                    }
-                }
-            }
-
-        }
-
-
-
-        // BuildingPart
-        if (_building.isSetConsistsOfBuildingPart()) {
-            for (BuildingPartProperty buildingPartProperty : _building.getConsistsOfBuildingPart()) {
-                BuildingPart buildingPart = buildingPartProperty.getBuildingPart();
-
-                if (buildingPart != null) {
-
-                		_SurfaceList.addAll(GetBuildingGeometries(buildingPart));
-
-
-                    // free memory of nested feature
-                    buildingPartProperty.unsetBuildingPart();
-                }
-                else {
-                    // xlink
-                    String href = buildingPartProperty.getHref();
-
-                    if (href != null && href.length() != 0) {
-                        LOG.error("XLink reference '" + href + "' to BuildingPart feature is not supported.");
+                        if (href != null && href.length() != 0) {
+                            LOG.error("XLink reference '" + href + "' to IntBuildingInstallation feature is not supported.");
+                        }
                     }
                 }
             }
-            
-        }
 
+
+            // Room
+            if (_building.isSetInteriorRoom()) {
+                for (InteriorRoomProperty roomProperty : _building.getInteriorRoom()) {
+                    Room room = roomProperty.getRoom();
+
+                    if (room != null) {
+
+                        if (room.isSetLod4MultiSurface() && room.isSetLod4Solid()) {
+
+                            StringBuilder msg = new StringBuilder();
+                            msg.append("Found both elements lod4Solid and lod4MultiSurface. Only lod4Solid will be imported.");
+                            Logger.getInstance().warn(msg.toString());
+
+                            room.unsetLod4MultiSurface();
+                        }
+
+
+                        if (room.isSetLod4Solid()) {
+
+                            SolidProperty solidProperty = room.getLod4Solid();
+
+                            if (solidProperty.isSetSolid()) {
+
+                                surfaceGeom.ClearPointList();
+                                surfaceGeom.ClearIdList();
+                                List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, solidProperty.getSolid(), false);
+                                _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
+
+                                int counter = 0;
+                                for (List<Double> _Geometry : _pointList) {
+
+                                    SurfaceObject BSurface = new SurfaceObject();
+                                    _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry, "Building");
+                                    BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
+                                    BSurface.setType(_SurfaceType);
+                                    BSurface.setGeometry(_Geometry);
+                                    _SurfaceList.add(BSurface);
+                                    counter++;
+                                }
+
+                            }
+
+                        } else if (room.isSetLod4MultiSurface()) {
+
+                            MultiSurfaceProperty multiSurfacePropery = room.getLod4MultiSurface();
+
+                            if (multiSurfacePropery.isSetMultiSurface()) {
+
+                                surfaceGeom.ClearPointList();
+                                surfaceGeom.ClearIdList();
+                                List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, multiSurfacePropery.getMultiSurface(), false);
+                                _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
+
+                                int counter = 0;
+                                for (List<Double> _Geometry : _pointList) {
+
+                                    SurfaceObject BSurface = new SurfaceObject();
+                                    _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry, "Building");
+                                    BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
+                                    BSurface.setType(_SurfaceType);
+                                    BSurface.setGeometry(_Geometry);
+                                    _SurfaceList.add(BSurface);
+                                    counter++;
+                                }
+                            }
+                        }
+
+
+                        // Room - BoundarySurfaces
+                        if (room.isSetBoundedBySurface()) {
+
+                            long ParentCounter = 1;
+                            for (BoundarySurfaceProperty boundarySurfaceProperty : room.getBoundedBySurface()) {
+                                AbstractBoundarySurface boundarySurface = boundarySurfaceProperty.getBoundarySurface();
+
+                                if (boundarySurface != null) {
+
+                                    for (int lod = 2; lod < 5; lod++) {
+                                        MultiSurfaceProperty multiSurfaceProperty = null;
+
+
+                                        switch (lod) {
+                                            case 2:
+                                                multiSurfaceProperty = boundarySurface.getLod2MultiSurface();
+                                                break;
+                                            case 3:
+                                                multiSurfaceProperty = boundarySurface.getLod3MultiSurface();
+                                                break;
+                                            case 4:
+                                                multiSurfaceProperty = boundarySurface.getLod4MultiSurface();
+                                                break;
+                                        }
+
+                                        if (multiSurfaceProperty != null) {
+                                            if (multiSurfaceProperty.isSetMultiSurface()) {
+
+                                                if (multiSurfaceProperty.getMultiSurface().isSetId()) {
+
+                                                    SurfaceObject BPSurface = new SurfaceObject();
+                                                    BPSurface.setPId(ParentCounter);
+                                                    BPSurface.setId(multiSurfaceProperty.getMultiSurface().getId());
+                                                    BPSurface.setType(null);
+                                                    BPSurface.setGeometry(null);
+                                                    _ParentSurfaceList.add(BPSurface);
+                                                }
+
+                                                surfaceGeom.ClearPointList();
+                                                surfaceGeom.ClearIdList();
+                                                _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(boundarySurface.getCityGMLClass()).toString();
+                                                List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, multiSurfaceProperty.getMultiSurface(), false);
+
+                                                int counter = 0;
+                                                for (List<Double> _Geometry : _pointList) {
+
+
+                                                    SurfaceObject BSurface = new SurfaceObject();
+                                                    BSurface.setPId(ParentCounter);
+                                                    BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
+                                                    BSurface.setType(_SurfaceType);
+                                                    BSurface.setGeometry(_Geometry);
+                                                    _SurfaceList.add(BSurface);
+
+                                                    counter++;
+
+                                                }
+
+                                            }
+                                        }
+
+                                    }
+
+                                    // Room - BoundrySurface - Openings
+                                    if (boundarySurface.isSetOpening()) {
+
+                                        for (OpeningProperty openingProperty : boundarySurface.getOpening()) {
+                                            if (openingProperty.isSetOpening()) {
+                                                AbstractOpening opening = openingProperty.getOpening();
+
+
+                                                // Opening - Geometry
+                                                for (int lod = 3; lod < 5; lod++) {
+
+                                                    MultiSurfaceProperty multiSurfaceProperty = null;
+
+
+                                                    switch (lod) {
+                                                        case 3:
+                                                            multiSurfaceProperty = opening.getLod3MultiSurface();
+                                                            break;
+                                                        case 4:
+                                                            multiSurfaceProperty = opening.getLod4MultiSurface();
+                                                            break;
+                                                    }
+
+                                                    if (multiSurfaceProperty != null) {
+                                                        if (multiSurfaceProperty.isSetMultiSurface()) {
+
+                                                            surfaceGeom.ClearPointList();
+                                                            surfaceGeom.ClearIdList();
+                                                            List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, multiSurfaceProperty.getMultiSurface(), false);
+                                                            _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
+
+                                                            int counter = 0;
+                                                            for (List<Double> _Geometry : _pointList) {
+
+
+                                                                SurfaceObject BSurface = new SurfaceObject();
+                                                                BSurface.setPId(null);
+                                                                BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
+                                                                BSurface.setType(_SurfaceType);
+                                                                BSurface.setGeometry(_Geometry);
+                                                                _SurfaceList.add(BSurface);
+
+                                                                counter++;
+                                                            }
+
+
+                                                        }
+                                                    }
+
+                                                    // free memory of nested feature
+                                                    openingProperty.unsetOpening();
+                                                }
+                                            }
+                                        }
+
+                                        // free memory of nested feature
+                                        boundarySurfaceProperty.unsetBoundarySurface();
+                                    }
+                                }
+                                ParentCounter++;
+                            }
+
+
+                            // Room - IntBuildingInstallation
+                            if (room.isSetRoomInstallation()) {
+                                for (IntBuildingInstallationProperty intBuildingInstProperty : room.getRoomInstallation()) {
+                                    IntBuildingInstallation intBuildingInst = intBuildingInstProperty.getObject();
+
+                                    if (intBuildingInst != null) {
+
+                                        if (intBuildingInst.isSetLod4Geometry()) {
+                                            GeometryProperty<? extends AbstractGeometry> geometryProperty = intBuildingInst.getLod4Geometry();
+
+                                            if (geometryProperty.isSetGeometry()) {
+
+                                                surfaceGeom.ClearPointList();
+                                                surfaceGeom.ClearIdList();
+                                                List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, geometryProperty.getGeometry(), false);
+                                                _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
+
+                                                int counter = 0;
+                                                for (List<Double> _Geometry : _pointList) {
+
+                                                    SurfaceObject BSurface = new SurfaceObject();
+                                                    _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry, "Building");
+                                                    BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
+                                                    BSurface.setType(_SurfaceType);
+                                                    BSurface.setGeometry(_Geometry);
+                                                    _SurfaceList.add(BSurface);
+                                                    counter++;
+                                                }
+                                            }
+                                        }
+
+
+                                        // free memory of nested feature
+                                        intBuildingInstProperty.unsetIntBuildingInstallation();
+                                    }
+                                }
+                            }
+
+
+                            // Room - BuildingFurniture
+                            if (room.isSetInteriorFurniture()) {
+                                for (InteriorFurnitureProperty intFurnitureProperty : room.getInteriorFurniture()) {
+                                    BuildingFurniture furniture = intFurnitureProperty.getObject();
+
+                                    if (furniture != null) {
+
+
+                                        if (furniture.isSetLod4Geometry()) {
+                                            GeometryProperty<? extends AbstractGeometry> geometryProperty = furniture.getLod4Geometry();
+
+                                            if (geometryProperty.isSetGeometry()) {
+
+                                                surfaceGeom.ClearPointList();
+                                                surfaceGeom.ClearIdList();
+                                                List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, geometryProperty.getGeometry(), false);
+                                                _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
+
+                                                int counter = 0;
+                                                for (List<Double> _Geometry : _pointList) {
+
+                                                    SurfaceObject BSurface = new SurfaceObject();
+                                                    _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry, "Building");
+                                                    BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
+                                                    BSurface.setType(_SurfaceType);
+                                                    BSurface.setGeometry(_Geometry);
+                                                    _SurfaceList.add(BSurface);
+                                                    counter++;
+                                                }
+                                            }
+                                        }
+
+
+                                        // free memory of nested feature
+                                        intFurnitureProperty.unsetBuildingFurniture();
+                                    }
+                                }
+                            }
+
+
+                            // free memory of nested feature
+                            roomProperty.unsetRoom();
+                        }
+                    } else {
+                        // xlink
+                        String href = roomProperty.getHref();
+
+                        if (href != null && href.length() != 0) {
+                            LOG.error("XLink reference '" + href + "' to Room feature is not supported.");
+                        }
+                    }
+                }
+
+            }
+
+
+            // BuildingPart
+            if (_building.isSetConsistsOfBuildingPart()) {
+                for (BuildingPartProperty buildingPartProperty : _building.getConsistsOfBuildingPart()) {
+                    BuildingPart buildingPart = buildingPartProperty.getBuildingPart();
+
+                    if (buildingPart != null) {
+
+                        _SurfaceList.addAll(GetBuildingGeometries(buildingPart));
+
+
+                        // free memory of nested feature
+                        buildingPartProperty.unsetBuildingPart();
+                    } else {
+                        // xlink
+                        String href = buildingPartProperty.getHref();
+
+                        if (href != null && href.length() != 0) {
+                            LOG.error("XLink reference '" + href + "' to BuildingPart feature is not supported.");
+                        }
+                    }
+                }
+
+            }
+        } catch (Exception ex) {
+            System.out.println(ex.toString() + " - " + _building.getId());
+        }
 
         return _SurfaceList;
 

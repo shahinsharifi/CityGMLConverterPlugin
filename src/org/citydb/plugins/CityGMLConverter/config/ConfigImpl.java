@@ -51,6 +51,12 @@ import org.citygml4j.util.internal.xml.SystemIDResolver;
 		"genericCityObjectBalloon",
 		"cityObjectGroupDisplayForms",
 		"cityObjectGroupBalloon",
+		"bridgeDisplayForms",
+		"bridgeColladaOptions",
+		"bridgeBalloon",
+		"tunnelDisplayForms",
+		"tunnelColladaOptions",
+		"tunnelBalloon",
 
 		"exportAsKmz",
 		"showBoundingBox",
@@ -124,6 +130,16 @@ public class ConfigImpl extends PluginConfig{
 	@XmlElementWrapper(name="cityObjectGroupDisplayForms")	
 	private List<DisplayForm> cityObjectGroupDisplayForms;
 	private Balloon cityObjectGroupBalloon;
+	@XmlElement(name="displayForm", required=true)
+	@XmlElementWrapper(name="bridgeDisplayForms")
+	private List<DisplayForm> bridgeDisplayForms;
+	private ColladaOptions bridgeColladaOptions;
+	private Balloon bridgeBalloon;
+	@XmlElement(name="displayForm", required=true)
+	@XmlElementWrapper(name="tunnelDisplayForms")
+	private List<DisplayForm> tunnelDisplayForms;
+	private ColladaOptions tunnelColladaOptions;
+	private Balloon tunnelBalloon;
 
 	private boolean exportAsKmz;
 	private boolean showBoundingBox;
@@ -180,6 +196,12 @@ public class ConfigImpl extends PluginConfig{
 		setGenericCityObjectBalloon(new Balloon());
 		setCityObjectGroupDisplayForms(new ArrayList<DisplayForm>());
 		setCityObjectGroupBalloon(new Balloon());
+		setBridgeDisplayForms(new ArrayList<DisplayForm>());
+		setBridgeColladaOptions(new ColladaOptions());
+		setBridgeBalloon(new Balloon());
+		setTunnelDisplayForms(new ArrayList<DisplayForm>());
+		setTunnelColladaOptions(new ColladaOptions());
+		setTunnelBalloon(new Balloon());
 
 		exportAsKmz = true;
 		showBoundingBox = true;
@@ -330,6 +352,54 @@ public class ConfigImpl extends PluginConfig{
 
 	public ColladaOptions getVegetationColladaOptions() {
 		return vegetationColladaOptions;
+	}
+
+	public void setBridgeDisplayForms(List<DisplayForm> bridgeDisplayForms) {
+		this.bridgeDisplayForms = bridgeDisplayForms;
+	}
+
+	public List<DisplayForm> getBridgeDisplayForms() {
+		return bridgeDisplayForms;
+	}
+
+	public void setBridgeColladaOptions(ColladaOptions bridgeColladaOptions) {
+		this.bridgeColladaOptions = bridgeColladaOptions;
+	}
+
+	public ColladaOptions getBridgeColladaOptions() {
+		return bridgeColladaOptions;
+	}
+
+	public void setBridgeBalloon(Balloon bridgeBalloon) {
+		this.bridgeBalloon = bridgeBalloon;
+	}
+
+	public Balloon getBridgeBalloon() {
+		return bridgeBalloon;
+	}
+
+	public void setTunnelDisplayForms(List<DisplayForm> tunnelDisplayForms) {
+		this.tunnelDisplayForms = tunnelDisplayForms;
+	}
+
+	public List<DisplayForm> getTunnelDisplayForms() {
+		return tunnelDisplayForms;
+	}
+
+	public void setTunnelColladaOptions(ColladaOptions tunnelColladaOptions) {
+		this.tunnelColladaOptions = tunnelColladaOptions;
+	}
+
+	public ColladaOptions getTunnelColladaOptions() {
+		return tunnelColladaOptions;
+	}
+
+	public void setTunnelBalloon(Balloon tunnelBalloon) {
+		this.tunnelBalloon = tunnelBalloon;
+	}
+
+	public Balloon getTunnelBalloon() {
+		return tunnelBalloon;
 	}
 
 	public static int getActiveDisplayFormsAmount(List<DisplayForm> displayForms) {

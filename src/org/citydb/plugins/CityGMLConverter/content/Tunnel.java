@@ -32,8 +32,6 @@ package org.citydb.plugins.CityGMLConverter.content;
 import net.opengis.kml._2.MultiGeometryType;
 import net.opengis.kml._2.PlacemarkType;
 import org.citydb.api.event.EventDispatcher;
-import org.citydb.api.geometry.GeometryObject;
-import org.citydb.config.internal.Internal;
 import org.citydb.log.Logger;
 import org.citydb.modules.common.event.CounterEvent;
 import org.citydb.modules.common.event.CounterType;
@@ -48,8 +46,6 @@ import org.citydb.util.Util;
 import org.citygml4j.factory.GMLGeometryFactory;
 import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.CityGMLClass;
-import org.citygml4j.model.citygml.core.ImplicitGeometry;
-import org.citygml4j.model.citygml.core.ImplicitRepresentationProperty;
 import org.citygml4j.model.citygml.tunnel.*;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
 import org.citygml4j.model.gml.geometry.GeometryProperty;
@@ -59,14 +55,13 @@ import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 
 import javax.vecmath.Point3d;
 import javax.xml.bind.JAXBException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
 
-public class TunnelObject extends KmlGenericObject{
+public class Tunnel extends KmlGenericObject{
 
     public static final String STYLE_BASIS_NAME = "Tunnel";
     private Matrix transformation;
@@ -78,14 +73,14 @@ public class TunnelObject extends KmlGenericObject{
     private double refPointZ;
 
 
-    public TunnelObject(KmlExporterManager kmlExporterManager,
-                        SqliteImporterManager sqlliteImporterManager,
-                        GMLGeometryFactory cityGMLFactory,
-                        net.opengis.kml._2.ObjectFactory kmlFactory,
-                        ElevationServiceHandler elevationServiceHandler,
-                        BalloonTemplateHandlerImpl balloonTemplateHandler,
-                        EventDispatcher eventDispatcher,
-                        ConfigImpl config) {
+    public Tunnel(KmlExporterManager kmlExporterManager,
+                  SqliteImporterManager sqlliteImporterManager,
+                  GMLGeometryFactory cityGMLFactory,
+                  net.opengis.kml._2.ObjectFactory kmlFactory,
+                  ElevationServiceHandler elevationServiceHandler,
+                  BalloonTemplateHandlerImpl balloonTemplateHandler,
+                  EventDispatcher eventDispatcher,
+                  ConfigImpl config) {
 
         super(kmlExporterManager,
             cityGMLFactory,
@@ -99,17 +94,17 @@ public class TunnelObject extends KmlGenericObject{
     }
 
     protected List<DisplayForm> getDisplayForms() {
-        return config.getBuildingDisplayForms();
+        return config.getTunnelDisplayForms();
     }
 
     
     public ColladaOptions getColladaOptions() {
-        return config.getBuildingColladaOptions();
+        return config.getTunnelColladaOptions();
     }
 
     
     public Balloon getBalloonSettings() {
-        return config.getBuildingBalloon();
+        return config.getTunnelBalloon();
     }
 
     
@@ -190,7 +185,7 @@ public class TunnelObject extends KmlGenericObject{
 
         try {
 
-            Tunnel _tunnel = (Tunnel)work.getCityGmlClass();
+            org.citygml4j.model.citygml.tunnel.Tunnel _tunnel = (org.citygml4j.model.citygml.tunnel.Tunnel)work.getCityGmlClass();
             SurfaceAppearance _SurfaceAppear = new SurfaceAppearance();
 
             //this function reads all geometries and returns a list of surfaces.
@@ -331,13 +326,13 @@ public class TunnelObject extends KmlGenericObject{
                 if (solidProperty.isSetSolid()) {
 
                     surfaceGeom.ClearPointList();
-                    List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId , solidProperty.getSolid() , false);
+                    List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, solidProperty.getSolid(), false);
 
                     int counter = 0;
                     for(List<Double> _Geometry : _pointList){
 
                         SurfaceObject BSurface = new SurfaceObject();
-                        _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
+                        _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry , "Tunnel");
                         BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                         BSurface.setType(_SurfaceType);
                         BSurface.setGeometry(_Geometry);
@@ -400,14 +395,14 @@ public class TunnelObject extends KmlGenericObject{
                 if (multiSurfaceProperty.isSetMultiSurface()) {
 
                     surfaceGeom.ClearPointList();
-                    List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId,multiSurfaceProperty.getMultiSurface(), false);
+                    List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, multiSurfaceProperty.getMultiSurface(), false);
 
                     int counter = 0;
                     for(List<Double> _Geometry : _pointList){
 
 
                         SurfaceObject BSurface = new SurfaceObject();
-                        _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
+                        _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry , "Tunnel");
                         BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                         BSurface.setType(_SurfaceType);
                         BSurface.setGeometry(_Geometry);
@@ -468,7 +463,7 @@ public class TunnelObject extends KmlGenericObject{
                 for(List<Double> _Geometry : _pointList){
 
                     SurfaceObject BSurface = new SurfaceObject();
-                    _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
+                    _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry , "Tunnel");
                     BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                     BSurface.setType(_SurfaceType);
                     BSurface.setGeometry(_Geometry);
@@ -510,7 +505,7 @@ public class TunnelObject extends KmlGenericObject{
                 for(List<Double> _Geometry : _pointList){
 
                     SurfaceObject BSurface = new SurfaceObject();
-                    _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
+                    _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry , "Tunnel");
                     BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                     BSurface.setType(_SurfaceType);
                     BSurface.setGeometry(_Geometry);
@@ -566,8 +561,8 @@ public class TunnelObject extends KmlGenericObject{
                                 surfaceGeom.ClearPointList();
                                 surfaceGeom.ClearIdList();
 
-                                _SurfaceType = "";//TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_BOUNDARY_SURFACE_PROPERTY).toString();
-                                List<List<Double>> _pointList  = surfaceGeom.GetSurfaceGeometry(buildingGmlId,multiSurfaceProperty.getMultiSurface(), false);
+                                _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(boundarySurface.getCityGMLClass()).toString();
+                                List<List<Double>> _pointList  = surfaceGeom.getSurfaceGeometry(buildingGmlId, multiSurfaceProperty.getMultiSurface(), false);
 
                                 int counter = 0;
                                 for(List<Double> _Geometry : _pointList){
@@ -624,8 +619,8 @@ public class TunnelObject extends KmlGenericObject{
 
                                             surfaceGeom.ClearPointList();
                                             surfaceGeom.ClearIdList();
-                                            List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId,multiSurfaceProperty.getMultiSurface(), false);
-                                            _SurfaceType = "";//TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
+                                            List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, multiSurfaceProperty.getMultiSurface(), false);
+                                            _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_WALL_SURFACE).toString();
 
                                             int counter = 0;
                                             for(List<Double> _Geometry : _pointList){
@@ -687,14 +682,14 @@ public class TunnelObject extends KmlGenericObject{
 
                                 surfaceGeom.ClearPointList();
                                 surfaceGeom.ClearIdList();
-                                List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId,geometryProperty.getGeometry(), false);
-                                _SurfaceType = "";//TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_WALL_SURFACE).toString();
+                                List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, geometryProperty.getGeometry(), false);
+                                _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_WALL_SURFACE).toString();
 
                                 int counter = 0;
                                 for(List<Double> _Geometry : _pointList){
 
                                     SurfaceObject BSurface = new SurfaceObject();
-                                    _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
+                                    _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry , "Tunnel");
                                     BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                                     BSurface.setType(_SurfaceType);
                                     BSurface.setGeometry(_Geometry);
@@ -736,14 +731,14 @@ public class TunnelObject extends KmlGenericObject{
 
                             surfaceGeom.ClearPointList();
                             surfaceGeom.ClearIdList();
-                            List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId,geometryProperty.getGeometry(), false);
-                            _SurfaceType = "";//TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
+                            List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, geometryProperty.getGeometry(), false);
+                            _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_WALL_SURFACE).toString();
 
                             int counter = 0;
                             for(List<Double> _Geometry : _pointList){
 
                                 SurfaceObject BSurface = new SurfaceObject();
-                                _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
+                                _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry , "Tunnel");
                                 BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                                 BSurface.setType(_SurfaceType);
                                 BSurface.setGeometry(_Geometry);
@@ -794,14 +789,14 @@ public class TunnelObject extends KmlGenericObject{
 
                             surfaceGeom.ClearPointList();
                             surfaceGeom.ClearIdList();
-                            List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId,solidProperty.getSolid(), false);
-                            _SurfaceType = "";//TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
+                            List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, solidProperty.getSolid(), false);
+                            _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_WALL_SURFACE).toString();
 
                             int counter = 0;
                             for(List<Double> _Geometry : _pointList){
 
                                 SurfaceObject BSurface = new SurfaceObject();
-                                _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
+                                _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry , "Tunnel");
                                 BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                                 BSurface.setType(_SurfaceType);
                                 BSurface.setGeometry(_Geometry);
@@ -819,14 +814,14 @@ public class TunnelObject extends KmlGenericObject{
 
                             surfaceGeom.ClearPointList();
                             surfaceGeom.ClearIdList();
-                            List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId,multiSurfacePropery.getMultiSurface(), false);
-                            _SurfaceType = "";//TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
+                            List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, multiSurfacePropery.getMultiSurface(), false);
+                            _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_WALL_SURFACE).toString();
 
                             int counter = 0;
                             for(List<Double> _Geometry : _pointList){
 
                                 SurfaceObject BSurface = new SurfaceObject();
-                                _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
+                                _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry , "Tunnel");
                                 BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                                 BSurface.setType(_SurfaceType);
                                 BSurface.setGeometry(_Geometry);
@@ -878,7 +873,7 @@ public class TunnelObject extends KmlGenericObject{
                                             surfaceGeom.ClearPointList();
                                             surfaceGeom.ClearIdList();
                                             _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(boundarySurface.getCityGMLClass()).toString();
-                                            List<List<Double>> _pointList  = surfaceGeom.GetSurfaceGeometry(buildingGmlId,multiSurfaceProperty.getMultiSurface(), false);
+                                            List<List<Double>> _pointList  = surfaceGeom.getSurfaceGeometry(buildingGmlId, multiSurfaceProperty.getMultiSurface(), false);
 
                                             int counter = 0;
                                             for(List<Double> _Geometry : _pointList){
@@ -918,14 +913,14 @@ public class TunnelObject extends KmlGenericObject{
 
                                             surfaceGeom.ClearPointList();
                                             surfaceGeom.ClearIdList();
-                                            List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId,geometryProperty.getGeometry(), false);
+                                            List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, geometryProperty.getGeometry(), false);
                                             _SurfaceType = "";//TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
 
                                             int counter = 0;
                                             for(List<Double> _Geometry : _pointList){
 
                                                 SurfaceObject BSurface = new SurfaceObject();
-                                                _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
+                                                _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry , "Tunnel");
                                                 BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                                                 BSurface.setType(_SurfaceType);
                                                 BSurface.setGeometry(_Geometry);
@@ -959,14 +954,14 @@ public class TunnelObject extends KmlGenericObject{
 
                                             surfaceGeom.ClearPointList();
                                             surfaceGeom.ClearIdList();
-                                            List<List<Double>> _pointList = surfaceGeom.GetSurfaceGeometry(buildingGmlId,geometryProperty.getGeometry(), false);
+                                            List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, geometryProperty.getGeometry(), false);
                                             _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
 
                                             int counter = 0;
                                             for(List<Double> _Geometry : _pointList){
 
                                                 SurfaceObject BSurface = new SurfaceObject();
-                                                _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
+                                                _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry , "Tunnel");
                                                 BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
                                                 BSurface.setType(_SurfaceType);
                                                 BSurface.setGeometry(_Geometry);
@@ -1030,7 +1025,7 @@ public class TunnelObject extends KmlGenericObject{
         return _SurfaceList;
     }
 
-    public static HashMap<String,Object> getObjectProperties(Tunnel tunnel){
+    public static HashMap<String,Object> getObjectProperties(org.citygml4j.model.citygml.tunnel.Tunnel tunnel){
 
         HashMap<String, Object> objectgMap = new HashMap<String,Object>();
 
