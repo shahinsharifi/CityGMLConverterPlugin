@@ -94,17 +94,17 @@ public class Vegetation extends KmlGenericObject{
     }
 
     protected List<DisplayForm> getDisplayForms() {
-        return config.getBuildingDisplayForms();
+        return config.getVegetationDisplayForms();
     }
 
     
     public ColladaOptions getColladaOptions() {
-        return config.getBuildingColladaOptions();
+        return config.getVegetationColladaOptions();
     }
 
     
     public Balloon getBalloonSettings() {
-        return config.getBuildingBalloon();
+        return config.getVegetationBalloon();
     }
 
     

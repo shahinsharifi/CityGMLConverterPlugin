@@ -49,7 +49,7 @@ import org.citydb.modules.common.event.EventType;
 import org.citydb.plugins.CityGMLConverter.concurrent.AppearanceWorkerFactory;
 import org.citydb.plugins.CityGMLConverter.concurrent.BBoxCalculatorWorkerFactory;
 import org.citydb.plugins.CityGMLConverter.config.ConfigImpl;
-import org.citydb.plugins.CityGMLConverter.content.Building;
+import org.citydb.plugins.CityGMLConverter.content.*;
 import org.citydb.plugins.CityGMLConverter.util.rtree.RTree;
 import org.citydb.plugins.CityGMLConverter.util.rtree.memory.MemoryPageStore;
 import org.citygml4j.CityGMLContext;
@@ -136,33 +136,33 @@ public class ThemeUtil implements EventHandler{
 			if (cityObject instanceof Building) {
 				type = CityGMLClass.BUILDING;
 			}
-			/*else if (kmlExportObject instanceof WaterBody) {
+			else if (cityObject instanceof WaterBody) {
 				type = CityGMLClass.WATER_BODY;
 			}
-			else if (kmlExportObject instanceof LandUse) {
+			else if (cityObject instanceof LandUse) {
 				type = CityGMLClass.LAND_USE;
 			}
-			else if (kmlExportObject instanceof CityObjectGroup) {
+			else if (cityObject instanceof CityObjectGroup) {
 				type = CityGMLClass.CITY_OBJECT_GROUP;
 			}
-			else if (kmlExportObject instanceof Transportation) {
+			else if (cityObject instanceof Transportation) {
 				type = CityGMLClass.TRANSPORTATION_COMPLEX;
 			}
-			else if (kmlExportObject instanceof Relief) {
+			else if (cityObject instanceof Relief) {
 				type = CityGMLClass.RELIEF_FEATURE;
 			}
-			else if (kmlExportObject instanceof Vegetation) {
+			else if (cityObject instanceof Vegetation) {
 				type = CityGMLClass.SOLITARY_VEGETATION_OBJECT;
 			}
-			else if (kmlExportObject instanceof PlantCover) {
+			else if (cityObject instanceof PlantCover) {
 				type = CityGMLClass.PLANT_COVER;
 			}
-			else if (kmlExportObject instanceof GenericCityObject) {
+			else if (cityObject instanceof GenericCityObject) {
 				type = CityGMLClass.GENERIC_CITY_OBJECT;
 			}
-			else if (kmlExportObject instanceof CityFurniture) {
+			else if (cityObject instanceof CityFurniture) {
 				type = CityGMLClass.CITY_FURNITURE;
-			}*/
+			}
 			else
 				return;
 

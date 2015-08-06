@@ -152,7 +152,7 @@ public class Building extends KmlGenericObject{
 
         try {
 
-            List<PlacemarkType> placemarkBPart = readBuildingPart(work);
+            List<PlacemarkType> placemarkBPart = readObject(work);
             if (placemarkBPart != null)
                 placemarks.addAll(placemarkBPart);
         }
@@ -207,7 +207,7 @@ public class Building extends KmlGenericObject{
 
     
     @SuppressWarnings("unchecked")
-    private List<PlacemarkType> readBuildingPart(KmlSplittingResult work) throws Exception {
+    private List<PlacemarkType> readObject(KmlSplittingResult work) throws Exception {
 
         boolean reversePointOrder = true;
 

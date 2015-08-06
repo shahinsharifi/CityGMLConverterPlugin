@@ -1,43 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="52b2aff2-9167-49d8-8e82-781ee16f9ac7" name="Default" comment="Semi-final Commit">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Bridge.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/gui/preferences/BridgeBalloonPanel.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/gui/preferences/BridgeRenderingPanel.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/GenericCityObject.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/LandUse.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/PlantCover.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Transportation.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/gui/preferences/TunnelBalloonPanel.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/gui/preferences/TunnelRenderingPanel.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/WaterBody.java" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Point.java" afterPath="" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/BridgeObject.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Relief.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityFurnitureObject.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityFurniture.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/SolitaryVegetationObject.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Vegetation.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/TunnelObject.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Tunnel.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/concurrent/AppearanceWorker.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/concurrent/AppearanceWorker.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/concurrent/BBoxCalculatorWorker.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/concurrent/BBoxCalculatorWorker.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/BalloonTemplateHandlerImpl.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/BalloonTemplateHandlerImpl.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/util/BoundingBox.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/util/BoundingBox.java" />
+    <list default="true" id="52b2aff2-9167-49d8-8e82-781ee16f9ac7" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Bridge.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Bridge.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Building.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Building.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/gui/preferences/CityKMLExportPreferences.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/gui/preferences/CityKMLExportPreferences.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/gui/view/CityKmlExportPanel.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/gui/view/CityKmlExportPanel.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/concurrent/CityKmlExportWorker.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/concurrent/CityKmlExportWorker.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/controller/CityKmlExporter.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/controller/CityKmlExporter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityObject.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityObject.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityFurniture.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityFurniture.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityObjectGroup.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityObjectGroup.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/config/ConfigImpl.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/config/ConfigImpl.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/GenericCityObject.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/GenericCityObject.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/KmlGenericObject.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/KmlGenericObject.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/KmlSplitter.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/KmlSplitter.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/KmlSplittingResult.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/KmlSplittingResult.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/gui/Label_en.properties" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/gui/Label_en.properties" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/OtherGeometry.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/OtherGeometry.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/SurfaceGeometry.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/SurfaceGeometry.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/LandUse.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/LandUse.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/TableEnum.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/TableEnum.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/util/ThemeUtil.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/util/ThemeUtil.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/TypeAttributeValueEnum.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/TypeAttributeValueEnum.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules.xml" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Vegetation.java" afterPath="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Vegetation.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="CityGMLConverterPlugin.iws" />
@@ -65,114 +39,7 @@
     <favorites_list name="CityGMLConverterPlugin" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
-      <file leaf-file-name="CityKmlExporter.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/controller/CityKmlExporter.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="1440" column="0" selection-start-line="1440" selection-start-column="0" selection-end-line="1440" selection-end-column="0" />
-              <folding>
-                <element signature="method#addBorder#0;class#CityKmlExporter#0" expanded="false" />
-                <element signature="method#hexStringToByteArray#0;class#CityKmlExporter#0" expanded="false" />
-                <element signature="method#checkBalloonSettings#0;class#CityKmlExporter#0" expanded="false" />
-                <element signature="method#calculateRowsColumns#0;class#CityKmlExporter#0" expanded="false" />
-                <element signature="method#getAllFiles#0;class#CityKmlExporter#0" expanded="false" />
-                <element signature="method#deleteFolder#0;class#CityKmlExporter#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="CityKmlExportWorker.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/concurrent/CityKmlExportWorker.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="347" column="54" selection-start-line="347" selection-start-column="54" selection-end-line="347" selection-end-column="54" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="BoundingBox.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/util/BoundingBox.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="274" column="45" selection-start-line="274" selection-start-column="45" selection-end-line="274" selection-end-column="45" />
-              <folding>
-                <element signature="e#10262#10412#0" expanded="true" />
-                <element signature="e#10411#10412#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="AppearanceWorker.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/concurrent/AppearanceWorker.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="130" column="0" selection-start-line="130" selection-start-column="0" selection-end-line="130" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="BBoxCalculatorWorker.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/concurrent/BBoxCalculatorWorker.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="50" column="13" selection-start-line="50" selection-start-column="13" selection-end-line="50" selection-end-column="13" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="CityObjectGroup.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityObjectGroup.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="83" column="28" selection-start-line="83" selection-start-column="28" selection-end-line="83" selection-end-column="28" />
-              <folding>
-                <element signature="e#7630#7660#0" expanded="true" />
-                <element signature="e#11736#11751#0" expanded="true" />
-                <element signature="e#13088#13103#0" expanded="true" />
-                <element signature="e#13761#13775#0" expanded="true" />
-                <element signature="e#18033#18050#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="KmlGenericObject.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/KmlGenericObject.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="1569" column="115" selection-start-line="1569" selection-start-column="115" selection-end-line="1569" selection-end-column="115" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="KmlSplitter.java" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/KmlSplitter.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-0.097222224">
-              <caret line="328" column="24" selection-start-line="328" selection-start-column="24" selection-end-line="328" selection-end-column="24" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Building.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Building.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="216" column="44" selection-start-line="216" selection-start-column="30" selection-end-line="216" selection-end-column="44" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <leaf />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -210,27 +77,30 @@
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityFurnitureObject.java" />
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/SolitaryVegetationObject.java" />
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/WaterObject.java" />
-        <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Building.java" />
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/BridgeObject.java" />
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/TunnelObject.java" />
-        <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityFurniture.java" />
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/WaterBody.java" />
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Transportation.java" />
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/PlantCover.java" />
-        <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/LandUse.java" />
-        <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/GenericCityObject.java" />
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/concurrent/CityKmlExportWorker.java" />
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/BalloonTemplateHandlerImpl.java" />
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/OtherGeometry.java" />
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Relief.java" />
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/SurfaceGeometry.java" />
-        <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Vegetation.java" />
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/controller/CityKmlExporter.java" />
-        <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityObjectGroup.java" />
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/KmlSplitter.java" />
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/util/BoundingBox.java" />
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/concurrent/AppearanceWorker.java" />
+        <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/util/ThemeUtil.java" />
         <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/KmlGenericObject.java" />
+        <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Building.java" />
+        <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/TableEnum.java" />
+        <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Bridge.java" />
+        <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/GenericCityObject.java" />
+        <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Vegetation.java" />
+        <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityFurniture.java" />
+        <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityObjectGroup.java" />
+        <option value="$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/LandUse.java" />
       </list>
     </option>
   </component>
@@ -276,7 +146,6 @@
     </navigator>
     <panes>
       <pane id="PackagesPane" />
-      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -382,6 +251,7 @@
         </subPane>
       </pane>
       <pane id="Scope" />
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -801,7 +671,10 @@
       <workItem from="1438253895806" duration="19490000" />
       <workItem from="1438298982785" duration="3310000" />
       <workItem from="1438343970299" duration="11667000" />
-      <workItem from="1438450171901" duration="32732000" />
+      <workItem from="1438450171901" duration="32970000" />
+      <workItem from="1438710017161" duration="3199000" />
+      <workItem from="1438806707628" duration="259000" />
+      <workItem from="1438889776834" duration="6839000" />
     </task>
     <task id="LOCAL-00001" summary="First Commit">
       <created>1418730900527</created>
@@ -869,42 +742,48 @@
       <option name="project" value="LOCAL" />
       <updated>1434038997612</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="Semi-final Commit">
+      <created>1438549372983</created>
+      <option name="number" value="00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1438549372983</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="218249000" />
+    <option name="totallyTimeSpent" value="228784000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="65" y="24" width="1855" height="1056" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32936507" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.31646827" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32738096" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
-      <window_info id="Coverage" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32991913" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32738096" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22156334" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22156334" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3065476" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="IDEtalk" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Coverage" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32991913" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="combo" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32936507" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
     </layout>
@@ -946,7 +825,7 @@
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="175" />
+      <option name="time" value="176" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -1085,9 +964,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-6.157986">
           <caret line="361" column="0" selection-start-line="361" selection-start-column="0" selection-end-line="361" selection-end-column="0" />
-          <folding>
-            <element signature="e#11389#11390#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1130,31 +1006,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="61" column="0" selection-start-line="61" selection-start-column="0" selection-end-line="61" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityFurniture.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="175" column="9" selection-start-line="175" selection-start-column="9" selection-end-line="175" selection-end-column="9" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/TableEnum.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.058282208">
-          <caret line="31" column="12" selection-start-line="31" selection-start-column="12" selection-end-line="31" selection-end-column="12" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Bridge.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="743" column="97" selection-start-line="743" selection-start-column="97" selection-end-line="743" selection-end-column="97" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1162,7 +1013,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="64" column="61" selection-start-line="64" selection-start-column="61" selection-end-line="64" selection-end-column="61" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1170,10 +1020,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="471" column="34" selection-start-line="463" selection-start-column="32" selection-end-line="477" selection-end-column="33" />
-          <folding>
-            <element signature="e#7434#7464#0" expanded="true" />
-            <element signature="e#24730#24745#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1181,23 +1027,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.15541922">
           <caret line="61" column="13" selection-start-line="61" selection-start-column="13" selection-end-line="61" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/GenericCityObject.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="65" column="58" selection-start-line="65" selection-start-column="58" selection-end-line="65" selection-end-column="58" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityObject.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="5" column="23" selection-start-line="5" selection-start-column="23" selection-end-line="5" selection-end-column="23" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1209,73 +1038,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Tunnel.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-1.6251897">
-          <caret line="675" column="21" selection-start-line="675" selection-start-column="21" selection-end-line="675" selection-end-column="21" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/LandUse.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="64" column="58" selection-start-line="64" selection-start-column="58" selection-end-line="64" selection-end-column="58" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Relief.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="2.5844543">
-          <caret line="426" column="22" selection-start-line="426" selection-start-column="22" selection-end-line="426" selection-end-column="22" />
-          <folding>
-            <element signature="e#19977#19994#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/OtherGeometry.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.5366218">
           <caret line="457" column="34" selection-start-line="457" selection-start-column="34" selection-end-line="457" selection-end-column="34" />
-          <folding>
-            <element signature="e#11502#11516#0" expanded="true" />
-            <element signature="e#11708#11716#0" expanded="true" />
-            <element signature="e#18358#18372#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/SurfaceGeometry.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-17.4858">
-          <caret line="122" column="0" selection-start-line="122" selection-start-column="0" selection-end-line="122" selection-end-column="0" />
-          <folding>
-            <element signature="method#SurfaceGeometry#0;class#SurfaceGeometry#0" expanded="false" />
-            <element signature="method#getCurve#0;class#SurfaceGeometry#0" expanded="false" />
-            <element signature="method#getMultiCurve#0;class#SurfaceGeometry#0" expanded="false" />
-            <element signature="method#getCurve#1;class#SurfaceGeometry#0" expanded="false" />
-            <element signature="method#getMultiCurve#1;class#SurfaceGeometry#0" expanded="false" />
-            <element signature="method#generatePointList#0;class#SurfaceGeometry#0" expanded="false" />
-            <element signature="method#DetectSurfaceType#0;class#SurfaceGeometry#0" expanded="false" />
-            <element signature="method#DetectSurfaceType#1;class#SurfaceGeometry#0" expanded="false" />
-            <element signature="method#ClearPointList#0;class#SurfaceGeometry#0" expanded="false" />
-            <element signature="method#ClearIdList#0;class#SurfaceGeometry#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Vegetation.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="366" column="23" selection-start-line="358" selection-start-column="20" selection-end-line="371" selection-end-column="21" />
-          <folding>
-            <element signature="method#read#0;class#Vegetation#0" expanded="false" />
-            <element signature="method#createPlacemarkForColladaModel#0;class#Vegetation#0" expanded="false" />
-            <element signature="e#13751#13765#0" expanded="true" />
-            <element signature="e#19188#19202#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1283,7 +1049,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.08520179">
           <caret line="31" column="35" selection-start-line="31" selection-start-column="13" selection-end-line="31" selection-end-column="35" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1291,28 +1056,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="1440" column="0" selection-start-line="1440" selection-start-column="0" selection-end-line="1440" selection-end-column="0" />
-          <folding>
-            <element signature="method#addBorder#0;class#CityKmlExporter#0" expanded="false" />
-            <element signature="method#hexStringToByteArray#0;class#CityKmlExporter#0" expanded="false" />
-            <element signature="method#checkBalloonSettings#0;class#CityKmlExporter#0" expanded="false" />
-            <element signature="method#calculateRowsColumns#0;class#CityKmlExporter#0" expanded="false" />
-            <element signature="method#getAllFiles#0;class#CityKmlExporter#0" expanded="false" />
-            <element signature="method#deleteFolder#0;class#CityKmlExporter#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityObjectGroup.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="83" column="28" selection-start-line="83" selection-start-column="28" selection-end-line="83" selection-end-column="28" />
-          <folding>
-            <element signature="e#7630#7660#0" expanded="true" />
-            <element signature="e#11736#11751#0" expanded="true" />
-            <element signature="e#13088#13103#0" expanded="true" />
-            <element signature="e#13761#13775#0" expanded="true" />
-            <element signature="e#18033#18050#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1320,23 +1063,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.115326256">
           <caret line="8" column="13" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/concurrent/AppearanceWorker.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="130" column="0" selection-start-line="130" selection-start-column="0" selection-end-line="130" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/concurrent/CityKmlExportWorker.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="347" column="54" selection-start-line="347" selection-start-column="54" selection-end-line="347" selection-end-column="54" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1344,17 +1070,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="274" column="45" selection-start-line="274" selection-start-column="45" selection-end-line="274" selection-end-column="45" />
-          <folding>
-            <element signature="e#10262#10412#0" expanded="true" />
-            <element signature="e#10411#10412#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/util/ThemeUtil.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-0.7784522">
-          <caret line="77" column="13" selection-start-line="77" selection-start-column="13" selection-end-line="77" selection-end-column="13" />
           <folding />
         </state>
       </provider>
@@ -1367,37 +1082,157 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Building.java">
+    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/gui/Label_en.properties">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.33225283">
+          <caret line="244" column="0" selection-start-line="244" selection-start-column="0" selection-end-line="244" selection-end-column="0" />
+        </state>
+      </provider>
+      <provider editor-type-id="ResourceBundle">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/concurrent/AppearanceWorker.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.14519428">
+          <caret line="130" column="0" selection-start-line="130" selection-start-column="0" selection-end-line="130" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/util/ThemeUtil.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="2.3856502">
+          <caret line="170" column="0" selection-start-line="170" selection-start-column="0" selection-end-line="170" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/KmlSplitter.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="216" column="44" selection-start-line="216" selection-start-column="30" selection-end-line="216" selection-end-column="44" />
+          <caret line="350" column="0" selection-start-line="350" selection-start-column="0" selection-end-line="350" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/concurrent/CityKmlExportWorker.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="347" column="54" selection-start-line="347" selection-start-column="54" selection-end-line="347" selection-end-column="54" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/KmlGenericObject.java">
       <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-10.898773">
+          <caret line="1587" column="16" selection-start-line="1587" selection-start-column="16" selection-end-line="1587" selection-end-column="16" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Relief.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="2.4764826">
+          <caret line="426" column="22" selection-start-line="426" selection-start-column="22" selection-end-line="426" selection-end-column="22" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/SurfaceGeometry.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.33262935">
+          <caret line="395" column="28" selection-start-line="395" selection-start-column="23" selection-end-line="395" selection-end-column="28" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Tunnel.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.21370143">
+          <caret line="181" column="42" selection-start-line="181" selection-start-column="32" selection-end-line="181" selection-end-column="42" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Building.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-22.953987">
+          <caret line="148" column="0" selection-start-line="148" selection-start-column="0" selection-end-line="148" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityObject.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.09713701">
+          <caret line="5" column="23" selection-start-line="5" selection-start-column="23" selection-end-line="5" selection-end-column="23" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/TableEnum.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.9611452">
+          <caret line="86" column="5" selection-start-line="86" selection-start-column="5" selection-end-line="86" selection-end-column="5" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Vegetation.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.8548057">
+          <caret line="106" column="44" selection-start-line="106" selection-start-column="44" selection-end-line="106" selection-end-column="44" />
+          <folding>
+            <element signature="method#read#0;class#Vegetation#0" expanded="false" />
+            <element signature="method#createPlacemarkForColladaModel#0;class#Vegetation#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/LandUse.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.65030676">
+          <caret line="371" column="9" selection-start-line="371" selection-start-column="9" selection-end-line="371" selection-end-column="9" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/GenericCityObject.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.6411043">
+          <caret line="514" column="13" selection-start-line="514" selection-start-column="13" selection-end-line="514" selection-end-column="13" />
+          <folding>
+            <element signature="e#0#21954#0" expanded="true" />
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityObjectGroup.java">
+      <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="1569" column="115" selection-start-line="1569" selection-start-column="115" selection-end-line="1569" selection-end-column="115" />
+          <caret line="426" column="18" selection-start-line="426" selection-start-column="18" selection-end-line="426" selection-end-column="18" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/CityFurniture.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="533" column="0" selection-start-line="532" selection-start-column="50" selection-end-line="533" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/gui/Label_en.properties">
-      <provider editor-type-id="ResourceBundle">
-        <state />
-      </provider>
+    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/Bridge.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33225283">
-          <caret line="244" column="0" selection-start-line="244" selection-start-column="0" selection-end-line="244" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/citydb/plugins/CityGMLConverter/content/KmlSplitter.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-0.097222224">
-          <caret line="328" column="24" selection-start-line="328" selection-start-column="24" selection-end-line="328" selection-end-column="24" />
+        <state vertical-scroll-proportion="0.7280164">
+          <caret line="797" column="109" selection-start-line="797" selection-start-column="109" selection-end-line="797" selection-end-column="109" />
           <folding />
         </state>
       </provider>

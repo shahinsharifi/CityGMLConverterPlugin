@@ -55,7 +55,6 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 
 import javax.vecmath.Point3d;
 import javax.xml.bind.JAXBException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -94,17 +93,17 @@ public class CityFurniture extends KmlGenericObject{
     }
 
     protected List<DisplayForm> getDisplayForms() {
-        return config.getBuildingDisplayForms();
+        return config.getCityFurnitureDisplayForms();
     }
 
 
     public ColladaOptions getColladaOptions() {
-        return config.getBuildingColladaOptions();
+        return config.getCityFurnitureColladaOptions();
     }
 
 
     public Balloon getBalloonSettings() {
-        return config.getBuildingBalloon();
+        return config.getCityFurnitureBalloon();
     }
 
 
@@ -129,7 +128,7 @@ public class CityFurniture extends KmlGenericObject{
                 placemarks.addAll(placemarkBPart);
         }
         catch (Exception Ex) {
-            Logger.getInstance().error("SQL error while getting building parts for building " + work.getGmlId() + ": " + Ex.getMessage());
+            Logger.getInstance().error("Error while getting furniture for object " + work.getGmlId() + ": " + Ex.getMessage());
         }
         finally {
 
@@ -194,7 +193,7 @@ public class CityFurniture extends KmlGenericObject{
             //Restarting Xlink worker.
          //   sqlliteImporterManager.getTmpXlinkPool().join();
           //  DBXlinkSplitter xlinkSplitter = config.getXlinkSplitter();
-         //   List<BuildingSurface> tmpList = xlinkSplitter.startQuery(_surfaceList);
+         //   List<SurfaceObject> tmpList = xlinkSplitter.startQuery(_surfaceList);
          //   if(tmpList != null && tmpList.size() > 0) //We should join xlinks with Main geometries
           //      _surfaceList.addAll(tmpList);
 
@@ -265,8 +264,8 @@ public class CityFurniture extends KmlGenericObject{
                 }
             }
         }
-        catch (SQLException sqlEx) {
-            Logger.getInstance().error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
+        catch (Exception Ex) {
+            Logger.getInstance().error("Error while querying city object " + work.getGmlId() + ": " + Ex.getMessage());
             return null;
         }
         finally {}
@@ -392,7 +391,7 @@ public class CityFurniture extends KmlGenericObject{
                     if (href != null && href.length() != 0) {
                         DBXlinkBasic xlink = new DBXlinkBasic(
                                 _furniture.getId(),
-                                TableEnum.BUILDING,
+                                TableEnum.CITY_FURNITURE,
                                 href,
                                 TableEnum.SURFACE_GEOMETRY
                         );
@@ -477,7 +476,7 @@ public class CityFurniture extends KmlGenericObject{
                     GeometryObject geometryObject = null;
 
                     surfaceGeom.ClearPointList();
-                    List<List<Double>> _pointList = null;//surfaceGeom.getSurfaceGeometry(buildingGmlId , implicit.getGeometry(), false);
+                    List<List<Double>> _pointList = null;
                     if (relativeGeometry != null) {
                         _pointList = surfaceGeom.getSurfaceGeometry(RootGmlId, relativeGeometry, false);
                     }
@@ -503,7 +502,7 @@ public class CityFurniture extends KmlGenericObject{
                     if (href != null && href.length() != 0) {
                         DBXlinkBasic xlink = new DBXlinkBasic(
                                 _furniture.getId(),
-                                TableEnum.BUILDING,
+                                TableEnum.CITY_FURNITURE,
                                 href,
                                 TableEnum.SURFACE_GEOMETRY
                         );
@@ -518,16 +517,18 @@ public class CityFurniture extends KmlGenericObject{
         return _SurfaceList;
     }
 
+
+
     public static HashMap<String,Object> getObjectProperties(org.citygml4j.model.citygml.cityfurniture.CityFurniture furniture){
 
         HashMap<String, Object> objectgMap = new HashMap<String , Object>();
 
-        //Building GmlID
+        // GmlID
         if (furniture.isSetId()) {
             objectgMap.put("GMLID",furniture.getId());
         }
 
-        //Building name and codespace
+        //name and codespace
         if (furniture.isSetName()) {
             objectgMap.put("NAME",furniture.getName());
             if(furniture.getName().get(0).isSetCodeSpace())

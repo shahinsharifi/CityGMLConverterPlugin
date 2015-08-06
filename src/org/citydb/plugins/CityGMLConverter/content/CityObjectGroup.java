@@ -60,7 +60,6 @@ import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
 
 import javax.vecmath.Point3d;
 import javax.xml.bind.JAXBException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -99,17 +98,17 @@ public class CityObjectGroup extends KmlGenericObject{
     }
 
     protected List<DisplayForm> getDisplayForms() {
-        return config.getBuildingDisplayForms();
+        return config.getCityObjectGroupDisplayForms();
     }
 
 
     public ColladaOptions getColladaOptions() {
-        return config.getBuildingColladaOptions();
+        return config.getGenericCityObjectColladaOptions();
     }
 
 
     public Balloon getBalloonSettings() {
-        return config.getBuildingBalloon();
+        return config.getCityObjectGroupBalloon();
     }
 
 
@@ -134,7 +133,7 @@ public class CityObjectGroup extends KmlGenericObject{
                 placemarks.addAll(placemarkBPart);
         }
         catch (Exception Ex) {
-            Logger.getInstance().error("SQL error while getting building parts for building " + work.getGmlId() + ": " + Ex.getMessage());
+            Logger.getInstance().error("Error while getting CityObjectGroup for object " + work.getGmlId() + ": " + Ex.getMessage());
         }
         finally {
 
@@ -272,8 +271,8 @@ public class CityObjectGroup extends KmlGenericObject{
                 }
             }
         }
-        catch (SQLException sqlEx) {
-            Logger.getInstance().error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
+        catch (Exception Ex) {
+            Logger.getInstance().error("Error while querying city object " + work.getGmlId() + ": " + Ex.getMessage());
             return null;
         }
         finally {}
@@ -423,12 +422,12 @@ public class CityObjectGroup extends KmlGenericObject{
 
         HashMap<String, Object> objectgMap = new HashMap<String , Object>();
 
-        //Building GmlID
+        //GmlID
         if (cityObjectGroup.isSetId()) {
             objectgMap.put("GMLID",cityObjectGroup.getId());
         }
 
-        //Building name and codespace
+        //name and codespace
         if (cityObjectGroup.isSetName()) {
             objectgMap.put("NAME",cityObjectGroup.getName());
             if(cityObjectGroup.getName().get(0).isSetCodeSpace())

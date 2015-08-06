@@ -45,6 +45,7 @@ import org.citydb.plugins.CityGMLConverter.xlink.content.DBXlinkBasic;
 import org.citydb.util.Util;
 import org.citygml4j.factory.GMLGeometryFactory;
 import org.citygml4j.geometry.Matrix;
+import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.bridge.AbstractBridge;
 import org.citygml4j.model.citygml.bridge.*;
 import org.citygml4j.model.gml.geometry.AbstractGeometry;
@@ -55,7 +56,6 @@ import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 
 import javax.vecmath.Point3d;
 import javax.xml.bind.JAXBException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -124,12 +124,12 @@ public class Bridge extends KmlGenericObject{
 
         try {
 
-            List<PlacemarkType> placemarkBPart = readBuildingPart(work);
+            List<PlacemarkType> placemarkBPart = readObject(work);
             if (placemarkBPart != null)
                 placemarks.addAll(placemarkBPart);
         }
         catch (Exception Ex) {
-            Logger.getInstance().error("SQL error while getting building parts for building " + work.getGmlId() + ": " + Ex.getMessage());
+            Logger.getInstance().error("Error while getting bridge parts for bridge " + work.getGmlId() + ": " + Ex.getMessage());
         }
         finally {
 
@@ -179,7 +179,7 @@ public class Bridge extends KmlGenericObject{
 
     
     @SuppressWarnings("unchecked")
-    private List<PlacemarkType> readBuildingPart(KmlSplittingResult work) throws Exception {
+    private List<PlacemarkType> readObject(KmlSplittingResult work) throws Exception {
 
         boolean reversePointOrder = true;
 
@@ -196,7 +196,7 @@ public class Bridge extends KmlGenericObject{
             //Restarting Xlink worker.
          //   sqlliteImporterManager.getTmpXlinkPool().join();
           //  DBXlinkSplitter xlinkSplitter = config.getXlinkSplitter();
-         //   List<BuildingSurface> tmpList = xlinkSplitter.startQuery(_surfaceList);
+         //   List<SurfaceObject> tmpList = xlinkSplitter.startQuery(_surfaceList);
          //   if(tmpList != null && tmpList.size() > 0) //We should join xlinks with Main geometries
           //      _surfaceList.addAll(tmpList);
 
@@ -267,8 +267,8 @@ public class Bridge extends KmlGenericObject{
                 }
             }
         }
-        catch (SQLException sqlEx) {
-            Logger.getInstance().error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
+        catch (Exception Ex) {
+            Logger.getInstance().error("Error while querying city object " + work.getGmlId() + ": " + Ex.getMessage());
             return null;
         }
         finally {}
@@ -351,7 +351,7 @@ public class Bridge extends KmlGenericObject{
                     if (href != null && href.length() != 0) {
                         DBXlinkBasic xlink = new DBXlinkBasic(
                                 _bridge.getId(),
-                                TableEnum.BUILDING,
+                                TableEnum.BRIDGE,
                                 href,
                                 TableEnum.SURFACE_GEOMETRY
                         );
@@ -421,7 +421,7 @@ public class Bridge extends KmlGenericObject{
                     if (href != null && href.length() != 0) {
                         DBXlinkBasic xlink = new DBXlinkBasic(
                                 _bridge.getId(),
-                                TableEnum.BUILDING,
+                                TableEnum.BRIDGE,
                                 href,
                                 TableEnum.SURFACE_GEOMETRY
                         );
@@ -623,7 +623,7 @@ public class Bridge extends KmlGenericObject{
                                             surfaceGeom.ClearPointList();
                                             surfaceGeom.ClearIdList();
                                             List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(bridgeGmlId, multiSurfaceProperty.getMultiSurface(), false);
-                                            _SurfaceType = "";//TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
+                                            _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BRIDGE_WALL_SURFACE).toString();
 
                                             int counter = 0;
                                             for(List<Double> _Geometry : _pointList){
@@ -711,7 +711,7 @@ public class Bridge extends KmlGenericObject{
                     String href = bridgeInstProperty.getHref();
 
                     if (href != null && href.length() != 0) {
-                        LOG.error("XLink reference '" + href + "' to BuildingInstallation feature is not supported.");
+                        LOG.error("XLink reference '" + href + "' to BridgeInstallation feature is not supported.");
                     }
                 }
 
@@ -719,7 +719,7 @@ public class Bridge extends KmlGenericObject{
         }
 
 
-        // IntBuildingInstallation
+        // IntBridgeInstallation
         if (_bridge.isSetInteriorBridgeInstallation()) {
             for (IntBridgeInstallationProperty intBridgeInstProperty : _bridge.getInteriorBridgeInstallation()) {
                 IntBridgeInstallation intBridgeInst = intBridgeInstProperty.getIntBridgeInstallation();
@@ -735,7 +735,7 @@ public class Bridge extends KmlGenericObject{
                             surfaceGeom.ClearPointList();
                             surfaceGeom.ClearIdList();
                             List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(bridgeGmlId, geometryProperty.getGeometry(), false);
-                            _SurfaceType = "";//TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
+                            _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BRIDGE_WALL_SURFACE).toString();
 
                             int counter = 0;
                             for(List<Double> _Geometry : _pointList){
@@ -760,7 +760,7 @@ public class Bridge extends KmlGenericObject{
                     String href = intBridgeInstProperty.getHref();
 
                     if (href != null && href.length() != 0) {
-                        LOG.error("XLink reference '" + href + "' to IntBuildingInstallation feature is not supported.");
+                        LOG.error("XLink reference '" + href + "' to IntBridgeInstallation feature is not supported.");
                     }
                 }
             }
@@ -785,7 +785,7 @@ public class Bridge extends KmlGenericObject{
                     String href = bridgePartProperty.getHref();
 
                     if (href != null && href.length() != 0) {
-                        LOG.error("XLink reference '" + href + "' to BuildingPart feature is not supported.");
+                        LOG.error("XLink reference '" + href + "' to BridgePart feature is not supported.");
                     }
                 }
             }
@@ -795,69 +795,10 @@ public class Bridge extends KmlGenericObject{
         return _SurfaceList;
     }
 
-    public static HashMap<String,Object> getObjectProperties(org.citygml4j.model.citygml.vegetation.SolitaryVegetationObject vegetation){
+    public static HashMap<String,Object> getObjectProperties(org.citygml4j.model.citygml.bridge.Bridge bridge){
 
         HashMap<String, Object> objectgMap = new HashMap<String,Object>();
 
-        //Building GmlID
-        if (vegetation.isSetId()) {
-            objectgMap.put("GMLID",vegetation.getId());
-        }
-
-        //Building name and codespace
-        if (vegetation.isSetName()) {
-            objectgMap.put("NAME",vegetation.getName());
-            if(vegetation.getName().get(0).isSetCodeSpace())
-                objectgMap.put("NAME_CODESPACE", vegetation.getName().get(0).getCodeSpace());
-        }
-
-        // class
-        if (vegetation.isSetClazz() && vegetation.getClazz().isSetValue()) {
-            objectgMap.put("CLASS",vegetation.getClazz().getValue());
-        }
-
-        //Description
-        if(vegetation.isSetDescription())
-        {
-            objectgMap.put("DESCRIPTION",vegetation.getDescription());
-        }
-
-        // function
-        if (vegetation.isSetFunction()) {
-            String[] function = Util.codeList2string(vegetation.getFunction());
-            objectgMap.put("FUNCTION",function[0]);
-        }
-
-        // usage
-        if (vegetation.isSetUsage()) {
-            String[] usage = Util.codeList2string(vegetation.getUsage());
-            objectgMap.put("USAGE",usage[0]);
-        }
-
-
-        // veg:species
-        if (vegetation.isSetSpecies() && vegetation.getSpecies().isSetValue()) {
-            objectgMap.put("SPECIES_VALUE",vegetation.getSpecies().getValue());
-            objectgMap.put("SPECIES_CODESPACE",vegetation.getSpecies().getCodeSpace());
-        }
-
-        // veg:height
-        if (vegetation.isSetHeight() && vegetation.getHeight().isSetValue()) {
-            objectgMap.put("HEIGHT_VALUE",vegetation.getHeight().getValue());
-            objectgMap.put("HEIGHT_UOM",vegetation.getSpecies().getCodeSpace());
-        }
-
-        // veg:trunkDiameter
-        if (vegetation.isSetTrunkDiameter() && vegetation.getTrunkDiameter().isSetValue()) {
-            objectgMap.put("TRUNK_VALUE",vegetation.getTrunkDiameter().getValue());
-            objectgMap.put("TRUNK_UOM",vegetation.getTrunkDiameter().getUom());
-        }
-
-        // veg:crownDiameter
-        if (vegetation.isSetCrownDiameter() && vegetation.getCrownDiameter().isSetValue()) {
-            objectgMap.put("CROWN_VALUE",vegetation.getCrownDiameter().getValue());
-            objectgMap.put("CROWN_UOM",vegetation.getCrownDiameter().getUom());
-        }
 
         return objectgMap;
     }
