@@ -96,17 +96,17 @@ public class Transportation extends KmlGenericObject{
     }
 
     protected List<DisplayForm> getDisplayForms() {
-        return config.getBridgeDisplayForms();
+        return config.getTransportationDisplayForms();
     }
 
 
     public ColladaOptions getColladaOptions() {
-        return config.getBridgeColladaOptions();
+        return config.getTransportationColladaOptions();
     }
 
 
     public Balloon getBalloonSettings() {
-        return config.getBridgeBalloon();
+        return config.getTransportationBalloon();
     }
 
 
@@ -126,12 +126,12 @@ public class Transportation extends KmlGenericObject{
 
         try {
 
-            List<PlacemarkType> placemarkBPart = readBuildingPart(work);
+            List<PlacemarkType> placemarkBPart = readObject(work);
             if (placemarkBPart != null)
                 placemarks.addAll(placemarkBPart);
         }
         catch (Exception Ex) {
-            Logger.getInstance().error("SQL error while getting building parts for building " + work.getGmlId() + ": " + Ex.getMessage());
+            Logger.getInstance().error("Error while getting transportation for object " + work.getGmlId() + ": " + Ex.getMessage());
         }
         finally {
 
@@ -181,7 +181,7 @@ public class Transportation extends KmlGenericObject{
 
 
     @SuppressWarnings("unchecked")
-    private List<PlacemarkType> readBuildingPart(KmlSplittingResult work) throws Exception {
+    private List<PlacemarkType> readObject(KmlSplittingResult work) throws Exception {
 
         boolean reversePointOrder = true;
 
@@ -197,7 +197,7 @@ public class Transportation extends KmlGenericObject{
             //Restarting Xlink worker.
          //   sqlliteImporterManager.getTmpXlinkPool().join();
           //  DBXlinkSplitter xlinkSplitter = config.getXlinkSplitter();
-         //   List<BuildingSurface> tmpList = xlinkSplitter.startQuery(_surfaceList);
+         //   List<SurfaceObject> tmpList = xlinkSplitter.startQuery(_surfaceList);
          //   if(tmpList != null && tmpList.size() > 0) //We should join xlinks with Main geometries
           //      _surfaceList.addAll(tmpList);
 
@@ -268,8 +268,8 @@ public class Transportation extends KmlGenericObject{
                 }
             }
         }
-        catch (SQLException sqlEx) {
-            Logger.getInstance().error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
+        catch (Exception Ex) {
+            Logger.getInstance().error("Error while querying city object " + work.getGmlId() + ": " + Ex.getMessage());
             return null;
         }
         finally {}

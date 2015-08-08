@@ -124,12 +124,12 @@ public class Vegetation extends KmlGenericObject{
 
         try {
 
-            List<PlacemarkType> placemarkBPart = readBuildingPart(work);
+            List<PlacemarkType> placemarkBPart = readObject(work);
             if (placemarkBPart != null)
                 placemarks.addAll(placemarkBPart);
         }
         catch (Exception Ex) {
-            Logger.getInstance().error("SQL error while getting building parts for building " + work.getGmlId() + ": " + Ex.getMessage());
+            Logger.getInstance().error("SQL error while getting vegetation parts for object " + work.getGmlId() + ": " + Ex.getMessage());
         }
         finally {
 
@@ -179,7 +179,7 @@ public class Vegetation extends KmlGenericObject{
 
     
     @SuppressWarnings("unchecked")
-    private List<PlacemarkType> readBuildingPart(KmlSplittingResult work) throws Exception {
+    private List<PlacemarkType> readObject(KmlSplittingResult work) throws Exception {
 
         boolean reversePointOrder = true;
 
@@ -194,7 +194,7 @@ public class Vegetation extends KmlGenericObject{
             //Restarting Xlink worker.
          //   sqlliteImporterManager.getTmpXlinkPool().join();
           //  DBXlinkSplitter xlinkSplitter = config.getXlinkSplitter();
-         //   List<BuildingSurface> tmpList = xlinkSplitter.startQuery(_surfaceList);
+         //   List<SurfaceObject> tmpList = xlinkSplitter.startQuery(_surfaceList);
          //   if(tmpList != null && tmpList.size() > 0) //We should join xlinks with Main geometries
           //      _surfaceList.addAll(tmpList);
 
@@ -265,8 +265,8 @@ public class Vegetation extends KmlGenericObject{
                 }
             }
         }
-        catch (SQLException sqlEx) {
-            Logger.getInstance().error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
+        catch (Exception Ex) {
+            Logger.getInstance().error("Error while querying city object " + work.getGmlId() + ": " + Ex.getMessage());
             return null;
         }
         finally {}
@@ -362,7 +362,7 @@ public class Vegetation extends KmlGenericObject{
                     if (href != null && href.length() != 0) {
                         DBXlinkBasic xlink = new DBXlinkBasic(
                                 _vegetation.getId(),
-                                TableEnum.BUILDING,
+                                TableEnum.SOLITARY_VEGETAT_OBJECT,
                                 href,
                                 TableEnum.SURFACE_GEOMETRY
                         );
@@ -483,7 +483,7 @@ public class Vegetation extends KmlGenericObject{
                     if (href != null && href.length() != 0) {
                         DBXlinkBasic xlink = new DBXlinkBasic(
                                 _vegetation.getId(),
-                                TableEnum.BUILDING,
+                                TableEnum.SOLITARY_VEGETAT_OBJECT,
                                 href,
                                 TableEnum.SURFACE_GEOMETRY
                         );
@@ -505,12 +505,12 @@ public class Vegetation extends KmlGenericObject{
 
         HashMap<String, Object> objectgMap = new HashMap<String,Object>();
 
-        //Building GmlID
+        // GmlID
         if (vegetation.isSetId()) {
             objectgMap.put("GMLID",vegetation.getId());
         }
 
-        //Building name and codespace
+        // name and codespace
         if (vegetation.isSetName()) {
             objectgMap.put("NAME",vegetation.getName());
             if(vegetation.getName().get(0).isSetCodeSpace())

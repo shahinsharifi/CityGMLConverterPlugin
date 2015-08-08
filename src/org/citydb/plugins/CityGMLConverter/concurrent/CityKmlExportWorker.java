@@ -115,7 +115,7 @@ public class CityKmlExportWorker implements Worker<KmlSplittingResult> {
 		elevationServiceHandler = new ElevationServiceHandler();
 
 		filterConfig = config.getFilter();
-		ColladaOptions colladaOptions = null; 
+		ColladaOptions colladaOptions = null;
 
 		objectGroupCounter.put(CityGMLClass.BUILDING, 0);
 		objectGroupSize.put(CityGMLClass.BUILDING, 1);
@@ -194,6 +194,25 @@ public class CityKmlExportWorker implements Worker<KmlSplittingResult> {
 			colladaOptions = config.getCityFurnitureColladaOptions();
 			if (colladaOptions.isGroupObjects()) {
 				objectGroupSize.put(CityGMLClass.CITY_FURNITURE, colladaOptions.getGroupSize());
+			}
+		}
+
+		objectGroupCounter.put(CityGMLClass.TUNNEL, 0);
+		objectGroupSize.put(CityGMLClass.TUNNEL, 1);
+		objectGroup.put(CityGMLClass.TUNNEL, null);
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetTunnel()) {
+			colladaOptions = config.getTunnelColladaOptions();
+			if (colladaOptions.isGroupObjects()) {
+				objectGroupSize.put(CityGMLClass.TUNNEL, colladaOptions.getGroupSize());
+			}
+		}
+		objectGroupCounter.put(CityGMLClass.BRIDGE, 0);
+		objectGroupSize.put(CityGMLClass.BRIDGE, 1);
+		objectGroup.put(CityGMLClass.BRIDGE, null);
+		if (filterConfig.getComplexFilter().getFeatureClass().isSetBridge()) {
+			colladaOptions = config.getBridgeColladaOptions();
+			if (colladaOptions.isGroupObjects()) {
+				objectGroupSize.put(CityGMLClass.BRIDGE, colladaOptions.getGroupSize());
 			}
 		}
 		// CityGMLClass.CITY_OBJECT_GROUP is left out, it does not make sense to group it without COLLADA DisplayForm 
@@ -477,7 +496,7 @@ public class CityKmlExportWorker implements Worker<KmlSplittingResult> {
 				}
 		}
         catch (Exception ex){
-            Logger.getInstance().error(ex.toString());
+            Logger.getInstance().error("Error in the object " + work.getGmlId() + ": " +ex.toString());
         }
 		finally {
 			runLock.unlock();

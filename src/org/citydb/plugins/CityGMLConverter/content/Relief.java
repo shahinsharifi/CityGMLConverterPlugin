@@ -99,17 +99,17 @@ public class Relief extends KmlGenericObject{
     }
 
     protected List<DisplayForm> getDisplayForms() {
-        return config.getBuildingDisplayForms();
+        return config.getReliefDisplayForms();
     }
 
 
     public ColladaOptions getColladaOptions() {
-        return config.getBuildingColladaOptions();
+        return config.getReliefColladaOptions();
     }
 
 
     public Balloon getBalloonSettings() {
-        return config.getBuildingBalloon();
+        return config.getReliefBalloon();
     }
 
 
@@ -134,7 +134,7 @@ public class Relief extends KmlGenericObject{
                 placemarks.addAll(placemarkBPart);
         }
         catch (Exception Ex) {
-            Logger.getInstance().error("SQL error while getting building parts for building " + work.getGmlId() + ": " + Ex.getMessage());
+            Logger.getInstance().error("Error while getting relief parts for object " + work.getGmlId() + ": " + Ex.getMessage());
         }
         finally {
 
@@ -190,16 +190,16 @@ public class Relief extends KmlGenericObject{
 
         try {
 
-            ReliefFeature _furniture = (ReliefFeature)work.getCityGmlClass();
+            ReliefFeature _relief = (ReliefFeature)work.getCityGmlClass();
             SurfaceAppearance _SurfaceAppear = new SurfaceAppearance();
 
             //this function reads all geometries and returns a list of surfaces.
-            List<SurfaceObject> _surfaceList = GetGeometries(_furniture);
+            List<SurfaceObject> _surfaceList = GetGeometries(_relief);
 
             //Restarting Xlink worker.
          //   sqlliteImporterManager.getTmpXlinkPool().join();
           //  DBXlinkSplitter xlinkSplitter = config.getXlinkSplitter();
-         //   List<BuildingSurface> tmpList = xlinkSplitter.startQuery(_surfaceList);
+         //   List<SurfaceObject> tmpList = xlinkSplitter.startQuery(_surfaceList);
          //   if(tmpList != null && tmpList.size() > 0) //We should join xlinks with Main geometries
           //      _surfaceList.addAll(tmpList);
 
@@ -270,8 +270,8 @@ public class Relief extends KmlGenericObject{
                 }
             }
         }
-        catch (SQLException sqlEx) {
-            Logger.getInstance().error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
+        catch (Exception Ex) {
+            Logger.getInstance().error("Error while querying city object " + work.getGmlId() + ": " + Ex.getMessage());
             return null;
         }
         finally {}
@@ -448,44 +448,10 @@ public class Relief extends KmlGenericObject{
         return _SurfaceList;
     }
 
-    public static HashMap<String,Object> getObjectProperties(org.citygml4j.model.citygml.cityfurniture.CityFurniture furniture){
+    public static HashMap<String,Object> getObjectProperties(ReliefFeature reliefFeature){
 
         HashMap<String, Object> objectgMap = new HashMap<String , Object>();
 
-        //Building GmlID
-        if (furniture.isSetId()) {
-            objectgMap.put("GMLID",furniture.getId());
-        }
-
-        //Building name and codespace
-        if (furniture.isSetName()) {
-            objectgMap.put("NAME",furniture.getName());
-            if(furniture.getName().get(0).isSetCodeSpace())
-                objectgMap.put("NAME_CODESPACE", furniture.getName().get(0).getCodeSpace());
-        }
-
-        // class
-        if (furniture.isSetClazz() && furniture.getClazz().isSetValue()) {
-            objectgMap.put("CLASS",furniture.getClazz().getValue());
-        }
-
-        //Description
-        if(furniture.isSetDescription())
-        {
-            objectgMap.put("DESCRIPTION",furniture.getDescription());
-        }
-
-        // function
-        if (furniture.isSetFunction()) {
-            String[] function = Util.codeList2string(furniture.getFunction());
-            objectgMap.put("FUNCTION",function[0]);
-        }
-
-        // usage
-        if (furniture.isSetUsage()) {
-            String[] usage = Util.codeList2string(furniture.getUsage());
-            objectgMap.put("USAGE",usage[0]);
-        }
 
         return objectgMap;
     }

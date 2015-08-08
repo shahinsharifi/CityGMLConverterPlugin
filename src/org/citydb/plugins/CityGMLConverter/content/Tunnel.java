@@ -129,7 +129,7 @@ public class Tunnel extends KmlGenericObject{
                 placemarks.addAll(placemarkBPart);
         }
         catch (Exception Ex) {
-            Logger.getInstance().error("SQL error while getting building parts for building " + work.getGmlId() + ": " + Ex.getMessage());
+            Logger.getInstance().error("Error while getting tunnel for object " + work.getGmlId() + ": " + Ex.getMessage());
         }
         finally {
 
@@ -194,7 +194,7 @@ public class Tunnel extends KmlGenericObject{
             //Restarting Xlink worker.
          //   sqlliteImporterManager.getTmpXlinkPool().join();
           //  DBXlinkSplitter xlinkSplitter = config.getXlinkSplitter();
-         //   List<BuildingSurface> tmpList = xlinkSplitter.startQuery(_surfaceList);
+         //   List<SurfaceObject> tmpList = xlinkSplitter.startQuery(_surfaceList);
          //   if(tmpList != null && tmpList.size() > 0) //We should join xlinks with Main geometries
           //      _surfaceList.addAll(tmpList);
 
@@ -297,7 +297,7 @@ public class Tunnel extends KmlGenericObject{
         List<SurfaceObject> _SurfaceList = new ArrayList<SurfaceObject>();
         SurfaceGeometry surfaceGeom = new SurfaceGeometry(config , sqlliteImporterManager);
         String _SurfaceType = "undefined";
-        String buildingGmlId = _tunnel.getId();
+        String tunnelGmlId = _tunnel.getId();
         OtherGeometry others = new OtherGeometry(config , sqlliteImporterManager,3068);
 
         // lodXSolid
@@ -326,7 +326,7 @@ public class Tunnel extends KmlGenericObject{
                 if (solidProperty.isSetSolid()) {
 
                     surfaceGeom.ClearPointList();
-                    List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, solidProperty.getSolid(), false);
+                    List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(tunnelGmlId, solidProperty.getSolid(), false);
 
                     int counter = 0;
                     for(List<Double> _Geometry : _pointList){
@@ -348,7 +348,7 @@ public class Tunnel extends KmlGenericObject{
                     if (href != null && href.length() != 0) {
                         DBXlinkBasic xlink = new DBXlinkBasic(
                                 _tunnel.getId(),
-                                TableEnum.BUILDING,
+                                TableEnum.TUNNEL,
                                 href,
                                 TableEnum.SURFACE_GEOMETRY
                         );
@@ -395,7 +395,7 @@ public class Tunnel extends KmlGenericObject{
                 if (multiSurfaceProperty.isSetMultiSurface()) {
 
                     surfaceGeom.ClearPointList();
-                    List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, multiSurfaceProperty.getMultiSurface(), false);
+                    List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(tunnelGmlId, multiSurfaceProperty.getMultiSurface(), false);
 
                     int counter = 0;
                     for(List<Double> _Geometry : _pointList){
@@ -418,7 +418,7 @@ public class Tunnel extends KmlGenericObject{
                     if (href != null && href.length() != 0) {
                         DBXlinkBasic xlink = new DBXlinkBasic(
                                 _tunnel.getId(),
-                                TableEnum.BUILDING,
+                                TableEnum.TUNNEL,
                                 href,
                                 TableEnum.SURFACE_GEOMETRY
                         );
@@ -562,7 +562,7 @@ public class Tunnel extends KmlGenericObject{
                                 surfaceGeom.ClearIdList();
 
                                 _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(boundarySurface.getCityGMLClass()).toString();
-                                List<List<Double>> _pointList  = surfaceGeom.getSurfaceGeometry(buildingGmlId, multiSurfaceProperty.getMultiSurface(), false);
+                                List<List<Double>> _pointList  = surfaceGeom.getSurfaceGeometry(tunnelGmlId, multiSurfaceProperty.getMultiSurface(), false);
 
                                 int counter = 0;
                                 for(List<Double> _Geometry : _pointList){
@@ -619,7 +619,7 @@ public class Tunnel extends KmlGenericObject{
 
                                             surfaceGeom.ClearPointList();
                                             surfaceGeom.ClearIdList();
-                                            List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, multiSurfaceProperty.getMultiSurface(), false);
+                                            List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(tunnelGmlId, multiSurfaceProperty.getMultiSurface(), false);
                                             _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_WALL_SURFACE).toString();
 
                                             int counter = 0;
@@ -682,7 +682,7 @@ public class Tunnel extends KmlGenericObject{
 
                                 surfaceGeom.ClearPointList();
                                 surfaceGeom.ClearIdList();
-                                List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, geometryProperty.getGeometry(), false);
+                                List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(tunnelGmlId, geometryProperty.getGeometry(), false);
                                 _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_WALL_SURFACE).toString();
 
                                 int counter = 0;
@@ -708,7 +708,7 @@ public class Tunnel extends KmlGenericObject{
                     String href = tunnelInstProperty.getHref();
 
                     if (href != null && href.length() != 0) {
-                        LOG.error("XLink reference '" + href + "' to BuildingInstallation feature is not supported.");
+                        LOG.error("XLink reference '" + href + "' to TunnelInstallation feature is not supported.");
                     }
                 }
 
@@ -716,7 +716,7 @@ public class Tunnel extends KmlGenericObject{
         }
 
 
-        // IntBuildingInstallation
+        // IntTunnelInstallation
         if (_tunnel.isSetInteriorTunnelInstallation()) {
             for (IntTunnelInstallationProperty intTunnelInstProperty : _tunnel.getInteriorTunnelInstallation()) {
                 IntTunnelInstallation intTunnelInst = intTunnelInstProperty.getIntTunnelInstallation();
@@ -731,7 +731,7 @@ public class Tunnel extends KmlGenericObject{
 
                             surfaceGeom.ClearPointList();
                             surfaceGeom.ClearIdList();
-                            List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, geometryProperty.getGeometry(), false);
+                            List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(tunnelGmlId, geometryProperty.getGeometry(), false);
                             _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_WALL_SURFACE).toString();
 
                             int counter = 0;
@@ -757,7 +757,7 @@ public class Tunnel extends KmlGenericObject{
                     String href = intTunnelInstProperty.getHref();
 
                     if (href != null && href.length() != 0) {
-                        LOG.error("XLink reference '" + href + "' to IntBuildingInstallation feature is not supported.");
+                        LOG.error("XLink reference '" + href + "' to IntTunnelInstallation feature is not supported.");
                     }
                 }
             }
@@ -789,7 +789,7 @@ public class Tunnel extends KmlGenericObject{
 
                             surfaceGeom.ClearPointList();
                             surfaceGeom.ClearIdList();
-                            List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, solidProperty.getSolid(), false);
+                            List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(tunnelGmlId, solidProperty.getSolid(), false);
                             _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_WALL_SURFACE).toString();
 
                             int counter = 0;
@@ -814,7 +814,7 @@ public class Tunnel extends KmlGenericObject{
 
                             surfaceGeom.ClearPointList();
                             surfaceGeom.ClearIdList();
-                            List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, multiSurfacePropery.getMultiSurface(), false);
+                            List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(tunnelGmlId, multiSurfacePropery.getMultiSurface(), false);
                             _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_WALL_SURFACE).toString();
 
                             int counter = 0;
@@ -873,7 +873,7 @@ public class Tunnel extends KmlGenericObject{
                                             surfaceGeom.ClearPointList();
                                             surfaceGeom.ClearIdList();
                                             _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(boundarySurface.getCityGMLClass()).toString();
-                                            List<List<Double>> _pointList  = surfaceGeom.getSurfaceGeometry(buildingGmlId, multiSurfaceProperty.getMultiSurface(), false);
+                                            List<List<Double>> _pointList  = surfaceGeom.getSurfaceGeometry(tunnelGmlId, multiSurfaceProperty.getMultiSurface(), false);
 
                                             int counter = 0;
                                             for(List<Double> _Geometry : _pointList){
@@ -913,8 +913,8 @@ public class Tunnel extends KmlGenericObject{
 
                                             surfaceGeom.ClearPointList();
                                             surfaceGeom.ClearIdList();
-                                            List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, geometryProperty.getGeometry(), false);
-                                            _SurfaceType = "";//TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
+                                            List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(tunnelGmlId, geometryProperty.getGeometry(), false);
+                                            _SurfaceType = "";//TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.Tunnel_WALL_SURFACE).toString();
 
                                             int counter = 0;
                                             for(List<Double> _Geometry : _pointList){
@@ -954,8 +954,8 @@ public class Tunnel extends KmlGenericObject{
 
                                             surfaceGeom.ClearPointList();
                                             surfaceGeom.ClearIdList();
-                                            List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(buildingGmlId, geometryProperty.getGeometry(), false);
-                                            _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.BUILDING_WALL_SURFACE).toString();
+                                            List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(tunnelGmlId, geometryProperty.getGeometry(), false);
+                                            _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(CityGMLClass.TUNNEL_WALL_SURFACE).toString();
 
                                             int counter = 0;
                                             for(List<Double> _Geometry : _pointList){
@@ -1015,7 +1015,7 @@ public class Tunnel extends KmlGenericObject{
                     String href = tunnelPartProperty.getHref();
 
                     if (href != null && href.length() != 0) {
-                        LOG.error("XLink reference '" + href + "' to BuildingPart feature is not supported.");
+                        LOG.error("XLink reference '" + href + "' to TunnelPart feature is not supported.");
                     }
                 }
             }
@@ -1029,12 +1029,12 @@ public class Tunnel extends KmlGenericObject{
 
         HashMap<String, Object> objectgMap = new HashMap<String,Object>();
 
-        //Building GmlID
+        //Tunnel GmlID
         if (tunnel.isSetId()) {
             objectgMap.put("GMLID",tunnel.getId());
         }
 
-        //Building name and codespace
+        //Tunnel name and codespace
         if (tunnel.isSetName()) {
             objectgMap.put("NAME",tunnel.getName());
             if(tunnel.getName().get(0).isSetCodeSpace())

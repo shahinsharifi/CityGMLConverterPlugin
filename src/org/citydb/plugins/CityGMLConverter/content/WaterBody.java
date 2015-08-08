@@ -193,7 +193,7 @@ public class WaterBody extends KmlGenericObject{
             //Restarting Xlink worker.
          //   sqlliteImporterManager.getTmpXlinkPool().join();
           //  DBXlinkSplitter xlinkSplitter = config.getXlinkSplitter();
-         //   List<BuildingSurface> tmpList = xlinkSplitter.startQuery(_surfaceList);
+         //   List<SurfaceObject> tmpList = xlinkSplitter.startQuery(_surfaceList);
          //   if(tmpList != null && tmpList.size() > 0) //We should join xlinks with Main geometries
           //      _surfaceList.addAll(tmpList);
 

@@ -185,11 +185,13 @@ public class GenericCityObject extends KmlGenericObject{
 
         try {
 
-            org.citygml4j.model.citygml.cityfurniture.CityFurniture _furniture = (org.citygml4j.model.citygml.cityfurniture.CityFurniture)work.getCityGmlClass();
+            org.citygml4j.model.citygml.generics.GenericCityObject _genericCityObject =
+                    (org.citygml4j.model.citygml.generics.GenericCityObject)work.getCityGmlClass();
+
             SurfaceAppearance _SurfaceAppear = new SurfaceAppearance();
 
             //this function reads all geometries and returns a list of surfaces.
-            List<SurfaceObject> _surfaceList = GetGeometries(_furniture);
+            List<SurfaceObject> _surfaceList = GetGeometries(_genericCityObject);
 
             //Restarting Xlink worker.
          //   sqlliteImporterManager.getTmpXlinkPool().join();
@@ -292,12 +294,12 @@ public class GenericCityObject extends KmlGenericObject{
     }
 
 
-    public List<SurfaceObject> GetGeometries(org.citygml4j.model.citygml.cityfurniture.CityFurniture _furniture) throws Exception
+    public List<SurfaceObject> GetGeometries(org.citygml4j.model.citygml.generics.GenericCityObject _genericCityObject) throws Exception
     {
         List<SurfaceObject> _SurfaceList = new ArrayList<SurfaceObject>();
         SurfaceGeometry surfaceGeom = new SurfaceGeometry(config , sqlliteImporterManager);
         String _SurfaceType = "undefined";
-        String RootGmlId = _furniture.getId();
+        String _genericGmlId = _genericCityObject.getId();
         OtherGeometry otherGeom = new OtherGeometry(config , sqlliteImporterManager , 3068);
 
         /// Geometry
@@ -308,16 +310,16 @@ public class GenericCityObject extends KmlGenericObject{
 
             switch (i) {
                 case 0:
-                    multiCurveProperty = _furniture.getLod1TerrainIntersection();
+                    multiCurveProperty = _genericCityObject.getLod1TerrainIntersection();
                     break;
                 case 1:
-                    multiCurveProperty = _furniture.getLod2TerrainIntersection();
+                    multiCurveProperty = _genericCityObject.getLod2TerrainIntersection();
                     break;
                 case 2:
-                    multiCurveProperty = _furniture.getLod3TerrainIntersection();
+                    multiCurveProperty = _genericCityObject.getLod3TerrainIntersection();
                     break;
                 case 3:
-                    multiCurveProperty = _furniture.getLod4TerrainIntersection();
+                    multiCurveProperty = _genericCityObject.getLod4TerrainIntersection();
                     break;
             }
 
@@ -349,16 +351,16 @@ public class GenericCityObject extends KmlGenericObject{
 
             switch (lod) {
                 case 0:
-                    geometryProperty = _furniture.getLod1Geometry();
+                    geometryProperty = _genericCityObject.getLod1Geometry();
                     break;
                 case 1:
-                    geometryProperty = _furniture.getLod2Geometry();
+                    geometryProperty = _genericCityObject.getLod2Geometry();
                     break;
                 case 2:
-                    geometryProperty = _furniture.getLod3Geometry();
+                    geometryProperty = _genericCityObject.getLod3Geometry();
                     break;
                 case 3:
-                    geometryProperty = _furniture.getLod4Geometry();
+                    geometryProperty = _genericCityObject.getLod4Geometry();
                     break;
             }
 
@@ -370,7 +372,7 @@ public class GenericCityObject extends KmlGenericObject{
                         geometryObject = otherGeom.getPointOrCurveGeometry(abstractGeometry);
 
                     surfaceGeom.ClearPointList();
-                    List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(RootGmlId, geometryProperty.getGeometry(), false);
+                    List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(_genericGmlId, geometryProperty.getGeometry(), false);
 
                     int counter = 0;
                     for(List<Double> _Geometry : _pointList){
@@ -391,7 +393,7 @@ public class GenericCityObject extends KmlGenericObject{
 
                     if (href != null && href.length() != 0) {
                         DBXlinkBasic xlink = new DBXlinkBasic(
-                                _furniture.getId(),
+                                _genericCityObject.getId(),
                                 TableEnum.GENERIC_CITYOBJECT,
                                 href,
                                 TableEnum.SURFACE_GEOMETRY
@@ -413,16 +415,16 @@ public class GenericCityObject extends KmlGenericObject{
 
             switch (lod) {
                 case 0:
-                    implicit = _furniture.getLod1ImplicitRepresentation();
+                    implicit = _genericCityObject.getLod1ImplicitRepresentation();
                     break;
                 case 1:
-                    implicit = _furniture.getLod2ImplicitRepresentation();
+                    implicit = _genericCityObject.getLod2ImplicitRepresentation();
                     break;
                 case 2:
-                    implicit = _furniture.getLod3ImplicitRepresentation();
+                    implicit = _genericCityObject.getLod3ImplicitRepresentation();
                     break;
                 case 3:
-                    implicit = _furniture.getLod4ImplicitRepresentation();
+                    implicit = _genericCityObject.getLod4ImplicitRepresentation();
                     break;
             }
 
@@ -479,7 +481,7 @@ public class GenericCityObject extends KmlGenericObject{
                     surfaceGeom.ClearPointList();
                     List<List<Double>> _pointList = null;
                     if (relativeGeometry != null) {
-                        _pointList = surfaceGeom.getSurfaceGeometry(RootGmlId, relativeGeometry, false);
+                        _pointList = surfaceGeom.getSurfaceGeometry(_genericGmlId, relativeGeometry, false);
                     }
 
                     int counter = 0;
@@ -502,7 +504,7 @@ public class GenericCityObject extends KmlGenericObject{
 
                     if (href != null && href.length() != 0) {
                         DBXlinkBasic xlink = new DBXlinkBasic(
-                                _furniture.getId(),
+                                _genericCityObject.getId(),
                                 TableEnum.GENERIC_CITYOBJECT,
                                 href,
                                 TableEnum.SURFACE_GEOMETRY

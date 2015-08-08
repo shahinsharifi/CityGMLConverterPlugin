@@ -48,6 +48,7 @@ import org.citygml4j.geometry.Matrix;
 import org.citygml4j.model.citygml.waterbody.AbstractWaterBoundarySurface;
 import org.citygml4j.model.citygml.waterbody.BoundedByWaterSurfaceProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiCurveProperty;
+import org.citygml4j.model.gml.geometry.aggregates.MultiSolidProperty;
 import org.citygml4j.model.gml.geometry.aggregates.MultiSurfaceProperty;
 import org.citygml4j.model.gml.geometry.primitives.SolidProperty;
 import org.citygml4j.model.gml.geometry.primitives.SurfaceProperty;
@@ -93,17 +94,17 @@ public class PlantCover extends KmlGenericObject{
     }
 
     protected List<DisplayForm> getDisplayForms() {
-        return config.getBuildingDisplayForms();
+        return config.getVegetationDisplayForms();
     }
 
     
     public ColladaOptions getColladaOptions() {
-        return config.getBuildingColladaOptions();
+        return config.getVegetationColladaOptions();
     }
 
     
     public Balloon getBalloonSettings() {
-        return config.getBuildingBalloon();
+        return config.getVegetationBalloon();
     }
 
     
@@ -123,12 +124,12 @@ public class PlantCover extends KmlGenericObject{
 
         try {
 
-            List<PlacemarkType> placemarkBPart = readBuildingPart(work);
+            List<PlacemarkType> placemarkBPart = readObject(work);
             if (placemarkBPart != null)
                 placemarks.addAll(placemarkBPart);
         }
         catch (Exception Ex) {
-            Logger.getInstance().error("SQL error while getting building parts for building " + work.getGmlId() + ": " + Ex.getMessage());
+            Logger.getInstance().error("Error while getting vegetation for object " + work.getGmlId() + ": " + Ex.getMessage());
         }
         finally {
 
@@ -178,22 +179,22 @@ public class PlantCover extends KmlGenericObject{
 
     
     @SuppressWarnings("unchecked")
-    private List<PlacemarkType> readBuildingPart(KmlSplittingResult work) throws Exception {
+    private List<PlacemarkType> readObject(KmlSplittingResult work) throws Exception {
 
         boolean reversePointOrder = true;
 
         try {
 
-            org.citygml4j.model.citygml.waterbody.WaterBody _waterBody = (org.citygml4j.model.citygml.waterbody.WaterBody)work.getCityGmlClass();
+            org.citygml4j.model.citygml.vegetation.PlantCover _plantCover = (org.citygml4j.model.citygml.vegetation.PlantCover)work.getCityGmlClass();
             SurfaceAppearance _SurfaceAppear = new SurfaceAppearance();
 
             //this function reads all geometries and returns a list of surfaces.
-            List<SurfaceObject> _surfaceList = GetGeometries(_waterBody);
+            List<SurfaceObject> _surfaceList = GetGeometries(_plantCover);
 
             //Restarting Xlink worker.
          //   sqlliteImporterManager.getTmpXlinkPool().join();
           //  DBXlinkSplitter xlinkSplitter = config.getXlinkSplitter();
-         //   List<BuildingSurface> tmpList = xlinkSplitter.startQuery(_surfaceList);
+         //   List<SurfaceObject> tmpList = xlinkSplitter.startQuery(_surfaceList);
          //   if(tmpList != null && tmpList.size() > 0) //We should join xlinks with Main geometries
           //      _surfaceList.addAll(tmpList);
 
@@ -264,8 +265,8 @@ public class PlantCover extends KmlGenericObject{
                 }
             }
         }
-        catch (SQLException sqlEx) {
-            Logger.getInstance().error("SQL error while querying city object " + work.getGmlId() + ": " + sqlEx.getMessage());
+        catch (Exception Ex) {
+            Logger.getInstance().error("Error while querying city object " + work.getGmlId() + ": " + Ex.getMessage());
             return null;
         }
         finally {}
@@ -291,42 +292,40 @@ public class PlantCover extends KmlGenericObject{
     }
 
     
-    public List<SurfaceObject> GetGeometries(org.citygml4j.model.citygml.waterbody.WaterBody _waterBody) throws Exception
+    public List<SurfaceObject> GetGeometries(org.citygml4j.model.citygml.vegetation.PlantCover plantCover) throws Exception
     {
         
         List<SurfaceObject> _SurfaceList = new ArrayList<SurfaceObject>();
         SurfaceGeometry surfaceGeom = new SurfaceGeometry(config, sqlliteImporterManager);
         String _SurfaceType = "undefined";
-        String waterbodyGmlId = _waterBody.getId();
+        String plantCoverGmlId = plantCover.getId();
 
         try {
             // lodXSolid
-            for (int lod = 1; lod < 5; lod++) {
-
-                SolidProperty solidProperty = null;
+            for (int lod = 0; lod < 4; lod++) {
+                MultiSolidProperty multiSolidProperty = null;
+                long solidGeometryId = 0;
 
                 switch (lod) {
+                    case 0:
+                        multiSolidProperty = plantCover.getLod1MultiSolid();
+                        break;
                     case 1:
-                        solidProperty = _waterBody.getLod1Solid();
+                        multiSolidProperty = plantCover.getLod2MultiSolid();
                         break;
                     case 2:
-                        solidProperty = _waterBody.getLod2Solid();
+                        multiSolidProperty = plantCover.getLod3MultiSolid();
                         break;
                     case 3:
-                        solidProperty = _waterBody.getLod3Solid();
-                        break;
-                    case 4:
-                        solidProperty = _waterBody.getLod4Solid();
+                        multiSolidProperty = plantCover.getLod4MultiSolid();
                         break;
                 }
 
-                if (solidProperty != null) {
-
-
-                    if (solidProperty.isSetSolid()) {
+                if (multiSolidProperty != null) {
+                    if (multiSolidProperty.isSetMultiSolid()) {
 
                         surfaceGeom.ClearPointList();
-                        List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(waterbodyGmlId, solidProperty.getSolid(), false);
+                        List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(plantCoverGmlId, multiSolidProperty.getMultiSolid(), false);
 
                         int counter = 0;
                         for (List<Double> _Geometry : _pointList) {
@@ -343,12 +342,12 @@ public class PlantCover extends KmlGenericObject{
                     } else {
 
                         // xlink
-                        String href = solidProperty.getHref();
+                        String href = multiSolidProperty.getHref();
 
                         if (href != null && href.length() != 0) {
                             DBXlinkBasic xlink = new DBXlinkBasic(
-                                    _waterBody.getId(),
-                                    TableEnum.BUILDING,
+                                    plantCover.getId(),
+                                    TableEnum.PLANT_COVER,
                                     href,
                                     TableEnum.SURFACE_GEOMETRY
                             );
@@ -366,29 +365,30 @@ public class PlantCover extends KmlGenericObject{
 
 
             // lodXMultiSurface
-            for (int lod = 1; lod < 5; lod++) {
-
-                //if (lodGeometry[lod - 1])
-                //continue;
-
+            for (int lod = 0; lod < 4; lod++) {
                 MultiSurfaceProperty multiSurfaceProperty = null;
-
+                long multiGeometryId = 0;
 
                 switch (lod) {
                     case 0:
-                        multiSurfaceProperty = _waterBody.getLod0MultiSurface();
+                        multiSurfaceProperty = plantCover.getLod1MultiSurface();
                         break;
                     case 1:
-                        multiSurfaceProperty = _waterBody.getLod1MultiSurface();
+                        multiSurfaceProperty = plantCover.getLod2MultiSurface();
+                        break;
+                    case 2:
+                        multiSurfaceProperty = plantCover.getLod3MultiSurface();
+                        break;
+                    case 3:
+                        multiSurfaceProperty = plantCover.getLod4MultiSurface();
                         break;
                 }
 
                 if (multiSurfaceProperty != null) {
-
                     if (multiSurfaceProperty.isSetMultiSurface()) {
 
                         surfaceGeom.ClearPointList();
-                        List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(waterbodyGmlId, multiSurfaceProperty.getMultiSurface(), false);
+                        List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(plantCoverGmlId, multiSurfaceProperty.getMultiSurface(), false);
 
                         int counter = 0;
                         for (List<Double> _Geometry : _pointList) {
@@ -409,8 +409,8 @@ public class PlantCover extends KmlGenericObject{
 
                         if (href != null && href.length() != 0) {
                             DBXlinkBasic xlink = new DBXlinkBasic(
-                                    _waterBody.getId(),
-                                    TableEnum.BUILDING,
+                                    plantCover.getId(),
+                                    TableEnum.PLANT_COVER,
                                     href,
                                     TableEnum.SURFACE_GEOMETRY
                             );
@@ -423,196 +423,17 @@ public class PlantCover extends KmlGenericObject{
 
             }
 
-
-
-            // lodXMultiCurve
-            for (int lod = 2; lod < 5; lod++) {
-
-                MultiCurveProperty multiCurveProperty = null;
-
-
-                switch (lod) {
-                    case 0:
-                        multiCurveProperty = _waterBody.getLod0MultiCurve();
-                        break;
-                    case 1:
-                        multiCurveProperty = _waterBody.getLod1MultiCurve();
-                        break;
-                }
-
-                if (multiCurveProperty != null) {
-                    surfaceGeom.ClearPointList();
-
-                    List<List<Double>> _pointList = surfaceGeom.getMultiCurve(multiCurveProperty);
-
-                    int counter = 0;
-                    for (List<Double> _Geometry : _pointList) {
-
-                        SurfaceObject BSurface = new SurfaceObject();
-                        _SurfaceType = surfaceGeom.DetectSurfaceType(_Geometry);
-                        BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
-                        BSurface.setType(_SurfaceType);
-                        BSurface.setGeometry(_Geometry);
-                        _SurfaceList.add(BSurface);
-                        counter++;
-                    }
-
-                }
-
-            }
-
-
-            // BoundarySurfaces
-            if (_waterBody.isSetBoundedBySurface()) {
-
-                long ParentCounter = 1;
-
-                for (BoundedByWaterSurfaceProperty waterSurfaceProperty : _waterBody.getBoundedBySurface()) {
-
-                    AbstractWaterBoundarySurface boundarySurface = waterSurfaceProperty.getWaterBoundarySurface();
-
-                    if (boundarySurface != null) {
-
-                        for (int i = 0; i < 3; i++) {
-                            SurfaceProperty surfaceProperty = null;
-                            long surfaceGeometryId = 0;
-
-                            switch (i) {
-                                case 0:
-                                    surfaceProperty = boundarySurface.getLod2Surface();
-                                    break;
-                                case 1:
-                                    surfaceProperty = boundarySurface.getLod3Surface();
-                                    break;
-                                case 2:
-                                    surfaceProperty = boundarySurface.getLod4Surface();
-                                    break;
-                            }
-
-                            if (surfaceProperty != null) {
-                                if (surfaceProperty.isSetSurface()) {
-
-
-
-
-                                    //We should take care about the parent surfaces, because we need them for exporting collada.
-                                    if (surfaceProperty.getSurface().isSetId()) {
-
-                                        SurfaceObject BPSurface = new SurfaceObject();
-                                        BPSurface.setPId(ParentCounter);
-                                        BPSurface.setId(surfaceProperty.getSurface().getId());
-                                        BPSurface.setType(null);
-                                        BPSurface.setGeometry(null);
-                                        _ParentSurfaceList.add(BPSurface);
-                                    }
-
-                                    surfaceGeom.ClearPointList();
-                                    surfaceGeom.ClearIdList();
-                                    _SurfaceType = TypeAttributeValueEnum.fromCityGMLClass(boundarySurface.getCityGMLClass()).toString();
-                                    List<List<Double>> _pointList = surfaceGeom.getSurfaceGeometry(waterbodyGmlId, surfaceProperty.getSurface(), false);
-
-                                    int counter = 0;
-                                    for (List<Double> _Geometry : _pointList) {
-
-                                        SurfaceObject BSurface = new SurfaceObject();
-                                        BSurface.setPId(ParentCounter);
-                                        BSurface.setId(surfaceGeom.GetSurfaceID().get(counter));
-                                        BSurface.setType(_SurfaceType);
-                                        BSurface.setGeometry(_Geometry);
-                                        _SurfaceList.add(BSurface);
-
-                                        counter++;
-                                    }
-
-                                } else {
-
-                                    // xlink
-                                    String href = surfaceProperty.getHref();
-
-                                    if (href != null && href.length() != 0) {
-                                        LOG.error("XLink reference '" + href + "' to BoundarySurface feature is not supported.");
-                                    }
-
-                                }
-                            }
-
-                        }
-
-                    }
-                    ParentCounter++;
-                }
-
-            }
         } catch (Exception ex) {
-            System.out.println(ex.toString() + " - " + _waterBody.getId());
+            System.out.println(ex.toString() + " - " + plantCover.getId());
         }
 
         return _SurfaceList;
     }
 
-    public static HashMap<String,Object> getObjectProperties(org.citygml4j.model.citygml.vegetation.SolitaryVegetationObject vegetation){
+    public static HashMap<String,Object> getObjectProperties(org.citygml4j.model.citygml.vegetation.PlantCover plantCover){
 
         HashMap<String, Object> objectgMap = new HashMap<String,Object>();
 
-        //Building GmlID
-        if (vegetation.isSetId()) {
-            objectgMap.put("GMLID",vegetation.getId());
-        }
-
-        //Building name and codespace
-        if (vegetation.isSetName()) {
-            objectgMap.put("NAME",vegetation.getName());
-            if(vegetation.getName().get(0).isSetCodeSpace())
-                objectgMap.put("NAME_CODESPACE", vegetation.getName().get(0).getCodeSpace());
-        }
-
-        // class
-        if (vegetation.isSetClazz() && vegetation.getClazz().isSetValue()) {
-            objectgMap.put("CLASS",vegetation.getClazz().getValue());
-        }
-
-        //Description
-        if(vegetation.isSetDescription())
-        {
-            objectgMap.put("DESCRIPTION",vegetation.getDescription());
-        }
-
-        // function
-        if (vegetation.isSetFunction()) {
-            String[] function = Util.codeList2string(vegetation.getFunction());
-            objectgMap.put("FUNCTION",function[0]);
-        }
-
-        // usage
-        if (vegetation.isSetUsage()) {
-            String[] usage = Util.codeList2string(vegetation.getUsage());
-            objectgMap.put("USAGE",usage[0]);
-        }
-
-
-        // veg:species
-        if (vegetation.isSetSpecies() && vegetation.getSpecies().isSetValue()) {
-            objectgMap.put("SPECIES_VALUE",vegetation.getSpecies().getValue());
-            objectgMap.put("SPECIES_CODESPACE",vegetation.getSpecies().getCodeSpace());
-        }
-
-        // veg:height
-        if (vegetation.isSetHeight() && vegetation.getHeight().isSetValue()) {
-            objectgMap.put("HEIGHT_VALUE",vegetation.getHeight().getValue());
-            objectgMap.put("HEIGHT_UOM",vegetation.getSpecies().getCodeSpace());
-        }
-
-        // veg:trunkDiameter
-        if (vegetation.isSetTrunkDiameter() && vegetation.getTrunkDiameter().isSetValue()) {
-            objectgMap.put("TRUNK_VALUE",vegetation.getTrunkDiameter().getValue());
-            objectgMap.put("TRUNK_UOM",vegetation.getTrunkDiameter().getUom());
-        }
-
-        // veg:crownDiameter
-        if (vegetation.isSetCrownDiameter() && vegetation.getCrownDiameter().isSetValue()) {
-            objectgMap.put("CROWN_VALUE",vegetation.getCrownDiameter().getValue());
-            objectgMap.put("CROWN_UOM",vegetation.getCrownDiameter().getUom());
-        }
 
         return objectgMap;
     }

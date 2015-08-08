@@ -59,12 +59,18 @@ import org.citygml4j.model.citygml.CityGMLClass;
 import org.citygml4j.model.citygml.appearance.Appearance;
 import org.citygml4j.model.citygml.appearance.AppearanceMember;
 import org.citygml4j.model.citygml.appearance.AppearanceProperty;
+import org.citygml4j.model.citygml.bridge.AbstractBridge;
+import org.citygml4j.model.citygml.bridge.BridgePart;
+import org.citygml4j.model.citygml.bridge.BridgePartProperty;
 import org.citygml4j.model.citygml.building.AbstractBuilding;
 import org.citygml4j.model.citygml.building.BuildingPart;
 import org.citygml4j.model.citygml.building.BuildingPartProperty;
 import org.citygml4j.model.citygml.core.AbstractCityObject;
 import org.citygml4j.model.citygml.core.CityModel;
 import org.citygml4j.model.citygml.core.CityObjectMember;
+import org.citygml4j.model.citygml.tunnel.AbstractTunnel;
+import org.citygml4j.model.citygml.tunnel.TunnelPart;
+import org.citygml4j.model.citygml.tunnel.TunnelPartProperty;
 import org.citygml4j.model.common.base.ModelType;
 import org.citygml4j.model.gml.feature.AbstractFeature;
 import org.citygml4j.model.gml.geometry.primitives.Envelope;
@@ -296,7 +302,7 @@ public class KmlSplitter {
 				tmpAppearanceList = new ArrayList<Appearance>();
 
 				//only for reading global appearance
-			/*	if(displayForm.getForm() == DisplayForm.COLLADA)
+				if(displayForm.getForm() == DisplayForm.COLLADA)
 				{
 					reader = in.createFilteredCityGMLReader(in.createCityGMLReader(file), inputFilter);
 					LOG.info("Searching for global appearance ...");
@@ -311,7 +317,7 @@ public class KmlSplitter {
 					}
 					reader.close();
 				}
-*/
+
 				
 				//for reading buildings
 			//	reader = in.createFilteredCityGMLReader(in.createCityGMLReader(file), inputFilter);
@@ -344,9 +350,11 @@ public class KmlSplitter {
 							if(envelope != null){
 
 								if(cityObject.isSetAppearance()){
+
 									for(AppearanceProperty appearance : cityObject.getAppearance()){
 										tmpAppearanceList.add((Appearance)appearance.getAppearance());
 									}
+
 								}else if(cityObjectType == CityGMLClass.BUILDING){
 
 									AbstractBuilding building = (AbstractBuilding)cityObject;
@@ -362,7 +370,39 @@ public class KmlSplitter {
 											}
 										}
 									}
+
+								}else if(cityObjectType == CityGMLClass.TUNNEL){
+
+									AbstractTunnel tunnel = (AbstractTunnel)cityObject;
+									if(tunnel.isSetConsistsOfTunnelPart()) {
+										for(TunnelPartProperty tunnelPart : tunnel.getConsistsOfTunnelPart())
+										{
+											TunnelPart tmpTunnelPart = tunnelPart.getTunnelPart();
+											if(tmpTunnelPart.isSetAppearance()){
+												for(AppearanceProperty appearance : tmpTunnelPart.getAppearance()){
+													tmpAppearanceList.add((Appearance)appearance.getAppearance());
+												}
+											}
+										}
+									}
+
+								}else if(cityObjectType == CityGMLClass.BRIDGE){
+
+									AbstractBridge bridge = (AbstractBridge)cityObject;
+									if(bridge.isSetConsistsOfBridgePart()) {
+										for(BridgePartProperty tunnelPart : bridge.getConsistsOfBridgePart())
+										{
+											BridgePart tmpBridgePart = tunnelPart.getBridgePart();
+											if(tmpBridgePart.isSetAppearance()){
+												for(AppearanceProperty appearance : tmpBridgePart.getAppearance()){
+													tmpAppearanceList.add((Appearance)appearance.getAppearance());
+												}
+											}
+										}
+									}
 								}
+
+
 
 								ReferencedEnvelope _refEnvelope = new ReferencedEnvelope(
 										envelope.getLowerCorner().toList3d().get(0),
@@ -375,7 +415,13 @@ public class KmlSplitter {
 							//	{
 
 									ElevationHelper elevation = new ElevationHelper(connection);								
-									KmlSplittingResult splitter = new KmlSplittingResult(cityObject.getId() , cityGML , cityObjectType , displayForm, TargetSrs , new CopyOnWriteArrayList<Appearance>(tmpAppearanceList) , elevation);		
+									KmlSplittingResult splitter = new KmlSplittingResult(cityObject.getId(),
+											cityGML,
+											cityObjectType ,
+											displayForm,
+											TargetSrs ,
+											new CopyOnWriteArrayList<Appearance>(tmpAppearanceList) ,
+											elevation);
 									
 									CityObject4JSON cityObject4Json = new CityObject4JSON(cityObject.getId());
 									cityObject4Json.setTileRow(exportFilter.getBoundingBoxFilter().getTileRow());
