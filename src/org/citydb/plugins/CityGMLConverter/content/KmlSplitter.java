@@ -196,268 +196,257 @@ public class KmlSplitter {
 	private void queryObjects(File file) throws SQLException {
 
 
-		if (filterConfig.isSetSimpleFilter()) {
-			for (String gmlId: filterConfig.getSimpleFilter().getGmlIdFilter().getGmlIds()) {
-				if (!shouldRun) break;
+        if (filterConfig.isSetSimpleFilter()) {
+            for (String gmlId : filterConfig.getSimpleFilter().getGmlIdFilter().getGmlIds()) {
+                if (!shouldRun) break;
 
-			}
-		}
-		else if (filterConfig.isSetComplexFilter() &&
-				filterConfig.getComplexFilter().getTiledBoundingBox().isSet()) {
+            }
+        } else if (filterConfig.isSetComplexFilter() &&
+                filterConfig.getComplexFilter().getTiledBoundingBox().isSet()) {
 
-			try {
+            try {
 
-				int boundingBoxSrs = filterConfig.getComplexFilter().getTiledBoundingBox().getSrs().getSrid();
-				org.citydb.plugins.CityGMLConverter.util.BoundingBox _bounds = null;
-				Tiling tiling = config.getFilter().getComplexFilter().getTiledBoundingBox().getTiling();
+                int boundingBoxSrs = filterConfig.getComplexFilter().getTiledBoundingBox().getSrs().getSrid();
+                org.citydb.plugins.CityGMLConverter.util.BoundingBox _bounds = null;
+                Tiling tiling = config.getFilter().getComplexFilter().getTiledBoundingBox().getTiling();
 
-				if(tiling.getMode() != TilingMode.NO_TILING)
-				{
-					BoundingBox tile = exportFilter.getBoundingBoxFilter().getFilterState();
+                if (tiling.getMode() != TilingMode.NO_TILING) {
+                    BoundingBox tile = exportFilter.getBoundingBoxFilter().getFilterState();
 
-					if(boundingBoxSrs != 4326)
-					{
-						_bounds = new org.citydb.plugins.CityGMLConverter.util.BoundingBox(
-								tile.getLowerLeftCorner().getX() ,
-								tile.getLowerLeftCorner().getY() ,
-								tile.getUpperRightCorner().getX() ,
-								tile.getUpperRightCorner().getY() ,
-								this.TargetSrs);						
+                    if (boundingBoxSrs != 4326) {
+                        _bounds = new org.citydb.plugins.CityGMLConverter.util.BoundingBox(
+                                tile.getLowerLeftCorner().getX(),
+                                tile.getLowerLeftCorner().getY(),
+                                tile.getUpperRightCorner().getX(),
+                                tile.getUpperRightCorner().getY(),
+                                this.TargetSrs);
 
-					}else {
+                    } else {
 
-						_bounds = new org.citydb.plugins.CityGMLConverter.util.BoundingBox(
-								tile.getLowerLeftCorner().getX() ,
-								tile.getLowerLeftCorner().getY() ,
-								tile.getUpperRightCorner().getX() ,
-								tile.getUpperRightCorner().getY(),
-								"4326");
-					}
+                        _bounds = new org.citydb.plugins.CityGMLConverter.util.BoundingBox(
+                                tile.getLowerLeftCorner().getX(),
+                                tile.getLowerLeftCorner().getY(),
+                                tile.getUpperRightCorner().getX(),
+                                tile.getUpperRightCorner().getY(),
+                                "4326");
+                    }
 
-				}
-				else{
+                } else {
 
-					if(boundingBoxSrs != 4326)
-					{
+                    if (boundingBoxSrs != 4326) {
 
-						BoundingBox BBox = filterConfig.getComplexFilter().getTiledBoundingBox();
+                        BoundingBox BBox = filterConfig.getComplexFilter().getTiledBoundingBox();
 
-						_bounds = new org.citydb.plugins.CityGMLConverter.util.BoundingBox(
-								BBox.getLowerLeftCorner().getX() ,
-								BBox.getLowerLeftCorner().getY() ,
-								BBox.getUpperRightCorner().getX() ,
-								BBox.getUpperRightCorner().getY() ,
-								this.TargetSrs);
+                        _bounds = new org.citydb.plugins.CityGMLConverter.util.BoundingBox(
+                                BBox.getLowerLeftCorner().getX(),
+                                BBox.getLowerLeftCorner().getY(),
+                                BBox.getUpperRightCorner().getX(),
+                                BBox.getUpperRightCorner().getY(),
+                                this.TargetSrs);
 
-					}else {
+                    } else {
 
 
-						//	BoundingBox BBox = ProjConvertor.transformBBox(filterConfig.getComplexFilter().getTiledBoundingBox() , "4326", this.TargetSrs); 
-						BoundingBox BBox = filterConfig.getComplexFilter().getTiledBoundingBox();
+                        //	BoundingBox BBox = ProjConvertor.transformBBox(filterConfig.getComplexFilter().getTiledBoundingBox() , "4326", this.TargetSrs);
+                        BoundingBox BBox = filterConfig.getComplexFilter().getTiledBoundingBox();
 
-						_bounds = new org.citydb.plugins.CityGMLConverter.util.BoundingBox(
-								BBox.getLowerLeftCorner().getX() ,
-								BBox.getLowerLeftCorner().getY() ,
-								BBox.getUpperRightCorner().getX() ,
-								BBox.getUpperRightCorner().getY() ,
-								"4326");
+                        _bounds = new org.citydb.plugins.CityGMLConverter.util.BoundingBox(
+                                BBox.getLowerLeftCorner().getX(),
+                                BBox.getLowerLeftCorner().getY(),
+                                BBox.getUpperRightCorner().getX(),
+                                BBox.getUpperRightCorner().getY(),
+                                "4326");
 
-					}
+                    }
 
-				}
-
-
-				//****************************************
-
-				// prepare CityGML input factory
-
-				CityGMLInputFactory in = null;
+                }
 
 
-				// prepare zOffSet Object
-				SQLiteFactory factory = new SQLiteFactory("Elevation.db",  file.getParent() , "org.sqlite.JDBC");
-				connection = factory.getConnection();
+                //****************************************
 
-				try {
-					in = jaxbBuilder.createCityGMLInputFactory();
-					in.setProperty(CityGMLInputFactory.FEATURE_READ_MODE, FeatureReadMode.SPLIT_PER_COLLECTION_MEMBER);
-					in.setProperty(CityGMLInputFactory.FAIL_ON_MISSING_ADE_SCHEMA, false);
-					in.setProperty(CityGMLInputFactory.PARSE_SCHEMA, false);
-					in.setProperty(CityGMLInputFactory.SPLIT_AT_FEATURE_PROPERTY, new QName("generalizesTo"));
-					in.setProperty(CityGMLInputFactory.EXCLUDE_FROM_SPLITTING, CityModel.class);
+                // prepare CityGML input factory
+
+                CityGMLInputFactory in = null;
 
 
-				} catch (CityGMLReadException e) {
-					//throw new CityGMLImportException("Failed to initialize CityGML parser. Aborting.", e);
-				}
+                // prepare zOffSet Object
+                SQLiteFactory factory = new SQLiteFactory("Elevation.db", file.getParent(), "org.sqlite.JDBC");
+                connection = factory.getConnection();
+
+                try {
+                    in = jaxbBuilder.createCityGMLInputFactory();
+                    in.setProperty(CityGMLInputFactory.FEATURE_READ_MODE, FeatureReadMode.SPLIT_PER_COLLECTION_MEMBER);
+                    in.setProperty(CityGMLInputFactory.FAIL_ON_MISSING_ADE_SCHEMA, false);
+                    in.setProperty(CityGMLInputFactory.PARSE_SCHEMA, false);
+                    in.setProperty(CityGMLInputFactory.SPLIT_AT_FEATURE_PROPERTY, new QName("generalizesTo"));
+                    in.setProperty(CityGMLInputFactory.EXCLUDE_FROM_SPLITTING, CityModel.class);
 
 
-				CityGMLInputFilter inputFilter = new CityGMLInputFilter() {
-					public boolean accept(CityGMLClass type) {
-						return true;
-					}
-				};
-
-				CityGMLReader reader = null;
-				tmpAppearanceList = new ArrayList<Appearance>();
-
-				//only for reading global appearance
-				if(displayForm.getForm() == DisplayForm.COLLADA)
-				{
-					reader = in.createFilteredCityGMLReader(in.createCityGMLReader(file), inputFilter);
-					LOG.info("Searching for global appearance ...");
-					while (reader.hasNext()) {
-						XMLChunk chunk = reader.nextChunk();
-						CityGML cityGML = chunk.unmarshal();
-						if(cityGML.getCityGMLClass() == CityGMLClass.APPEARANCE)
-						{
-							Appearance _appreance = (Appearance)cityGML;
-							tmpAppearanceList.add(_appreance);
-						}
-					}
-					reader.close();
-				}
-
-				
-				//for reading buildings
-			//	reader = in.createFilteredCityGMLReader(in.createCityGMLReader(file), inputFilter);
-				LOG.info("Reading city objects ...");
-			//	while (reader.hasNext()) {
-
-				List<CityObjectData> result = _bounds.SelectCityObject(this.TargetSrs);
-
-				for(CityObjectData dt:result){
-					
-				
-					try{
-
-						Envelope envelope = null;
-						//XMLChunk chunk = reader.nextChunk();
-						//CityGML cityGML = chunk.unmarshal();
-						CityGML cityGML = (CityGML)dt.getValue(0);
-						
-						if(cityGML.getCityGMLClass() != CityGMLClass.APPEARANCE && cityGML.getModelType() == ModelType.CITYGML ){
-
-							AbstractCityObject cityObject = (AbstractCityObject)cityGML;
-							CityGMLClass cityObjectType = cityGML.getCityGMLClass();
-
-							if(cityObject.calcBoundedBy(true) != null)
-								envelope = cityObject.calcBoundedBy(true).getEnvelope();
-
-							if(cityObject.calcBoundedBy(false) != null)
-								envelope = cityObject.calcBoundedBy(false).getEnvelope();
-
-							if(envelope != null){
-
-								if(cityObject.isSetAppearance()){
-
-									for(AppearanceProperty appearance : cityObject.getAppearance()){
-										tmpAppearanceList.add((Appearance)appearance.getAppearance());
-									}
-
-								}else if(cityObjectType == CityGMLClass.BUILDING){
-
-									AbstractBuilding building = (AbstractBuilding)cityObject;
-									if(building.isSetConsistsOfBuildingPart())
-									{
-										for(BuildingPartProperty buidingPart : building.getConsistsOfBuildingPart())
-										{
-											BuildingPart tmpBuildingPart = buidingPart.getBuildingPart();
-											if(tmpBuildingPart.isSetAppearance()){
-												for(AppearanceProperty appearance : tmpBuildingPart.getAppearance()){
-													tmpAppearanceList.add((Appearance)appearance.getAppearance());
-												}
-											}
-										}
-									}
-
-								}else if(cityObjectType == CityGMLClass.TUNNEL){
-
-									AbstractTunnel tunnel = (AbstractTunnel)cityObject;
-									if(tunnel.isSetConsistsOfTunnelPart()) {
-										for(TunnelPartProperty tunnelPart : tunnel.getConsistsOfTunnelPart())
-										{
-											TunnelPart tmpTunnelPart = tunnelPart.getTunnelPart();
-											if(tmpTunnelPart.isSetAppearance()){
-												for(AppearanceProperty appearance : tmpTunnelPart.getAppearance()){
-													tmpAppearanceList.add((Appearance)appearance.getAppearance());
-												}
-											}
-										}
-									}
-
-								}else if(cityObjectType == CityGMLClass.BRIDGE){
-
-									AbstractBridge bridge = (AbstractBridge)cityObject;
-									if(bridge.isSetConsistsOfBridgePart()) {
-										for(BridgePartProperty tunnelPart : bridge.getConsistsOfBridgePart())
-										{
-											BridgePart tmpBridgePart = tunnelPart.getBridgePart();
-											if(tmpBridgePart.isSetAppearance()){
-												for(AppearanceProperty appearance : tmpBridgePart.getAppearance()){
-													tmpAppearanceList.add((Appearance)appearance.getAppearance());
-												}
-											}
-										}
-									}
-								}
+                } catch (CityGMLReadException e) {
+                    //throw new CityGMLImportException("Failed to initialize CityGML parser. Aborting.", e);
+                }
 
 
+                CityGMLInputFilter inputFilter = new CityGMLInputFilter() {
+                    public boolean accept(CityGMLClass type) {
+                        return true;
+                    }
+                };
 
-								ReferencedEnvelope _refEnvelope = new ReferencedEnvelope(
-										envelope.getLowerCorner().toList3d().get(0),
-										envelope.getUpperCorner().toList3d().get(0),	
-										envelope.getLowerCorner().toList3d().get(1),							
-										envelope.getUpperCorner().toList3d().get(1),
-										CRS.decode("EPSG:" + this.TargetSrs, true));
+                CityGMLReader reader = null;
+                tmpAppearanceList = new ArrayList<Appearance>();
+                List<Appearance> GlobalAppearanceList = new ArrayList<>();
 
-							//	if(_bounds.ContainCentroid(_refEnvelope,TargetSrs))						
-							//	{
-
-									ElevationHelper elevation = new ElevationHelper(connection);								
-									KmlSplittingResult splitter = new KmlSplittingResult(cityObject.getId(),
-											cityGML,
-											cityObjectType ,
-											displayForm,
-											TargetSrs ,
-											new CopyOnWriteArrayList<Appearance>(tmpAppearanceList) ,
-											elevation);
-									
-									CityObject4JSON cityObject4Json = new CityObject4JSON(cityObject.getId());
-									cityObject4Json.setTileRow(exportFilter.getBoundingBoxFilter().getTileRow());
-									cityObject4Json.setTileColumn(exportFilter.getBoundingBoxFilter().getTileColumn());
-
-									cityObject4Json.setEnvelopeXmin(_refEnvelope.getLowerCorner().getCoordinate()[0]);
-									cityObject4Json.setEnvelopeXmax(_refEnvelope.getUpperCorner().getCoordinate()[0]);
-									cityObject4Json.setEnvelopeYmin(_refEnvelope.getLowerCorner().getCoordinate()[1]);
-									cityObject4Json.setEnvelopeYmax(_refEnvelope.getUpperCorner().getCoordinate()[1]);					
-
-									kmlWorkerPool.addWork(splitter);									
-									CityKmlExporter.getAlreadyExported().put(cityObject.getId(), cityObject4Json);
-									tmpAppearanceList.clear();									
-							//	}
-							}
-						}else{
-							LOG.info(cityGML.getCityGMLClass().name());
-						}
-
-					}catch (Exception e) {
-						Logger.getInstance().error(e.toString());
-					}
-					
-				}
-				//reader.close();
-			
-
-			} catch (Exception e) {
-
-				Logger.getInstance().error(e.toString());
-
-			}
+                //only for reading global appearance
+                if (displayForm.getForm() == DisplayForm.COLLADA) {
+                    reader = in.createFilteredCityGMLReader(in.createCityGMLReader(file), inputFilter);
+                    LOG.info("Searching for global appearance ...");
+                    while (reader.hasNext()) {
+                        XMLChunk chunk = reader.nextChunk();
+                        CityGML cityGML = chunk.unmarshal();
+                        if (cityGML.getCityGMLClass() == CityGMLClass.APPEARANCE) {
+                            Appearance _appreance = (Appearance) cityGML;
+                            GlobalAppearanceList.add(_appreance);
+                        }
+                    }
+                    reader.close();
+                }
 
 
-		}
-	}
+                //for reading buildings
+                //	reader = in.createFilteredCityGMLReader(in.createCityGMLReader(file), inputFilter);
+                LOG.info("Reading city objects ...");
+                //	while (reader.hasNext()) {
+
+                List<CityObjectData> result = _bounds.SelectCityObject(this.TargetSrs);
+
+                for (CityObjectData dt : result) {
+
+
+                    try {
+
+                        Envelope envelope = null;
+                        //XMLChunk chunk = reader.nextChunk();
+                        //CityGML cityGML = chunk.unmarshal();
+                        CityGML cityGML = (CityGML) dt.getValue(0);
+
+                        if (cityGML.getCityGMLClass() != CityGMLClass.APPEARANCE && cityGML.getModelType() == ModelType.CITYGML) {
+
+                            AbstractCityObject cityObject = (AbstractCityObject) cityGML;
+                            CityGMLClass cityObjectType = cityGML.getCityGMLClass();
+
+                            if (cityObject.calcBoundedBy(true) != null)
+                                envelope = cityObject.calcBoundedBy(true).getEnvelope();
+
+                            if (cityObject.calcBoundedBy(false) != null)
+                                envelope = cityObject.calcBoundedBy(false).getEnvelope();
+
+                            if (envelope != null) {
+
+                                if (cityObject.isSetAppearance()) {
+
+                                    for (AppearanceProperty appearance : cityObject.getAppearance()) {
+                                        tmpAppearanceList.add((Appearance) appearance.getAppearance());
+                                    }
+
+                                } else if (cityObjectType == CityGMLClass.BUILDING) {
+
+                                    AbstractBuilding building = (AbstractBuilding) cityObject;
+                                    if (building.isSetConsistsOfBuildingPart()) {
+                                        for (BuildingPartProperty buidingPart : building.getConsistsOfBuildingPart()) {
+                                            BuildingPart tmpBuildingPart = buidingPart.getBuildingPart();
+                                            if (tmpBuildingPart.isSetAppearance()) {
+                                                for (AppearanceProperty appearance : tmpBuildingPart.getAppearance()) {
+                                                    tmpAppearanceList.add((Appearance) appearance.getAppearance());
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                } else if (cityObjectType == CityGMLClass.TUNNEL) {
+
+                                    AbstractTunnel tunnel = (AbstractTunnel) cityObject;
+                                    if (tunnel.isSetConsistsOfTunnelPart()) {
+                                        for (TunnelPartProperty tunnelPart : tunnel.getConsistsOfTunnelPart()) {
+                                            TunnelPart tmpTunnelPart = tunnelPart.getTunnelPart();
+                                            if (tmpTunnelPart.isSetAppearance()) {
+                                                for (AppearanceProperty appearance : tmpTunnelPart.getAppearance()) {
+                                                    tmpAppearanceList.add((Appearance) appearance.getAppearance());
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                } else if (cityObjectType == CityGMLClass.BRIDGE) {
+
+                                    AbstractBridge bridge = (AbstractBridge) cityObject;
+                                    if (bridge.isSetConsistsOfBridgePart()) {
+                                        for (BridgePartProperty tunnelPart : bridge.getConsistsOfBridgePart()) {
+                                            BridgePart tmpBridgePart = tunnelPart.getBridgePart();
+                                            if (tmpBridgePart.isSetAppearance()) {
+                                                for (AppearanceProperty appearance : tmpBridgePart.getAppearance()) {
+                                                    tmpAppearanceList.add((Appearance) appearance.getAppearance());
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+
+                                ReferencedEnvelope _refEnvelope = new ReferencedEnvelope(
+                                        envelope.getLowerCorner().toList3d().get(0),
+                                        envelope.getUpperCorner().toList3d().get(0),
+                                        envelope.getLowerCorner().toList3d().get(1),
+                                        envelope.getUpperCorner().toList3d().get(1),
+                                        CRS.decode("EPSG:" + this.TargetSrs, true));
+
+                                //	if(_bounds.ContainCentroid(_refEnvelope,TargetSrs))
+                                //	{
+                                tmpAppearanceList.addAll(GlobalAppearanceList);
+                                ElevationHelper elevation = new ElevationHelper(connection);
+                                KmlSplittingResult splitter = new KmlSplittingResult(cityObject.getId(),
+                                        cityGML,
+                                        cityObjectType,
+                                        displayForm,
+                                        TargetSrs,
+                                        new CopyOnWriteArrayList<Appearance>(tmpAppearanceList),
+                                        elevation);
+
+                                CityObject4JSON cityObject4Json = new CityObject4JSON(cityObject.getId());
+                                cityObject4Json.setTileRow(exportFilter.getBoundingBoxFilter().getTileRow());
+                                cityObject4Json.setTileColumn(exportFilter.getBoundingBoxFilter().getTileColumn());
+
+                                cityObject4Json.setEnvelopeXmin(_refEnvelope.getLowerCorner().getCoordinate()[0]);
+                                cityObject4Json.setEnvelopeXmax(_refEnvelope.getUpperCorner().getCoordinate()[0]);
+                                cityObject4Json.setEnvelopeYmin(_refEnvelope.getLowerCorner().getCoordinate()[1]);
+                                cityObject4Json.setEnvelopeYmax(_refEnvelope.getUpperCorner().getCoordinate()[1]);
+
+                                kmlWorkerPool.addWork(splitter);
+                                CityKmlExporter.getAlreadyExported().put(cityObject.getId(), cityObject4Json);
+                                tmpAppearanceList.clear();
+                                //	}
+                            }
+                        } else {
+                            LOG.info(cityGML.getCityGMLClass().name());
+                        }
+
+                    } catch (Exception e) {
+                        Logger.getInstance().error(e.toString());
+                    }
+
+                }
+                //reader.close();
+
+
+            } catch (Exception e) {
+
+                Logger.getInstance().error(e.toString());
+
+            }
+
+
+        }
+    }
 
 	public void startQuery(File reader) throws SQLException {
 		try {
